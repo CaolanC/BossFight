@@ -1,0 +1,7 @@
+build/*
+!/build/.gitkeep
+
+bin/*
+!/bin/.gitkeep
+
+libhv*.log
