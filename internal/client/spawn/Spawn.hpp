@@ -38,11 +38,11 @@ namespace spawn {
         return e;
     }
 
-    static entt::entity model(entt::registry& r, xg::Guid model_ref, xg::Guid program_ref) {
+    static entt::entity model(entt::registry& r, xg::Guid model_ref, xg::Guid program_ref, glm::vec3 pos = glm::vec3(0, 0, 0)) {
         const auto e = r.create();
         r.emplace<component::model_ref>(e, model_ref);
         r.emplace<component::mat_ref>(e, program_ref);
-        r.emplace<component::position>(e, glm::vec3(0, 0, 0));
+        r.emplace<component::position>(e, pos);
         r.emplace<component::rotation>(e, glm::quat());
         r.emplace<component::transform>(e, glm::mat4(1.0f));
         return e;

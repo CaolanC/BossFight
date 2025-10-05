@@ -22,6 +22,13 @@ namespace systems::Utils {
             };
         };
 
+        static void set_model_mat(glm::mat4 model_matrix, unsigned int program) {
+            unsigned int model_loc = glGetUniformLocation(program, "uModel");
+            if (model_loc == -1) SDL_Log("WARN: uModel not found"); {
+                glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_matrix));
+            };
+        };
+
         static std::string asset(std::string const& path) {
             auto s = SLJA_ASSETS_DIR + path;
             std::cout << s << '\n';
