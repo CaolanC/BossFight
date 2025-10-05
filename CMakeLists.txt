@@ -57,3 +57,8 @@ set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 
 target_link_libraries(Server PRIVATE ServerLib concurrentqueue EnTT::EnTT hv crossguid)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+
+target_include_directories(Client
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/thirdpartypoopers/stb
+)
