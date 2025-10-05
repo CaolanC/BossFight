@@ -1,27 +1,15 @@
 cmake_minimum_required(VERSION 3.28.3)
-project(Soulja C)
+project(Soulja LANGUAGES C CXX)
 
-set(SDL_SHARED OFF CACHE BOOL "" FORCE)
-set(SDL_STATIC ON  CACHE BOOL "" FORCE)
+# SDL & OpenGL switches ---
+set(SDL_VIDEO            ON  CACHE BOOL "" FORCE)
+set(SDL_VIDEO_X11        ON  CACHE BOOL "" FORCE)
+set(SDL_VIDEO_WAYLAND    ON  CACHE BOOL "" FORCE)
+set(SDL_VIDEO_OPENGL     ON  CACHE BOOL "" FORCE)
+set(SDL_VIDEO_OPENGL_GLX ON  CACHE BOOL "" FORCE)
+set(SDL_VIDEO_OPENGL_EGL ON  CACHE BOOL "" FORCE)
 
-if(WIN32)
-    set(SDL_VIDEO            ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_X11        OFF CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_WAYLAND    OFF CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_OPENGL     ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_OPENGL_GLX OFF CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_OPENGL_EGL OFF CACHE BOOL "" FORCE)
-else()
-    set(SDL_VIDEO            ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_X11        ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_WAYLAND    ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_OPENGL     ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_OPENGL_GLX ON  CACHE BOOL "" FORCE)
-    set(SDL_VIDEO_OPENGL_EGL ON  CACHE BOOL "" FORCE)
-endif()
-
-set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
-
+set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets/")
 find_package(OpenGL REQUIRED)
 
 add_subdirectory(thirdpartypoopers/libhv)
@@ -29,70 +17,43 @@ add_subdirectory(thirdpartypoopers/libsdl-org)
 add_subdirectory(thirdpartypoopers/cglm)
 add_subdirectory(thirdpartypoopers/glad)
 add_subdirectory(thirdpartypoopers/FastNoiseLite)
+add_subdirectory(thirdpartypoopers/glm)
+add_subdirectory(thirdpartypoopers/entt)
+add_subdirectory(thirdpartypoopers/concurrentqueue)
+add_subdirectory(thirdpartypoopers/crossguid)
+add_subdirectory(thirdpartypoopers/tinygltf)
 
-file(GLOB_RECURSE SRC_FILES           "${CMAKE_SOURCE_DIR}/src/server/*.c")
-file(GLOB_RECURSE CLIENT_SRC_FILES    "${CMAKE_SOURCE_DIR}/src/client/*.c")
-file(GLOB_RECURSE SHARED_SRC_FILES    "${CMAKE_SOURCE_DIR}/src/shared/*.c")
 
-add_library(SouljaLib        ${SRC_FILES})
-add_library(SouljaClientLib  ${CLIENT_SRC_FILES})
-add_library(SouljaSharedLib  ${SHARED_SRC_FILES})
 
-add_executable(Soulja             apps/soulja_server/main.c)
-add_executable(SouljaClient       apps/soulja_client/main.c)
-add_executable(SouljaTestSandbox  apps/soulja_test/main.c)
+set(CLIENT_SHARED_LIBS cglm glad SDL3::SDL3 OpenGL::GL m fastnoiselitelib SouljaSharedLib)
 
-target_include_directories(SouljaLib        PRIVATE internal)
-target_include_directories(SouljaClientLib  PRIVATE internal)
-target_include_directories(SouljaSharedLib  PRIVATE internal)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-target_include_directories(SouljaTestSandbox PRIVATE internal)
-target_include_directories(SouljaClient      PRIVATE internal)
-target_include_directories(Soulja            PRIVATE internal)
+file(GLOB_RECURSE SERVER_SRC_FILES "${CMAKE_SOURCE_DIR}/src/server/*.cpp")
+add_library(ServerLib ${SERVER_SRC_FILES})
 
-foreach(tgt IN ITEMS Soulja SouljaClient SouljaTestSandbox)
-  set_target_properties(${tgt} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY                  "${CMAKE_SOURCE_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG            "${CMAKE_SOURCE_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE          "${CMAKE_SOURCE_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO   "${CMAKE_SOURCE_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL       "${CMAKE_SOURCE_DIR}/bin"
-  )
-endforeach()
+target_include_directories(ServerLib PUBLIC ${CMAKE_SOURCE_DIR}/internal)
 
-set(CLIENT_SHARED_LIBS cglm glad OpenGL::GL fastnoiselitelib SouljaSharedLib)
-if(NOT MSVC)
-  list(APPEND CLIENT_SHARED_LIBS m)
-endif()
-
-target_link_libraries(SouljaSharedLib PRIVATE fastnoiselitelib)
-
-target_link_libraries(Soulja PRIVATE
-  SouljaSharedLib
-  SouljaLib
-  hv
+target_link_libraries(ServerLib
+  PUBLIC EnTT::EnTT
+  PRIVATE concurrentqueue hv crossguid
 )
 
-target_link_libraries(SouljaClientLib  PRIVATE ${CLIENT_SHARED_LIBS} SDL3::SDL3)
-target_link_libraries(SouljaClient     PRIVATE ${CLIENT_SHARED_LIBS} SDL3::SDL3 SouljaClientLib)
+add_executable(Client apps/client/main.cpp
+        internal/client/component/AdminCommand.hpp
+        internal/client/systems/MeshLoading.hpp
+        internal/client/systems/Init.hpp
+        internal/client/utils/Model.hpp
+        internal/client/core/ModelManager.hpp)
 
-target_link_libraries(SouljaTestSandbox PRIVATE
-  SouljaSharedLib
-  SouljaClientLib
-  SDL3::SDL3
-  OpenGL::GL
-  cglm
-  glad
-  fastnoiselitelib
-)
+set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+target_include_directories(Client PRIVATE ${CMAKE_SOURCE_DIR}/internal/client)
+target_link_libraries(Client PRIVATE EnTT::EnTT glad SDL3::SDL3 OpenGL::GL hv glm::glm crossguid tinygltf)
+target_compile_definitions(Client PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}" SLJA_WINDOW_TITLE="Soulja")
 
-target_compile_definitions(SouljaTestSandbox PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-target_compile_definitions(SouljaClient      PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-target_compile_definitions(SouljaClientLib   PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+add_executable(Server apps/server/main.cpp)
+set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
-if(MSVC)                                                                          # CHANGED
-  target_compile_definitions(SouljaClient     PRIVATE _USE_MATH_DEFINES)
-  target_compile_definitions(SouljaClientLib  PRIVATE _USE_MATH_DEFINES)
-  target_compile_definitions(SouljaTestSandbox PRIVATE _USE_MATH_DEFINES)
-endif()
-
+target_link_libraries(Server PRIVATE ServerLib concurrentqueue EnTT::EnTT hv crossguid)
+target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")

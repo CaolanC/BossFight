@@ -1,16 +1,25 @@
 .PHONY: build
 
-bootstrap:
-	git submodule update --init
-	cmake -B build -S . -G Ninja ../
+all: setup cmake
+
+setup:
+	git submodule update --init --recursive
 
 cmake:
-	cmake -B build -S . -G Ninja ../
+	cmake -B build -S . -G "Unix Makefiles" ../
 
 c: bc rc
 
+s: bs rs
+
 bc:
-	ninja -C build
+	make -C build Client
+
+bs:
+	make -C build Server
 
 rc:
 	./bin/Client
+
+rs:
+	./bin/Server

@@ -1,6 +1,8 @@
-A game, unnamed, for now:
+# Perfect.
 
-# Soulja
+A framework for collaborative work, including 3d model design, audiovisualisation, games dev and an education tool for 3d maths visualisation and interaction.
+
+Built on top of OpenGL and SDL3, in C++. Dependencies managed with cmake.
 
 ## First install SDL dependencies
 
@@ -43,4 +45,4 @@ Similarly with the server:
 `make brs`
 `make brcf`
 
-We don't have an include directory as we don't have a public API to expose.
+We don't have an include directory as we don't have a public API to expose as of right now.

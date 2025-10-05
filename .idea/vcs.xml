@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/FastNoiseLite" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/cglm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/concurrentqueue" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/crossguid" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/entt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/libhv" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/libsdl-org" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdpartypoopers/tinygltf" vcs="Git" />
+  </component>
+</project>

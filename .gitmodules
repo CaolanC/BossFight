@@ -10,3 +10,21 @@
 [submodule "thirdpartypoopers/FastNoiseLite"]
 	path = thirdpartypoopers/FastNoiseLite
 	url = git@github.com:CaolanC/FastNoiseLite.git
+[submodule "thirdpartypoopers/glm"]
+	path = thirdpartypoopers/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "thirdpartypoopers/entt"]
+	path = thirdpartypoopers/entt
+	url = https://github.com/skypjack/entt.git
+[submodule "thirdpartypoopers/uWebSockets"]
+	path = thirdpartypoopers/uWebSockets
+	url = git@github.com:CaolanC/uWebSockets.git
+[submodule "thirdpartypoopers/concurrentqueue"]
+	path = thirdpartypoopers/concurrentqueue
+	url = https://github.com/cameron314/concurrentqueue.git
+[submodule "thirdpartypoopers/crossguid"]
+	path = thirdpartypoopers/crossguid
+	url = https://github.com/graeme-hill/crossguid.git
+[submodule "thirdpartypoopers/tinygltf"]
+	path = thirdpartypoopers/tinygltf
+	url = https://github.com/syoyo/tinygltf.git
