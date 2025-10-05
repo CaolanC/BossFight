@@ -66,4 +66,8 @@ namespace component
     struct model_ref {
         xg::Guid id;
     };
+
+    struct scale {
+        float s;
+    };
 }

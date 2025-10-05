@@ -20,6 +20,6 @@ namespace systems {
         };
         ShaderProgramHandle program = r.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
-        spawn::model(r, h, program, glm::vec3(0, 0, 0));
+        spawn::model(r, h, program, glm::vec3(0, 0, 0), 0.01f);
     }
 }

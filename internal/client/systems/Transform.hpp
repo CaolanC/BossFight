@@ -9,10 +9,9 @@
 
 namespace systems {
     void Transform(entt::registry& r) {
-        auto view = r.view<component::transform, component::position, component::rotation>();
-        for (auto [e, transform, position, rotation]: view.each()) {
-            //std::cout << std::format("{}, {}, {}", position[0], position[1], position[2]) << '\n';
-            transform = glm::translate(glm::identity<glm::mat4>(), position) * glm::mat4_cast(rotation);
+        auto view = r.view<component::transform, component::position, component::rotation, component::scale>();
+        for (auto [e, transform, position, rotation, scale]: view.each()) {
+            transform = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation) * glm::scale(glm::mat4(1.0f), glm::vec3(scale.s));;
         }
     }
 }

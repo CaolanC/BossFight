@@ -6,7 +6,7 @@ setup:
 	git submodule update --init --recursive
 
 cmake:
-	cmake -B build -S . -G "Unix Makefiles" ../
+	cmake -B build -S . -G "Ninja" ../
 
 c: bc rc
 
