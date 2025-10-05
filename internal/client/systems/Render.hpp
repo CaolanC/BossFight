@@ -47,9 +47,9 @@ void NewRender(entt::registry& reg) {
         auto& curr_cam = reg.ctx().get<component::current_camera>();
     glm::mat4 view_matrix = glm::inverse(reg.get<component::transform>(curr_cam.e));
 
-    auto view = reg.view<component::model_ref, component::mat_ref>();
+    auto view = reg.view<component::model_ref, component::mat_ref, component::transform>();
 
-    for (auto [e, mod_ref, mat_ref] : view.each()) {
+    for (auto [e, mod_ref, mat_ref, tr] : view.each()) {
         const utils::Model& model = model_manager.get_model(mod_ref.id);
 
         GLuint defaultProgram = material_mgr.get_program(mat_ref.id);
@@ -63,6 +63,7 @@ void NewRender(entt::registry& reg) {
             glUseProgram(program);
             systems::Utils::RenderUtils::set_view_mat(view_matrix, program);
             systems::Utils::RenderUtils::set_projection_mat(projection, program);
+            systems::Utils::RenderUtils::set_model_mat(tr, program);
         };
 
         std::function<void(const utils::Node&, const glm::mat4&, GLuint)> drawNode;

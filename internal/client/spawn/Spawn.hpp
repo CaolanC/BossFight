@@ -24,6 +24,7 @@ namespace spawn {
         r.emplace<component::position>(e, glm::vec3(0, 0, 0));
         r.emplace<component::rotation>(e, glm::angleAxis(0.0f, glm::vec3(0, 1, 0)));
         r.emplace<component::transform>(e, glm::mat4(1.0f));
+        r.emplace<component::scale>(e, 1.0f);
         r.emplace<component::user_control>(e);
         return e;
     }
@@ -35,16 +36,19 @@ namespace spawn {
         r.emplace<component::position>(e, glm::vec3(0, 0, 0));
         r.emplace<component::rotation>(e, glm::quat());
         r.emplace<component::transform>(e, glm::mat4(1.0f));
+        r.emplace<component::scale>(e, 1.0f);
         return e;
     }
 
-    static entt::entity model(entt::registry& r, xg::Guid model_ref, xg::Guid program_ref) {
+    static entt::entity model(entt::registry& r, xg::Guid model_ref, xg::Guid program_ref, glm::vec3 pos = glm::vec3(0, 0, 0), float scale = 1.0f) {
         const auto e = r.create();
         r.emplace<component::model_ref>(e, model_ref);
         r.emplace<component::mat_ref>(e, program_ref);
+        std::cout << "FU\n";
         r.emplace<component::position>(e, glm::vec3(0, 0, 0));
         r.emplace<component::rotation>(e, glm::quat());
         r.emplace<component::transform>(e, glm::mat4(1.0f));
+        r.emplace<component::scale>(e, scale);
         return e;
     }
 
@@ -55,6 +59,7 @@ namespace spawn {
         r.emplace<component::position>(e, glm::vec3(0, 0, 0));
         r.emplace<component::rotation>(e, glm::quat());
         r.emplace<component::transform>(e, glm::mat4(1.0f));
+
         return e;
     }
 };

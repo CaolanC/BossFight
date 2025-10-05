@@ -63,7 +63,7 @@ public:
         while (!quit) {
             glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT);
-            const bool* k_state = SDL_GetKeyboardState(NULL); // TODO: Singleton component for game input
+
             scene.update();
             while (SDL_PollEvent(&event)) {
                 switch(event.type) {
