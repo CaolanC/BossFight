@@ -5,3 +5,5 @@ bin/*
 !/bin/.gitkeep
 
 libhv*.log
+
+.idea
