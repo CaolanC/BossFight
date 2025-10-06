@@ -62,7 +62,7 @@ public:
         scene.set_camera_position(glm::vec3(0, 0, 1));
         while (!quit) {
             glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             scene.update();
             while (SDL_PollEvent(&event)) {

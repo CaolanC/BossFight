@@ -47,6 +47,7 @@ void NewRender(entt::registry& reg) {
     );
         auto& curr_cam = reg.ctx().get<component::current_camera>();
     glm::mat4 view_matrix = glm::inverse(reg.get<component::transform>(curr_cam.e));
+        glm::vec3 camera_position = reg.get<component::position>(curr_cam.e);
 
     auto view = reg.view<component::model_ref, component::mat_ref, component::transform>();
 
@@ -65,6 +66,7 @@ void NewRender(entt::registry& reg) {
             systems::Utils::RenderUtils::set_view_mat(view_matrix, program);
             systems::Utils::RenderUtils::set_projection_mat(projection, program);
             systems::Utils::RenderUtils::set_model_mat(tr, program);
+            systems::Utils::RenderUtils::set_campos(camera_position, program);
         };
 
         std::function<void(const utils::Node&, const glm::mat4&, GLuint)> drawNode;
