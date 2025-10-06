@@ -70,4 +70,5 @@ namespace component
     struct scale {
         float s;
     };
+
 }

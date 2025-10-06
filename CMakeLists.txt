@@ -45,7 +45,8 @@ add_executable(Client apps/client/main.cpp
         internal/client/systems/MeshLoading.hpp
         internal/client/systems/Init.hpp
         internal/client/utils/Model.hpp
-        internal/client/core/ModelManager.hpp)
+        internal/client/core/ModelManager.hpp
+        internal/client/animation/rotation.hpp)
 
 set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_include_directories(Client PRIVATE ${CMAKE_SOURCE_DIR}/internal/client)
