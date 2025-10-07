@@ -9,6 +9,8 @@
 #include <core/defines.hpp>
 #include <crossguid/guid.hpp>
 
+#include "utils/assets/helpers.hpp"
+
 namespace core
 {
 
@@ -35,7 +37,8 @@ namespace core
 
                 shader = glCreateShader(source.type);
                 char shader_source[2048];
-                get_shader_source(source.path.c_str(), shader_source, sizeof(shader_source));
+                std::string s = utils::assets::get_asset(source.path);
+                get_shader_source(s.c_str(), shader_source, sizeof(shader_source));
                 const char* shader_src = shader_source;
                 glShaderSource(shader, 1, &shader_src, NULL);
                 glCompileShader(shader);
@@ -43,22 +46,6 @@ namespace core
                 GLint ok; char log[1024];
                 glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
                 if(!ok){ glGetShaderInfoLog(shader, sizeof(log), NULL, log); SDL_Log("VS: %s", log); }
-            }
-
-            void get_shader_source(const char* path, char* shader_buffer, size_t shader_buffer_length) {
-                char tmp[512];
-                strcpy(tmp, SLJA_ASSETS_DIR);
-                strcat(tmp, path);
-                FILE* stream = fopen(tmp, "r");
-                if (stream == NULL) {
-                    printf("ooops\n");
-                    // TODO LOLLLLLL
-                }
-
-                size_t bytes = fread(shader_buffer, 1, shader_buffer_length - 1, stream);
-                shader_buffer[bytes] = '\0';
-
-                fclose(stream);
             }
 
             unsigned int get_shader() {
@@ -69,6 +56,19 @@ namespace core
             std::vector<char> source;
             unsigned int shader;
             unsigned int program;
+
+        void get_shader_source(const char* path, char* shader_buffer, size_t shader_buffer_length) {
+            FILE* stream = fopen(path, "r");
+            if (stream == NULL) {
+                printf("ooops\n");
+                // TODO LOLLLLLL
+            }
+
+            size_t bytes = fread(shader_buffer, 1, shader_buffer_length - 1, stream);
+            shader_buffer[bytes] = '\0';
+
+            fclose(stream);
+        }
     };
 
     class ShaderProgramManager {

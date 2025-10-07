@@ -12,8 +12,8 @@ out vec3 vCamPos;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
-    vWorldPos = worldPos.xyz;   // ensures uModel is used
-    vCamPos   = uCamPos;        // ensures uCamPos is used
+    vWorldPos = worldPos.xyz;
+    vCamPos   = uCamPos;
 
-    gl_Position = uProjection * uView * worldPos; // ensures uProjection/uView are used
+    gl_Position = uProjection * uView * worldPos;
 }
