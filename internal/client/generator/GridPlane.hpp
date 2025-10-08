@@ -4,19 +4,15 @@
 
 namespace generator {
 
-    rendering::GpuPrimitive lines(std::vector<float> points) {;
-        auto pr = rendering::GpuPrimitive();
-        glGenVertexArrays(1, &pr.vao);
-        glBindVertexArray(pr.vao);
+    std::vector<float> grid_plane(unsigned int cell_width, unsigned int no_cells) {;
+        std::vector<float> vertices = {};
+        std::vector<float> curr = {};
+        for (int x = 0; x < no_cells+1; x++) {
+            vertices.insert(vertices.end(), {static_cast<float>(x), 0.0f, static_cast<float>((cell_width+1)*x)});
+            std::cout << vertices[x] << vertices[x+1] << vertices[x+2] << '\n';
+        }
 
-        glGenBuffers(1, &pr.vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, pr.vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(points), points.data(), GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        return pr;
+        return vertices;
     }
 
 }

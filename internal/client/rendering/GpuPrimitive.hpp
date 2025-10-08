@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <tiny_gltf.h>
+#include <vector>
 
 namespace rendering {
     struct GpuPrimitive {
@@ -13,5 +14,5 @@ namespace rendering {
         GLsizei vertexCount = 0;
     };
 
-    GpuPrimitive load_primitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+    GpuPrimitive pr_lines(std::vector<float> const& vertices);
 }

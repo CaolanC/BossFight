@@ -58,7 +58,7 @@ namespace core
             glGenBuffers(1, &pr.vbo);
             glBindBuffer(GL_ARRAY_BUFFER, pr.vbo);
 
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, vertices.size()*sizeof(float), (void*)0);
             glEnableVertexAttribArray(0);
             gpu_primitives.push_back(pr);
         }
