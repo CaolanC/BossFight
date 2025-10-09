@@ -10,7 +10,8 @@
 
 namespace systems {
     void NewRender(entt::registry& reg) {
-
+        GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
         auto& model_manager = reg.ctx().get<component::model_manager>().manager;
         auto& material_mgr  = reg.ctx().get<component::material_manager>().manager;
 
@@ -54,6 +55,8 @@ namespace systems {
 
                     glBindVertexArray(prim.vao);
                     unsigned int view_loc = glGetUniformLocation(program, "uDistance");
+                    // unsigned int cam_pos = glGetUniformLocation(program, "uCamPos");
+                    // glUniform3fv(cam_pos, 3, glm::value_ptr(camera_position));
                     if (prim.indexCount > 0) {
                         glDrawElements(prim.mode, prim.indexCount, prim.indexType, nullptr);
                     } else {

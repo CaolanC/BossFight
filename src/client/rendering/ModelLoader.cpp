@@ -63,14 +63,43 @@ namespace rendering {
         glGenVertexArrays(1, &pr.vao);
         glBindVertexArray(pr.vao);
 
+        auto normIt = primitive.attributes.find("NORMAL");
+        if (normIt != primitive.attributes.end()) {
+            const auto& acc  = model.accessors.at(normIt->second);
+            const auto& view = model.bufferViews.at(acc.bufferView);
+            const auto& buff = model.buffers.at(view.buffer);
+
+            const size_t comps  = utils::gl::numComponentsInType(acc.type);
+            const size_t csize  = utils::gl::bytesPerComponent(acc.componentType);
+            const size_t stride = view.byteStride ? view.byteStride : comps * csize;
+            const size_t offset = view.byteOffset + acc.byteOffset;
+
+            const unsigned char* data = buff.data.data() + offset;
+
+            GLuint nbo = 0;
+            glGenBuffers(1, &nbo);
+            glBindBuffer(GL_ARRAY_BUFFER, nbo);
+            glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
+
+            glVertexAttribPointer(
+                1,
+                static_cast<GLint>(comps),
+                utils::gl::glTypeFromComponent(acc.componentType), // likely GL_FLOAT
+                acc.normalized ? GL_TRUE : GL_FALSE,
+                static_cast<GLsizei>(stride),
+                reinterpret_cast<void*>(0)
+            );
+            glEnableVertexAttribArray(1);
+        }
+
         auto posIt = primitive.attributes.find("POSITION");
         if (posIt != primitive.attributes.end()) {
             const auto& acc  = model.accessors.at(posIt->second);
             const auto& view = model.bufferViews.at(acc.bufferView);
             const auto& buff = model.buffers.at(view.buffer);
 
-            const size_t comps  = utils::gl::numComponentsInType(acc.type);                 // usually 3
-            const size_t csize  = utils::gl::bytesPerComponent(acc.componentType);          // usually 4
+            const size_t comps  = utils::gl::numComponentsInType(acc.type);
+            const size_t csize  = utils::gl::bytesPerComponent(acc.componentType);
             const size_t stride = view.byteStride ? view.byteStride : comps * csize;
 
             const unsigned char* data = buff.data.data() + view.byteOffset + acc.byteOffset;

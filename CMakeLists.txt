@@ -65,3 +65,28 @@ target_include_directories(Client
     PRIVATE
         ${CMAKE_SOURCE_DIR}/thirdpartypoopers/stb
 )
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui)
+set(IMGUI_SOURCES
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+        apps/gui/main.cpp
+)
+
+add_library(imgui STATIC ${IMGUI_SOURCES})
+target_include_directories(imgui PUBLIC
+        ${IMGUI_DIR}
+        ${IMGUI_DIR}/backends
+)
+target_link_libraries(imgui PUBLIC
+        SDL3::SDL3
+)
+
+add_executable(GUI apps/gui/main.cpp)
+target_link_libraries(GUI PRIVATE imgui SDL3::SDL3 OpenGL::GL)
+
+set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")

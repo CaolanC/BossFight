@@ -13,7 +13,7 @@ namespace systems {
     void Init(entt::registry& r) {
         // Basically we want to be able to load a model from memory and see it
         auto& model_m = r.ctx().get<component::model_manager>().manager;
-        rendering::Model m = LoadModel(r, "models/fox.gltf");
+        rendering::Model m = LoadModel(r, "models/box/box.gltf");
 
         ModelHandle h = model_m.add_model(m);
 

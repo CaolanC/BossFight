@@ -31,9 +31,11 @@ namespace utils::gl {
     void set_campos(glm::vec3 cam_pos, unsigned int program) {
         glUseProgram(program);
         unsigned int cam_loc = glGetUniformLocation(program, "uCamPos");
-        if (cam_loc == -1) SDL_Log("WARN: CamPos not found"); {
-            glUniform3fv(cam_loc, 1, glm::value_ptr(cam_pos));
+        if (cam_loc == -1) {
+            SDL_Log("WARN: uCamPos not found");
+            return;
         };
+        glUniform3fv(cam_loc, 1, glm::value_ptr(cam_pos));
     };
 
     size_t numComponentsInType(int type) {

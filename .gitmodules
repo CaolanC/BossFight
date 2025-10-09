@@ -28,3 +28,7 @@
 [submodule "thirdpartypoopers/tinygltf"]
 	path = thirdpartypoopers/tinygltf
 	url = https://github.com/syoyo/tinygltf.git
+[submodule "thirdpartypoopers/imgui"]
+	path = thirdpartypoopers/imgui
+    url = https://github.com/ocornut/imgui.git
+    branch = docking
