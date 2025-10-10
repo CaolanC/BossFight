@@ -12,7 +12,7 @@ namespace rendering {
     private:
 
         Model load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model);
-        Node load_node(tinygltf::Model const& model, tinygltf::Node const& node, glm::mat4 local_transform);
+        Node load_node(tinygltf::Model const& model, tinygltf::Node const& node);
         GpuPrimitive load_primitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
     };
 }

@@ -17,6 +17,13 @@ void main() { // expect 4 (FLOAT)
     vec3 lightDir = normalize(vCamPos - vWorldPos);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * light_color;
-    vec3 result = (ambient_strength + diffuse) * base;
+
+    float specularStrength = 0.5;
+    vec3 viewDir = normalize(vCamPos - vWorldPos);
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    vec3 specular = specularStrength * spec * light_color;
+
+    vec3 result = (ambient_strength + diffuse + specular) * base;
     FragColor =  vec4(result, 1.0);
 }

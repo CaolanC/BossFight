@@ -75,6 +75,7 @@ set(IMGUI_SOURCES
         ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
         ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
         apps/gui/main.cpp
+        internal/client/systems/Debug.hpp
 )
 
 add_library(imgui STATIC ${IMGUI_SOURCES})

@@ -33,18 +33,19 @@ namespace rendering {
     Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model) {
         Model m;
         for (auto const& n: scene.nodes) {
-            auto const& I = glm::mat4(1.0f);
-            m.root_nodes.push_back(load_node(model, model.nodes[n], I));
+            // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
+            m.root_nodes.push_back(load_node(model, model.nodes[n]));
         }
 
         return m;
     }
 
-    Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, glm::mat4 local_transform) { // We're just going to harcode the transform for now before things inherit it
+    Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node) { // We're just going to harcode the transform for now before things inherit it
         Node my_node;
 
-        for (auto const& n: node.children) {
-            my_node.children.push_back(load_node(model, model.nodes[n], local_transform));
+        if (node.matrix.data()) {
+            my_node.local_transform = glm::make_mat4(node.matrix.data());;
+            my_node.has_local_transform = true;
         }
 
         if (node.mesh != -1) {
@@ -54,6 +55,9 @@ namespace rendering {
             }
         }
 
+        for (auto const& n: node.children) {
+            my_node.children.push_back(load_node(model, model.nodes[n]));
+        }
         return my_node;
     }
     GpuPrimitive ModelLoader::load_primitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive) {

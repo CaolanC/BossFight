@@ -18,7 +18,7 @@ namespace systems {
         glm::mat4 projection = glm::perspective(
             glm::radians(60.0f),
             static_cast<float>(INIT_SCREEN_WIDTH) / static_cast<float>(INIT_SCREEN_HEIGHT),
-            0.1f, 100.0f // (near=0.1 avoids bad depth precision)
+            0.1f, 1000.0f // (near=0.1 avoids bad depth precision)
         );
             auto& curr_cam = reg.ctx().get<component::current_camera>();
         glm::mat4 view_matrix = glm::inverse(reg.get<component::transform>(curr_cam.e));
@@ -40,20 +40,22 @@ namespace systems {
                 glUseProgram(program);
                 utils::gl::set_view_mat(view_matrix, program);
                 utils::gl::set_projection_mat(projection, program);
-                utils::gl::set_model_mat(tr, program);
+                // utils::gl::set_model_mat(tr, program);
                 utils::gl::set_campos(camera_position, program);
             };
 
             std::function<void(const rendering::Node&, const glm::mat4&, GLuint)> drawNode;
             drawNode = [&](const rendering::Node& node, const glm::mat4& parentModel, GLuint program) {
-
                 glm::mat4 model_mat = parentModel;
+                if (node.has_local_transform) {
+                    model_mat = parentModel * node.local_transform;
+                }
                 for (const auto& prim : node.mesh.primitives) {
                     GLuint programToUse = program;
-
                     bindProgramAndSetGlobals(programToUse);
 
                     glBindVertexArray(prim.vao);
+                    utils::gl::set_model_mat(model_mat, program);
                     unsigned int view_loc = glGetUniformLocation(program, "uDistance");
                     // unsigned int cam_pos = glGetUniformLocation(program, "uCamPos");
                     // glUniform3fv(cam_pos, 3, glm::value_ptr(camera_position));
@@ -72,7 +74,7 @@ namespace systems {
 
             bindProgramAndSetGlobals(defaultProgram);
             for (const auto& root : model.root_nodes) {
-                drawNode(root, entity_model, defaultProgram);
+                drawNode(root, tr, defaultProgram);
             }
 
             glBindVertexArray(0);
