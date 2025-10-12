@@ -22,10 +22,9 @@ add_subdirectory(thirdpartypoopers/entt)
 add_subdirectory(thirdpartypoopers/concurrentqueue)
 add_subdirectory(thirdpartypoopers/crossguid)
 add_subdirectory(thirdpartypoopers/tinygltf)
+add_subdirectory(thirdpartypoopers/PolyVox)
 
-
-
-set(CLIENT_SHARED_LIBS glm::glm glad SDL3::SDL3 OpenGL::GL m fastnoiselitelib EnTT::EnTT hv crossguid tinygltf)
+set(CLIENT_SHARED_LIBS glm::glm glad SDL3::SDL3 OpenGL::GL m fastnoiselitelib EnTT::EnTT hv crossguid tinygltf PolyVoxCore PolyVoxUtil)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,6 +39,26 @@ target_link_libraries(ServerLib
   PRIVATE concurrentqueue hv crossguid
 )
 
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui)
+set(IMGUI_SOURCES
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
+)
+
+add_library(imgui STATIC ${IMGUI_SOURCES})
+target_include_directories(imgui PUBLIC
+        ${IMGUI_DIR}
+        ${IMGUI_DIR}/backends
+)
+target_link_libraries(imgui PUBLIC
+        SDL3::SDL3
+)
+
 add_executable(Client apps/client/main.cpp)
 file(GLOB_RECURSE CLIENT_SRC_FILES "${CMAKE_SOURCE_DIR}/src/client/*.cpp")
 add_library(ClientLib ${CLIENT_SRC_FILES})
@@ -47,11 +66,11 @@ target_include_directories(ClientLib PUBLIC
     ${CMAKE_SOURCE_DIR}/internal/client
 )
 
-target_link_libraries(ClientLib ${CLIENT_SHARED_LIBS})
+target_link_libraries(ClientLib imgui glm::glm ${CLIENT_SHARED_LIBS})
 
 set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_include_directories(Client PRIVATE ${CMAKE_SOURCE_DIR}/internal/client)
-target_link_libraries(Client PRIVATE ClientLib ${CLIENT_SHARED_LIBS})
+target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
@@ -65,29 +84,9 @@ target_include_directories(Client
     PRIVATE
         ${CMAKE_SOURCE_DIR}/thirdpartypoopers/stb
 )
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui)
-set(IMGUI_SOURCES
-        ${IMGUI_DIR}/imgui.cpp
-        ${IMGUI_DIR}/imgui_demo.cpp
-        ${IMGUI_DIR}/imgui_draw.cpp
-        ${IMGUI_DIR}/imgui_tables.cpp
-        ${IMGUI_DIR}/imgui_widgets.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-        apps/gui/main.cpp
-        internal/client/systems/Debug.hpp
-)
-
-add_library(imgui STATIC ${IMGUI_SOURCES})
-target_include_directories(imgui PUBLIC
-        ${IMGUI_DIR}
-        ${IMGUI_DIR}/backends
-)
-target_link_libraries(imgui PUBLIC
-        SDL3::SDL3
-)
 
 add_executable(GUI apps/gui/main.cpp)
-target_link_libraries(GUI PRIVATE imgui SDL3::SDL3 OpenGL::GL)
+target_include_directories(GUI PRIVATE thirdpartypoopers/libhv)
+target_link_libraries(GUI PRIVATE hv imgui SDL3::SDL3 OpenGL::GL)
 
 set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")

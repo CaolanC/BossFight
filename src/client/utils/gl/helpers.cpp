@@ -38,6 +38,17 @@ namespace utils::gl {
         glUniform3fv(cam_loc, 1, glm::value_ptr(cam_pos));
     };
 
+    // struct Light {
+    //     glm::vec3 position;
+    // };
+    //
+    // void set_light_pos(std::vector<Light> lights, unsigned int program) {
+    //     glUseProgram(program);
+    //     unsigned int light_no = 128;
+    //
+    //     glUniform
+    // }
+
     size_t numComponentsInType(int type) {
         switch (type) {
             case TINYGLTF_TYPE_SCALAR: return 1;

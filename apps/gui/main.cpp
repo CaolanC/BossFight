@@ -22,6 +22,26 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
+#include <hv/HttpClient.h>
+
+void request_join(std::string const& ip = "http://127.0.0.1:30000/join") {
+    hv::HttpClient cli;
+    HttpRequest req;
+    req.method = HTTP_GET;
+    req.url = ip;
+    req.headers["Connection"] = "keep-alive";
+    req.body = "This is a sync request.";
+    req.timeout = 10;
+    HttpResponse resp;
+    int ret = cli.send(&req, &resp);
+    if (ret != 0) {
+        printf("request failed!\n");
+    } else {
+        printf("%d %s\r\n", resp.status_code, resp.status_message());
+        printf("%s %s\n", resp.body.c_str(), resp.headers["Connection"].c_str());
+    }
+};
+
 // Main code
 int main(int, char**)
 {
@@ -191,8 +211,23 @@ int main(int, char**)
             ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-            if (ImGui::Button("Create Scene"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            if (ImGui::Button("Create Local Session")) {
+
+            }
+
+            if (ImGui::Button("Create Hosted Session")) {
+
+            }
+
+            static char buf[128] = "";
+            ImGui::InputTextWithHint(" ", "Server I.P:", buf, IM_ARRAYSIZE(buf));
+            if (ImGui::Button("Join Session")) {
+                request_join(buf);
+            }
+            if (ImGui::Button("Create Scene")) {
+                // Buttons return true when clicked (most widgets return true when edited/activated)
                 counter++;
+            }
             ImGui::SameLine();
             ImGui::Text("counter = %d", counter);
 

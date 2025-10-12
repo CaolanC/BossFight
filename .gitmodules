@@ -32,3 +32,6 @@
 	path = thirdpartypoopers/imgui
     url = https://github.com/ocornut/imgui.git
     branch = docking
+[submodule "thirdpartypoopers/PolyVox"]
+	path = thirdpartypoopers/PolyVox
+	url = https://github.com/JoeGurt/PolyVox.git
