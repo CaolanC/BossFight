@@ -70,4 +70,9 @@ namespace component
     struct scale {
         float s;
     };
+
+    struct debug_spin {
+        float speed = 1.0f;
+    };
+
 }

@@ -27,6 +27,8 @@
 #include "systems/Init.hpp"
 #include <core/ModelManager.hpp>
 
+#include "systems/Debug.hpp"
+
 namespace core
 {
 
@@ -122,6 +124,7 @@ public:
          systems::UserControl(r);
          systems::Transform(r);
          systems::NewRender(r);
+         systems::Debug(r);
     }
 
 private:
