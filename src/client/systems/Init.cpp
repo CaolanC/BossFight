@@ -24,7 +24,7 @@ namespace systems {
         };
         ShaderProgramHandle program = r.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
-        auto model_e = spawn::model(r, h, program, glm::vec3(0, 0, 0), 0.2f, glm::angleAxis(glm::radians( 0.f), glm::vec3(0.f, 1.f, 0.5f)));
+        auto model_e = spawn::model(r, h, program, glm::vec3(0, 0, 0), 0.02f, glm::angleAxis(glm::radians( 0.f), glm::vec3(0.f, 1.f, 0.5f)));
         r.emplace<component::debug_spin>(model_e, 0.2f);
         rendering::Model model = rendering::Model();
         rendering::Node node = rendering::Node();
