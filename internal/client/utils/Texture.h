@@ -7,12 +7,18 @@
 
 #include <glad/glad.h>
 #include <iostream>
+#include <tiny_gltf.h>
 
 class Texture {
 public:
     unsigned int ID;
 
+    // Supplying our own texture from file
     Texture(int* objs, const char* imagepath);
+
+    // Getting texture for glTF model
+    Texture(int* objs, const tinygltf::Image& gltfImage);
+
     void Bind();
 };
 
