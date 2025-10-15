@@ -59,6 +59,8 @@ namespace systems {
                     unsigned int view_loc = glGetUniformLocation(program, "uDistance");
                     // unsigned int cam_pos = glGetUniformLocation(program, "uCamPos");
                     // glUniform3fv(cam_pos, 3, glm::value_ptr(camera_position));
+                    glActiveTexture(GL_TEXTURE0 + 0);
+                    glBindTexture(GL_TEXTURE_2D,                     prim.texture.ID);
                     if (prim.indexCount > 0) {
                         glDrawElements(prim.mode, prim.indexCount, prim.indexType, nullptr);
                     } else {

@@ -4,6 +4,9 @@
 #include <tiny_gltf.h>
 #include <vector>
 
+#include <utils/Texture.hpp>
+#include <utils/assets/helpers.hpp>
+
 namespace rendering {
     struct GpuPrimitive {
         GLuint vao = 0, vbo = 0, ebo = 0;
@@ -12,6 +15,8 @@ namespace rendering {
         GLenum indexType = GL_UNSIGNED_INT;
         uint32_t materialHandle = 0;
         GLsizei vertexCount = 0;
+        utils::Texture texture = utils::Texture(utils::assets::get_asset("textures/default_texture.jpg").c_str());
+
     };
 
     GpuPrimitive pr_lines(std::vector<float> const& vertices);

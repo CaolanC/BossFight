@@ -1,8 +1,12 @@
+#include <iostream>
+#include <ostream>
 #include <rendering/ModelLoader.hpp>
 #include <rendering/Model.hpp>
 #include <glm/glm.hpp>
 #include <utils/assets/helpers.hpp>
 #include <utils/gl/helpers.hpp>
+#include <utils/Texture.hpp>
+#include <filesystem>
 
 namespace rendering {
     ModelLoader::ModelLoader() {
@@ -10,6 +14,7 @@ namespace rendering {
     };
 
     Model ModelLoader::load_model(std::string const& p) {
+        std::cout << p << std::endl;
         tinygltf::TinyGLTF loader;
         tinygltf::Model model;
         std::string err, warn;
@@ -27,20 +32,20 @@ namespace rendering {
             printf("Need to look in the repo for this message lol.\n.");
         }
         auto s = model.scenes.at(model.defaultScene);
-        return load_scene(s, model);
+        return load_scene(s, model, p);
     }
 
-    Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model) {
+    Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model, std::string const& p) {
         Model m;
         for (auto const& n: scene.nodes) {
             // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
-            m.root_nodes.push_back(load_node(model, model.nodes[n]));
+            m.root_nodes.push_back(load_node(model, model.nodes[n], p));
         }
 
         return m;
     }
 
-    Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node) { // We're just going to harcode the transform for now before things inherit it
+    Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, std::string const& p) { // We're just going to harcode the transform for now before things inherit it
         Node my_node;
 
         if (node.matrix.data()) {
@@ -51,16 +56,16 @@ namespace rendering {
         if (node.mesh != -1) {
             auto const& mesh = model.meshes[node.mesh];
             for (auto const& primitive: mesh.primitives) {
-                my_node.mesh.primitives.push_back(load_primitive(model, primitive));
+                my_node.mesh.primitives.push_back(load_primitive(model, primitive, p));
             }
         }
 
         for (auto const& n: node.children) {
-            my_node.children.push_back(load_node(model, model.nodes[n]));
+            my_node.children.push_back(load_node(model, model.nodes[n], p));
         }
         return my_node;
     }
-    GpuPrimitive ModelLoader::load_primitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive) {
+    GpuPrimitive ModelLoader::load_primitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive, std::string const& p) {
         GpuPrimitive pr{};
         pr.mode = utils::gl::glModeFromPrimitive(primitive.mode);
 
@@ -169,7 +174,18 @@ namespace rendering {
             pr.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
         }
 
+        auto texture_index = model.materials[primitive.material].pbrMetallicRoughness.baseColorTexture.index;
+        auto texture = model.textures[texture_index];
+
+        std::filesystem::path parent = p;
+        parent = parent.parent_path();
+        pr.texture = utils::Texture((utils::assets::get_asset(parent.string() + "/" + model.images[texture.source].uri)).c_str());
+
+
+        // Need to load the texture data
+
         // Per-primitive material (store handle, resolve at draw time)
+
         if (primitive.material >= 0) {
             pr.materialHandle = 0;
         }
