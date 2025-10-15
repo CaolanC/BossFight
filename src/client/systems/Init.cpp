@@ -7,6 +7,8 @@
 
 #include "generator/GridPlane.hpp"
 #include <systems/Init.hpp>
+#include <utils/Texture.hpp>
+#include <utils/assets/helpers.hpp>
 
 namespace systems {
     void Init(entt::registry& r) {
@@ -37,5 +39,7 @@ namespace systems {
         ModelHandle const lh = model_m.add_model(model);
 
         spawn::model(r, lh, program);
+        int a = 1;
+        auto texture = utils::Texture(&a, utils::assets::get_asset("models/Texture.png").c_str());
     }
 }
