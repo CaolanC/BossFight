@@ -41,5 +41,6 @@ namespace systems {
         spawn::model(r, lh, program);
         int a = 1;
         auto texture = utils::Texture(&a, utils::assets::get_asset("models/Texture.png").c_str());
+        texture.Bind(0);
     }
 }

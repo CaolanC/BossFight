@@ -76,6 +76,7 @@ namespace systems {
             for (const auto& root : model.root_nodes) {
                 drawNode(root, tr, defaultProgram);
             }
+            glUniform1i(glGetUniformLocation(defaultProgram, "uTex"), 0);
 
             glBindVertexArray(0);
             glUseProgram(0);

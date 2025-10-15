@@ -12,6 +12,6 @@ namespace utils {
         // Getting texture for glTF model
         Texture(int* objs, const tinygltf::Image& gltfImage);
 
-        void Bind();
+        void Bind(int unit);
     };
 }

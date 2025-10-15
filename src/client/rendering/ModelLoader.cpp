@@ -95,6 +95,32 @@ namespace rendering {
             );
             glEnableVertexAttribArray(1);
         }
+        auto texIt = primitive.attributes.find("TEXCOORD_0");
+        if (texIt != primitive.attributes.end()) {
+            const auto& acc  = model.accessors.at(texIt->second);
+            const auto& view = model.bufferViews.at(acc.bufferView);
+            const auto& buff = model.buffers.at(view.buffer);
+
+            const size_t comps  = utils::gl::numComponentsInType(acc.type);
+            const size_t csize  = utils::gl::bytesPerComponent(acc.componentType);
+            const size_t stride = view.byteStride ? view.byteStride : comps * csize;
+
+            const unsigned char* data = buff.data.data() + view.byteOffset + acc.byteOffset;
+
+            glGenBuffers(1, &pr.vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, pr.vbo);
+            glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
+            pr.vertexCount = static_cast<GLsizei>(acc.count);
+            glVertexAttribPointer(
+                2,
+                static_cast<GLint>(comps),
+                utils::gl::glTypeFromComponent(acc.componentType),
+                acc.normalized ? GL_TRUE : GL_FALSE,
+                static_cast<GLsizei>(stride),
+                reinterpret_cast<void*>(0)
+            );
+            glEnableVertexAttribArray(2);
+        }
 
         auto posIt = primitive.attributes.find("POSITION");
         if (posIt != primitive.attributes.end()) {

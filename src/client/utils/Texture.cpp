@@ -9,7 +9,7 @@
 
 namespace utils {
     Texture::Texture(int* objs, char const* imagepath) {
-        glGenTextures(*objs, &ID);
+        glGenTextures(1, &ID);
         glBindTexture(GL_TEXTURE_2D, ID);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -51,7 +51,7 @@ namespace utils {
     }
 
     Texture::Texture(int* objs, const tinygltf::Image& gltfImage) {
-        glGenTextures(*objs, &ID);
+        glGenTextures(1, &ID);
         glBindTexture(GL_TEXTURE_2D, ID);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -75,7 +75,8 @@ namespace utils {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    void Texture::Bind() {
+    void Texture::Bind(int unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, ID);
     }
 }
