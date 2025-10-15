@@ -9,20 +9,22 @@ uniform sampler2D uTex;
 
 out vec4 FragColor;
 
-void main() {
-    // distance-based darkening
+void main()
+{
     float dist   = length(vCamPos - vWorldPos);
     float darken = clamp(1.0 - dist * 0.05, 0.1, 1.0);
 
-    // sample albedo from texture
-    vec3 albedo = texture(uTex, vuV).rgb;
+    // flip the V coordinate (fixes upside-down glTF texture)
+    vec2 uv = vec2(vuV.x, 1.0 - vuV.y);
 
-    // simple Blinn-Phong/Phong-ish lighting
+    // sample albedo from texture
+    vec3 albedo = texture(uTex, uv).rgb;
+
     float ambientStrength = 0.2;
     vec3 lightColor = vec3(1.0);
 
     vec3 N = normalize(vNorm);
-    vec3 L = normalize(vCamPos - vWorldPos); // using camera as light dir?
+    vec3 L = normalize(vCamPos - vWorldPos);
     float diff = max(dot(N, L), 0.0);
     vec3 diffuse = diff * lightColor;
 
@@ -35,7 +37,6 @@ void main() {
     // combine: (ambient + diffuse) * albedo + specular
     vec3 color = (ambientStrength + diffuse) * albedo + specular;
 
-    // apply distance darkening
     color *= darken;
 
     FragColor = vec4(color, 1.0);

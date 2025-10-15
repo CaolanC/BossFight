@@ -50,6 +50,7 @@ private:
         glEnable(GL_NORMALIZE);
         glDepthFunc(GL_LESS);
         glLineWidth(10);
+        glEnable(GL_FRAMEBUFFER_SRGB);
     }
 
     void InitSDL() {

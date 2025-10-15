@@ -40,8 +40,10 @@ namespace utils {
         }
 
         if (data) {
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
             glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
         }
         else {
             std::cout << "Failed to load texture" << std::endl;
@@ -70,9 +72,10 @@ namespace utils {
             internalFormat = GL_RGB;
             format = GL_RGB;
         }
-
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, gltfImage.width, gltfImage.height, 0, format, GL_UNSIGNED_BYTE, gltfImage.image.data());
         glGenerateMipmap(GL_TEXTURE_2D);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     }
 
     void Texture::Bind(int unit) {
