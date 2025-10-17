@@ -42,8 +42,9 @@ namespace systems {
         spawn::model(r, lh, program);
 
         par_shapes_mesh* par_m = par_shapes_create_subdivided_sphere(4);
-        rendering::Model sphere_m = LoadModel(r, *par_m);
+        par_shapes_mesh* k_par_m = par_shapes_create_trefoil_knot(100, 100, 1);
+        rendering::Model sphere_m = LoadModel(r, *k_par_m);
         auto const sphere_h = model_m.add_model(sphere_m);
-        spawn::model(r, sphere_h, program, glm::vec3(0, 0, 0));
+        spawn::model(r, sphere_h, program, glm::vec3(2, 0, 0));
     }
 }
