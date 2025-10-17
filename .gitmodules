@@ -35,3 +35,6 @@
 [submodule "thirdpartypoopers/PolyVox"]
 	path = thirdpartypoopers/PolyVox
 	url = https://github.com/JoeGurt/PolyVox.git
+[submodule "thirdpartypoopers/yocto-gl"]
+	path = thirdpartypoopers/yocto-gl
+	url = https://github.com/xelatihy/yocto-gl.git

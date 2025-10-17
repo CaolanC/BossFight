@@ -2,6 +2,7 @@
 
 #include <rendering/Model.hpp>
 #include <glm/glm.hpp>
+#include <par_shapes.h>
 
 namespace rendering {
     class ModelLoader {
@@ -9,6 +10,7 @@ namespace rendering {
         ModelLoader();
 
         Model load_model(std::string const& p);
+        Model load_model(par_shapes_mesh_s& m);
     private:
 
         Model load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model, std::string const& p);

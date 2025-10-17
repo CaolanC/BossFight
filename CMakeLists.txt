@@ -23,8 +23,16 @@ add_subdirectory(thirdpartypoopers/concurrentqueue)
 add_subdirectory(thirdpartypoopers/crossguid)
 add_subdirectory(thirdpartypoopers/tinygltf)
 add_subdirectory(thirdpartypoopers/PolyVox)
+add_subdirectory(thirdpartypoopers/header_only)
 
-set(CLIENT_SHARED_LIBS glm::glm glad SDL3::SDL3 OpenGL::GL m fastnoiselitelib EnTT::EnTT hv crossguid tinygltf PolyVoxCore PolyVoxUtil)
+add_library(single_headers_impl STATIC
+        src/impl.cpp
+)
+target_link_libraries(single_headers_impl PUBLIC par_shapes)
+
+
+
+set(CLIENT_SHARED_LIBS glm::glm glad SDL3::SDL3 OpenGL::GL par_shapes m fastnoiselitelib EnTT::EnTT hv crossguid tinygltf PolyVoxCore PolyVoxUtil)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,7 +74,7 @@ target_include_directories(ClientLib PUBLIC
     ${CMAKE_SOURCE_DIR}/internal/client
 )
 
-target_link_libraries(ClientLib imgui glm::glm ${CLIENT_SHARED_LIBS})
+target_link_libraries(ClientLib single_headers_impl imgui glm::glm ${CLIENT_SHARED_LIBS})
 
 set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_include_directories(Client PRIVATE ${CMAKE_SOURCE_DIR}/internal/client)

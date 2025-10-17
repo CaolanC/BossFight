@@ -4,6 +4,7 @@
 #include <spawn/Spawn.hpp>
 #include <rendering/GpuPrimitive.hpp>
 #include <core/sh_src.hpp>
+#include <par_shapes.h>
 
 #include "generator/GridPlane.hpp"
 #include <systems/Init.hpp>
@@ -39,5 +40,10 @@ namespace systems {
         ModelHandle const lh = model_m.add_model(model);
 
         spawn::model(r, lh, program);
+
+        par_shapes_mesh* par_m = par_shapes_create_subdivided_sphere(4);
+        rendering::Model sphere_m = LoadModel(r, *par_m);
+        auto const sphere_h = model_m.add_model(sphere_m);
+        spawn::model(r, sphere_h, program, glm::vec3(0, 0, 0));
     }
 }

@@ -6,6 +6,7 @@
 
 #include <utils/Texture.hpp>
 #include <utils/assets/helpers.hpp>
+#include <par_shapes.h>
 
 namespace rendering {
     struct GpuPrimitive {
@@ -20,4 +21,5 @@ namespace rendering {
     };
 
     GpuPrimitive pr_lines(std::vector<float> const& vertices);
+    GpuPrimitive par(par_shapes_mesh_s& m);
 }

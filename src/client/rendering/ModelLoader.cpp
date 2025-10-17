@@ -7,6 +7,7 @@
 #include <utils/gl/helpers.hpp>
 #include <utils/Texture.hpp>
 #include <filesystem>
+#include <par_shapes.h>
 
 namespace rendering {
     ModelLoader::ModelLoader() {
@@ -34,6 +35,14 @@ namespace rendering {
         auto s = model.scenes.at(model.defaultScene);
         return load_scene(s, model, p);
     }
+
+    Model ModelLoader::load_model(par_shapes_mesh_s& m) {
+        Model model;
+        Node node;
+        node.add_primitive(rendering::par(m));
+        model.root_nodes.push_back(node);
+        return model;
+    };
 
     Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model, std::string const& p) {
         Model m;
