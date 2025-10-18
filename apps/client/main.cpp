@@ -9,4 +9,3 @@ int main(int argc, char* argv[]) {
     client.run(1920, 1080);
     return 0;
 };
- 
