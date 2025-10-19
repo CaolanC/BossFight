@@ -71,4 +71,8 @@ namespace component
         float s;
     };
 
+    struct debug_spin {
+        float speed = 1.0f;
+    };
+
 }

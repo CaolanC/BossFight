@@ -1,7 +1,7 @@
 #pragma once
 
 #include <core/defines.hpp>
-#include <utils/Model.hpp>
+#include <rendering/Model.hpp>
 #include <crossguid/guid.hpp>
 namespace core {
 
@@ -11,17 +11,17 @@ namespace core {
 
         };
 
-        xg::Guid add_model(utils::Model model) {
+        xg::Guid add_model(rendering::Model model) {
             auto g = xg::newGuid();
             model_map.insert({g, model});
 
             return g;
         }
 
-        utils::Model get_model(ModelHandle id) {
+        rendering::Model get_model(ModelHandle id) {
             return model_map.at(id);
         }
     private:
-        std::map<ModelHandle, utils::Model> model_map;
+        std::map<ModelHandle, rendering::Model> model_map;
     };
 }

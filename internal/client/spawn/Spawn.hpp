@@ -61,4 +61,11 @@ namespace spawn {
 
         return e;
     }
+    //
+    // static entt::entity grid_plane(entt::registry& r) {
+    //     const auto e = r.create();
+    //     r.emplace<component::position>(e, glm::vec3(0, 0, 0));
+    //     r.emplace<component::transform>(e, glm::mat4(1.0f));
+    //     r.emplace<component::rotation>(e, glm::quat());
+    // }
 };

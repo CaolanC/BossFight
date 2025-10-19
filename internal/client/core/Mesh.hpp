@@ -6,9 +6,9 @@
 #include <vector>
 #include <string>
 #include <tiny_gltf.h>
-#include <utils/Model.hpp>
+#include <rendering/Model.hpp>
 #include <core/defines.hpp>
-
+#include <utils/gl/helpers.hpp>
 namespace core
 {
 
@@ -47,6 +47,21 @@ namespace core
     class Mesh
     {
     public:
+        Mesh () {
+
+        }
+        void line(GLenum mode, std::vector<float>& vertices) {
+            GpuPrimitive pr;
+            glGenVertexArrays(1, &pr.vao);
+            glBindVertexArray(pr.vao);
+
+            glGenBuffers(1, &pr.vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, pr.vbo);
+
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, vertices.size()*sizeof(float), (void*)0);
+            glEnableVertexAttribArray(0);
+            gpu_primitives.push_back(pr);
+        }
         Mesh(tinygltf::Model const& model, tinygltf::Mesh const& mesh) {
             for (auto const& primitive: mesh.primitives) {
                 GpuPrimitive pr;
@@ -76,10 +91,10 @@ namespace core
 
                 glVertexAttribPointer(
                     0,
-                    numComponentsInType(b_acc.type),
-                    glTypeFromComponent(b_acc.componentType),
+                    utils::gl::numComponentsInType(b_acc.type),
+                    utils::gl::glTypeFromComponent(b_acc.componentType),
                     false, // We will definitely have to put more thought into this flag
-                    b_view.byteStride ? b_acc.type * bytesPerComponent(b_acc.componentType) : 0,
+                    b_view.byteStride ? b_acc.type * utils::gl::bytesPerComponent(b_acc.componentType) : 0,
                     (void*) b_acc.byteOffset);
                 glEnableVertexAttribArray(0);
                 gpu_primitives.push_back(pr);
