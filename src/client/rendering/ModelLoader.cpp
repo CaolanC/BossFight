@@ -182,13 +182,38 @@ namespace rendering {
             pr.indexCount = static_cast<GLsizei>(iacc.count);
             pr.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
         }
+        namespace fs = std::filesystem;
 
-        auto texture_index = model.materials[primitive.material].pbrMetallicRoughness.baseColorTexture.index;
-        auto texture = model.textures[texture_index];
+        if (primitive.material >= 0 &&
+            primitive.material < static_cast<int>(model.materials.size())) {
 
-        std::filesystem::path parent = p;
-        parent = parent.parent_path();
-        pr.texture = utils::Texture((utils::assets::get_asset(parent.string() + "/" + model.images[texture.source].uri)).c_str());
+            const auto& material = model.materials[primitive.material];
+            const auto& baseTex = material.pbrMetallicRoughness.baseColorTexture;
+
+            // glTF convention: index == -1 means "no texture"
+            if (baseTex.index >= 0 &&
+                baseTex.index < static_cast<int>(model.textures.size())) {
+
+                const auto& texture = model.textures[baseTex.index];
+                if (texture.source >= 0 &&
+                    texture.source < static_cast<int>(model.images.size())) {
+
+                    const auto& image = model.images[texture.source];
+                    if (!image.uri.empty()) {
+                        fs::path parent = p;
+                        parent = parent.parent_path();
+                        fs::path fullPath = fs::path(utils::assets::get_asset(
+                            (parent / image.uri).string()));
+
+                        pr.texture = utils::Texture(fullPath.string().c_str());
+                    }
+                    }
+                }
+            }
+
+        // std::filesystem::path parent = p;
+        // parent = parent.parent_path();
+        // pr.texture = utils::Texture((utils::assets::get_asset(parent.string() + "/" + model.images[texture.source].uri)).c_str());
 
 
         // Need to load the texture data
