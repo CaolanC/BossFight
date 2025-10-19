@@ -9,7 +9,7 @@
 
 namespace utils {
     Texture::Texture(char const* imagepath) {
-        // std::cout << imagepath << std::endl;
+        //std::cout << imagepath << std::endl;
         glGenTextures(1, &ID);
         glBindTexture(GL_TEXTURE_2D, ID);
 

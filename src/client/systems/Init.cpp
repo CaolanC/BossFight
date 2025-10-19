@@ -15,7 +15,7 @@ namespace systems {
     void Init(entt::registry& r) {
         // Basically we want to be able to load a model from memory and see it
         auto& model_m = r.ctx().get<component::model_manager>().manager;
-        rendering::Model m = LoadModel(r, "models/carl_johnson_cj/scene.gltf");
+        rendering::Model m = LoadModel(r, "models/fox.gltf");
 
         ModelHandle h = model_m.add_model(m);
 
@@ -25,7 +25,7 @@ namespace systems {
         };
         ShaderProgramHandle program = r.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
-        auto model_e = spawn::model(r, h, program, glm::vec3(0, 0, 0), 0.2f, glm::angleAxis(glm::radians( 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        auto model_e = spawn::model(r, h, program, glm::vec3(0, 0, 0), 1.0f, glm::angleAxis(glm::radians( 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         r.emplace<component::debug_spin>(model_e, 0.2f);
         rendering::Model model = rendering::Model();
         rendering::Node node = rendering::Node();
@@ -43,7 +43,7 @@ namespace systems {
 
         par_shapes_mesh* par_m = par_shapes_create_subdivided_sphere(4);
         par_shapes_mesh* k_par_m = par_shapes_create_trefoil_knot(100, 100, 1);
-        rendering::Model sphere_m = LoadModel(r, *k_par_m);
+        rendering::Model sphere_m = LoadModel(r, *par_m);
         auto const sphere_h = model_m.add_model(sphere_m);
         spawn::model(r, sphere_h, program, glm::vec3(2, 0, 0));
     }
