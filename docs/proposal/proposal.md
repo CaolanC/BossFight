@@ -1,6 +1,6 @@
 |                     |                 |
 |---------------------|-----------------|
-|Project Title:       | Perfect         |
+|Project Title:       | Real time collaboration software for interior designers |
 |Student 1 Name:      | Caolan Cochrane |
 |Student 1 ID:        | 22490802        |
 |Student 2 Name:      | Ethan Doyle     |
