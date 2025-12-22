@@ -40,17 +40,45 @@ namespace server
 
     void NetIO::handle_reply(NetMsg msg) {
 
-        std::lock_guard<std::mutex> lock(req_prom_mut);
-        auto it = waiting_joiners.find(msg.req_id);
+        switch (msg.type) {
+            case JoinReply: {
+                std::lock_guard<std::mutex> lock(req_prom_mut_join);
+                auto it = waiting_join.find(msg.req_id);
 
-        
-        if(it == waiting_joiners.end()) {
-            return;
-        };
 
-        std::cout << "Client ID created for request: " << msg.req_id <<'\n';
-        auto reply = server::JoinReplyPayload();
-        it->second.set_value(reply);
+                if(it == waiting_join.end()) {
+                    return;
+                };
+
+                std::cout << "Client ID created for request: " << msg.req_id <<'\n';
+                auto reply = server::JoinReplyPayload();
+                it->second.set_value(reply);
+                break;
+            }
+
+            case CreateSessionReply: {
+                std::lock_guard<std::mutex> lock(req_prom_mut_create);
+
+                auto it = waiting_create.find(msg.req_id);
+
+                if (it == waiting_create.end()) {
+                    return;
+                }
+
+                std::cout << "Server ID created for request: " << msg.req_id <<'\n';
+                auto reply = server::CreateSessionReplyPayload();
+                it->second.set_value(reply);
+
+                std::cout << "Created Session: []" <<'\n';
+
+                break;
+            }
+
+            default: {
+                std::cout << "Invalid NetMsg type supplied to NetIO.";
+                break;
+            }
+        }
     }
 
     void NetIO::async_run(std::stop_token st) {
@@ -68,8 +96,8 @@ namespace server
             auto fut = promise.get_future();
             auto id = xg::newGuid();
             {
-                std::lock_guard<std::mutex> lock(req_prom_mut);
-                waiting_joiners.emplace(id, std::move(promise));
+                std::lock_guard<std::mutex> lock(req_prom_mut_join);
+                waiting_join.emplace(id, std::move(promise));
             }
 
             bus.send_in(NetMsg{.id=id, .type=JoinRequest});
@@ -79,6 +107,24 @@ namespace server
                 return response->String("Joined server.");
             }
             return response->String("Server-side error joining the server.");
+        });
+
+        router.GET("/create_session", [this](HttpRequest* request, HttpResponse* response) {
+            std::promise<CreateSessionReplyPayload> promise;
+            auto fut = promise.get_future();
+            auto id = xg::newGuid();
+            {
+            std::lock_guard<std::mutex> lock(req_prom_mut_join);
+                waiting_create.emplace(id, std::move(promise));
+            }
+
+            bus.send_in(NetMsg{.id=id, .type=CreateSessionRequest});
+
+            if (fut.wait_for(3000ms) == std::future_status::ready) {
+                return response->String("Created session.");
+            }
+
+            return response->String("Server-side error creating the session.");
         });
     }
 };

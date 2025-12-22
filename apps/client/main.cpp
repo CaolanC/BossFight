@@ -5,13 +5,13 @@
 
 int main(int argc, char* argv[]) {
 
-    if (argc == 2 ) {
-        auto client = client::Client(std::string("Perfect Client."), argv[1]);
-        client.run(1920, 1080);
-    } else {
-        auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000/join");
-        client.run(1920, 1080);
-    }
-    // std::jthread th(editor::gui);
+    // if (argc == 2 ) {
+    //     auto client = client::Client(std::string("Perfect Client."), argv[1]);
+    //     client.run(1920, 1080);
+    // } else {
+    //     auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000/join");
+    //     client.run(1920, 1080);
+    // }
+    std::jthread th(editor::gui);
     return 0;
 };

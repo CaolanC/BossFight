@@ -30,9 +30,10 @@ private:
     int port;
     bool running = false;
     NetBus& bus;
-    std::unordered_map<xg::Guid, std::promise<JoinReplyPayload>> waiting_joiners;
-    std::mutex req_prom_mut;
-
+    std::unordered_map<xg::Guid, std::promise<JoinReplyPayload>> waiting_join;
+    std::unordered_map<xg::Guid, std::promise<CreateSessionReplyPayload>> waiting_create;
+    std::mutex req_prom_mut_join;
+    std::mutex req_prom_mut_create;
     void async_run(std::stop_token st);
 
     void setup_routes();

@@ -7,7 +7,10 @@ namespace server
 
 typedef enum {
     JoinRequest,
-    JoinReply
+    JoinReply,
+    CreateSessionRequest,
+    CreateSessionReply,
+    DefaultReply
 } NetMsgType;
 
 struct NetMsg

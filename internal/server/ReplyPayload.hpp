@@ -5,20 +5,25 @@
 namespace server
 {
 
-class ReplyPayload
-{
-public:
-    explicit ReplyPayload(NetMsgType type);
+    class ReplyPayload
+    {
+    public:
+        explicit ReplyPayload(NetMsgType type);
 
-    NetMsgType type;
-};
+        NetMsgType type;
+    };
 
-class JoinReplyPayload : public ReplyPayload
-{
-public:
-    JoinReplyPayload() : ReplyPayload(JoinRequest) {
+    class JoinReplyPayload : public ReplyPayload
+    {
+    public:
+        JoinReplyPayload() : ReplyPayload(JoinRequest) {
 
-    }
-};
+        }
+    };
+
+    class CreateSessionReplyPayload : public ReplyPayload {
+    public:
+        CreateSessionReplyPayload() : ReplyPayload(CreateSessionRequest) {}
+    };
 
 }
