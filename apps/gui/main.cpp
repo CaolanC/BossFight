@@ -343,7 +343,7 @@ int main(int, char**)
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // igThemeV3(255, 255, 255);
-    ImGuiStyle& style = ImGui::GetStyle();
+    // ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 0;
     style.Colors[ImGuiCol_Button] = ImVec4(90 / 255.0f, 90 / 255.0f, 102 / 255.0f, 1);
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(164.0 / 255.0f, 194 / 255.0f, 168 / 255.0f, 1);
