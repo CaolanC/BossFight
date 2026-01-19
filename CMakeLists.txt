@@ -25,6 +25,7 @@ add_subdirectory(thirdpartypoopers/concurrentqueue)
 add_subdirectory(thirdpartypoopers/crossguid)
 add_subdirectory(thirdpartypoopers/tinygltf)
 add_subdirectory(thirdpartypoopers/PolyVox)
+add_subdirectory(thirdpartypoopers/header_only)
 
 set(CLIENT_SHARED_LIBS
         glm::glm
@@ -39,6 +40,7 @@ set(CLIENT_SHARED_LIBS
         tinygltf
         PolyVoxCore
         PolyVoxUtil
+        par_shapes
 )
 
 file(GLOB_RECURSE SERVER_SRC_FILES "${CMAKE_SOURCE_DIR}/src/server/*.cpp")
