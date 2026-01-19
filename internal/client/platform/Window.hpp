@@ -33,6 +33,10 @@ public:
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
+    SDL_Window* get_window() { return window; }
+
+    SDL_GLContext get_context() { return glcontext; }
+
     void swap() {
         SDL_GL_SwapWindow(window);
     };

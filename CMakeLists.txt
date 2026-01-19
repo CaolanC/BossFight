@@ -63,6 +63,7 @@ target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends)
 target_link_libraries(imgui PUBLIC SDL3::SDL3 OpenGL::GL)
 
 file(GLOB_RECURSE CLIENT_SRC_FILES "${CMAKE_SOURCE_DIR}/src/client/*.cpp")
+file(GLOB_RECURSE EDITOR_SRC_FILES "${CMAKE_SOURCE_DIR}/src/editor/*.cpp")
 add_library(ClientLib ${CLIENT_SRC_FILES})
 target_include_directories(ClientLib PUBLIC
         ${CMAKE_SOURCE_DIR}/internal
@@ -72,15 +73,15 @@ target_include_directories(ClientLib PUBLIC
 target_link_libraries(ClientLib PUBLIC imgui ${CLIENT_SHARED_LIBS})
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
-add_executable(Client apps/client/main.cpp)
+add_executable(Client apps/client/main.cpp
+        internal/editor/EditorUI.hpp)
 set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_link_libraries(Client PUBLIC ClientLib)
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_include_directories(Client PRIVATE ${CMAKE_SOURCE_DIR}/thirdpartypoopers/stb)
 
 add_library(EditorLib
-        src/editor/Editor.cpp
-        internal/editor/Editor.hpp
+        ${EDITOR_SRC_FILES}
 )
 target_include_directories(EditorLib PUBLIC
         ${CMAKE_SOURCE_DIR}/internal
