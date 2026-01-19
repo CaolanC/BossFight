@@ -12,9 +12,11 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip);
+        Client(std::string name, std::string server_ip, bool is_editor);
         void run(int w = 100, int h = 100);
-
+        void enter_editor(int w, int h);
+        void enter_client(int w, int h);
+        bool is_editor;
         std::string name;
         Platform::Window window;
         core::MeshManager mesh_manager = core::MeshManager();

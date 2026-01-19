@@ -3,15 +3,13 @@
 #include <thread>
 #include <Client.hpp>
 
-int main(int argc, char* argv[]) {
+#include "../../internal/editor/Editor.hpp"
 
-    if (argc == 2 ) {
-        auto client = client::Client(std::string("Perfect Client."), argv[1]);
-        client.run(1920, 1080);
-    } else {
-        auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000/join");
-        client.run(1920, 1080);
-    }
-    // std::jthread th(editor::gui);
+int main(int argc, char* argv[]) {
+    // auto editor = editor::Editor();
+    auto client = client::Client(std::string("Perfect Client."), argv[1], true);
+    std::jthread th(editor::gui);
+    client.run(1920, 1080);
     return 0;
 };
+ 
