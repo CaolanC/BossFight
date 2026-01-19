@@ -80,17 +80,15 @@ Shaders will be written in GLSL.
 
 Software that will be used in this project includes:
 
-Simple DirectMedia Layer (SDL): SDL is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL. 
-[QUOTE NUM site: https://www.libsdl.org/] 
+Simple DirectMedia Layer (SDL): SDL is a cross-platform development library designed to provide low level access to audio, keyboard, mouse, joystick, and graphics hardware via OpenGL. [1] 
 
-OpenGL: OpenGL is a cross-platform API that enables developers of software for PC, workstation, and supercomputing hardware to create high-performance, visually compelling graphics software applications. OpenGL is muc simpler than Vulkan, even if the API has not been updated since 2017. Research shows that this doesn't limit the capabilitiy of the API, but rather that it is not as efficient with regards to performance. We can expect to take a 25% hit in the worst case, but it varies case by case.
-[QUOTE NUM site: https://www.khronos.org/opengl/] 
+OpenGL: OpenGL is a cross-platform API that enables developers of software for PC, workstation, and supercomputing hardware to create high-performance, visually compelling graphics software applications. OpenGL is muc simpler than Vulkan, even if the API has not been updated since 2017. Research shows that this doesn't limit the capabilitiy of the API, but rather that it is not as efficient with regards to performance. We can expect to take a 25% hit in the worst case, but it varies case by case. [2]
 
 WebSockets: WebSockets provides a persistent full-duplex communication channel between the client and server - essentially, a two-way communication session between a user’s client and a server. 
 Helps to enable the listen-server architecture.
 
-CMake: CMake is an open source, cross-platform family of tools designed to build, test, and package software. 
-[QUOTE NUM site: https://cmake.org/about/] We are using this to build all necessary components in our project.
+CMake: CMake is an open source, cross-platform family of tools designed to build, test, and package software. [3]
+We are using this to build all necessary components in our project.
 
 GLTF: A file format for describing a 3D scene. It bridges the gap between other file formats. Anything can be converted to GLTF. This is an excellent starting file format to load.
 
@@ -126,14 +124,14 @@ We maintain that we will both actively work on the project, prioritizing areas t
 ### Risk Register
 
 Description: Replication Complexity
-Replication can introduce many unexpected bugs, we
+Replication can introduce many unexpected bugs
 Likelihood: High
 Severity: Medium
-Mitigation: A testing framework where we simulate a server gettting hit with API requests from multiple clients, editing the scene. Need cases such as both clients editing the same object etc.
+Mitigation: A testing framework where we simulate a server getting hit with API requests from multiple clients, editing the scene. Need cases such as both clients editing the same object etc.
 
 Description:  Programming overheads. 
 These can be caused by many different aspects of our project. 
-Another possible overhead is when many models are loaded onto a scene, which could happen if someone is using the space for a very large project.
+A possible overhead is when many models are loaded onto a scene, which could happen if someone is using the space for a very large project.
 
 Likelihood: Almost guaranteed at some point with a project of this manner.
 
@@ -164,5 +162,15 @@ We have already begun early development in the same repository to explore the fe
 <p align="center">
   <img src="./res/gui.png" width="300px">
 </p>
+
+
+### References
+
+[1]     SDL, "About SDL", *Simple Direct MediaLayer*. [Online]. Available: https://www.libsdl.org/
+
+[2]     Khronos Group, "OpenGL - The Industry's Foundation for High Performance Graphics", *Khronos Group*. [Online]. Available: https://www.khronos.org/opengl/
+
+[3]     kitware inc., "Software Development with CMake", *CMake*. [Online]. Available: https://cmake.org/about/
+
 
 
