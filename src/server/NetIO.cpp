@@ -45,7 +45,7 @@ namespace server
         ws_server.setPort(port + 1);
         ws_thread = std::jthread(
             [this](std::stop_token st){
-                async_run(st);
+                async_ws_run(st);
             }
         );
 
@@ -54,6 +54,7 @@ namespace server
 
     void NetIO::stop() {
         server.stop();
+        ws_server.stop();
     }
 
     void NetIO::handle_reply(NetMsg msg) {
@@ -101,6 +102,10 @@ namespace server
 
     void NetIO::async_run(std::stop_token st) {
         server.run();
+    }
+
+    void NetIO::async_ws_run(std::stop_token st) {
+        ws_server.run();
     }
 
     void NetIO::setup_routes() {
