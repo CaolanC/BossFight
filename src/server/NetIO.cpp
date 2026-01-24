@@ -31,6 +31,22 @@ namespace server
             }
         );
 
+        ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
+            std::cout << "WebSocket client connected\n";
+        };
+        ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
+            std::cout << "WS message: " << msg << "\n";
+        };
+        ws.onclose = [](const WebSocketChannelPtr& channel) {
+            std::cout << "WebSocket client disconnected\n";
+        };
+
+        ws_server = hv::WebSocketServer(&ws);
+        ws_server.setPort(port + 1);
+        ws_thread = std::jthread([this] {
+            ws_server.run();
+        });
+
         running = true;
     }
 
