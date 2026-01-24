@@ -3,6 +3,7 @@
 #include <server/NetBus.hpp>
 #include <thread>
 #include <hv/HttpServer.h>
+#include <hv/WebSocketServer.h>
 #include <future>
 #include <server/ReplyPayload.hpp>
 
@@ -26,6 +27,9 @@ private:
     std::jthread thr_reply_dispatch, thr_webserver;
     hv::HttpServer server;
     hv::HttpService router;
+    std::jthread ws_thread;
+    hv::WebSocketService ws;
+    hv::WebSocketServer ws_server;
     int listenfd;
     int port;
     bool running = false;
