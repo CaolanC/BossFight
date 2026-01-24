@@ -43,9 +43,11 @@ namespace server
 
         ws_server = hv::WebSocketServer(&ws);
         ws_server.setPort(port + 1);
-        ws_thread = std::jthread([this] {
-            ws_server.run();
-        });
+        ws_thread = std::jthread(
+            [this](std::stop_token st){
+                async_run(st);
+            }
+        );
 
         running = true;
     }
