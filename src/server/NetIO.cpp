@@ -149,5 +149,9 @@ namespace server
 
             return response->String("Server-side error creating the session.");
         });
+
+        router.GET("/session_load_scene", [this](HttpRequest* request, HttpResponse* response) {
+            return response->String("Not implemented yet.");
+        });
     }
 };

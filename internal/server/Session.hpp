@@ -1,6 +1,7 @@
 #pragma once
 
 #include <crossguid/guid.hpp>
+#include <server/PerfectServer.hpp>
 
 namespace server
 
@@ -19,6 +20,7 @@ public:
 
 private:
     xg::Guid id;
+    server::PerfectServer perfect;
 
 };
 

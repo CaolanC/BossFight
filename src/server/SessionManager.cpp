@@ -18,7 +18,9 @@ namespace server
 
     xg::Guid SessionManager::create() { // Returns the session ID or NULL on error
         Session session;
-        return session.get_id();
+        auto id = session.get_id();
+        session_map.emplace(id, session);
+        return id;
     }
 
     void SessionManager::start() {
