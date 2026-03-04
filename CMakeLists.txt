@@ -68,21 +68,6 @@ set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 target_link_libraries(Server PRIVATE ServerLib SharedLib concurrentqueue EnTT::EnTT hv crossguid glm::glm)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
-
-# Can't recall as to why we needed to do this, we can probably find a cleaner solution.
-
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui)
-set(IMGUI_SOURCES
-        ${IMGUI_DIR}/imgui.cpp
-        ${IMGUI_DIR}/imgui_demo.cpp
-        ${IMGUI_DIR}/imgui_draw.cpp
-        ${IMGUI_DIR}/imgui_tables.cpp
-        ${IMGUI_DIR}/imgui_widgets.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-        modules/shared/src/Empty.cpp
-)
-
 add_executable(Client apps/client/main.cpp)
 
 set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
