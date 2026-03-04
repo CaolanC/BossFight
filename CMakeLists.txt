@@ -1,18 +1,30 @@
 cmake_minimum_required(VERSION 3.28.3)
 project(Soulja LANGUAGES C CXX)
 
-set(SDL_VIDEO            ON  CACHE BOOL "" FORCE)
-set(SDL_VIDEO_X11        ON  CACHE BOOL "" FORCE)
-set(SDL_VIDEO_WAYLAND    ON  CACHE BOOL "" FORCE)
-set(SDL_VIDEO_OPENGL     ON  CACHE BOOL "" FORCE)
-set(SDL_VIDEO_OPENGL_GLX ON  CACHE BOOL "" FORCE)
-set(SDL_VIDEO_OPENGL_EGL ON  CACHE BOOL "" FORCE)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(WIN32)
+
+    set(SDL_VIDEO ON CACHE BOOL "" FORCE)
+else() # Linux/BSD
+    set(SDL_VIDEO            ON  CACHE BOOL "" FORCE)
+    set(SDL_VIDEO_X11        ON  CACHE BOOL "" FORCE)
+    set(SDL_VIDEO_WAYLAND    ON  CACHE BOOL "" FORCE)
+    set(SDL_VIDEO_OPENGL     ON  CACHE BOOL "" FORCE)
+    set(SDL_VIDEO_OPENGL_GLX ON  CACHE BOOL "" FORCE)
+    set(SDL_VIDEO_OPENGL_EGL ON  CACHE BOOL "" FORCE)
+endif()
+
+
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC ON  CACHE BOOL "" FORCE)
+
+set(SDL_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
+
 
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets/")
 find_package(OpenGL REQUIRED)
+
+set(SDL_TARGET SDL3::SDL3-static)
 
 add_subdirectory(thirdpartypoopers/libhv)
 add_subdirectory(thirdpartypoopers/libsdl-org)
@@ -26,84 +38,44 @@ add_subdirectory(thirdpartypoopers/crossguid)
 add_subdirectory(thirdpartypoopers/tinygltf)
 add_subdirectory(thirdpartypoopers/PolyVox)
 add_subdirectory(thirdpartypoopers/header_only)
+add_subdirectory(thirdpartypoopers/imgui)
 
-set(CLIENT_SHARED_LIBS
-        glm::glm
-        glad
-        SDL3::SDL3
-        OpenGL::GL
-        m
-        fastnoiselitelib
-        EnTT::EnTT
-        hv
-        crossguid
-        tinygltf
-        PolyVoxCore
-        PolyVoxUtil
-        par_shapes
-)
+add_subdirectory(modules/server)
+add_subdirectory(modules/shared)
+add_subdirectory(modules/client)
+add_subdirectory(modules/gui)
 
-file(GLOB_RECURSE SERVER_SRC_FILES "${CMAKE_SOURCE_DIR}/src/server/*.cpp")
-add_library(ServerLib ${SERVER_SRC_FILES})
-target_include_directories(ServerLib PUBLIC ${CMAKE_SOURCE_DIR}/internal)
-target_link_libraries(ServerLib
-        PUBLIC EnTT::EnTT
-        PRIVATE concurrentqueue hv crossguid
-)
+if(NOT TARGET ${SDL_TARGET})
+    if(TARGET SDL3::SDL3)
+        set(SDL_TARGET SDL3::SDL3)
+    else()
+        message(FATAL_ERROR
+                "SDL3 targets not defined. Expected SDL3::SDL3-static or SDL3::SDL3. "
+                "Check the submodule path and SDL_* options.")
+    endif()
+endif()
 
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui)
-add_library(imgui STATIC
-        ${IMGUI_DIR}/imgui.cpp
-        ${IMGUI_DIR}/imgui_demo.cpp
-        ${IMGUI_DIR}/imgui_draw.cpp
-        ${IMGUI_DIR}/imgui_tables.cpp
-        ${IMGUI_DIR}/imgui_widgets.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-        ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
-)
-target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends)
-target_link_libraries(imgui PUBLIC SDL3::SDL3 OpenGL::GL)
-
-file(GLOB_RECURSE CLIENT_SRC_FILES "${CMAKE_SOURCE_DIR}/src/client/*.cpp")
-file(GLOB_RECURSE EDITOR_SRC_FILES "${CMAKE_SOURCE_DIR}/src/editor/*.cpp")
-add_library(ClientLib ${CLIENT_SRC_FILES})
-target_include_directories(ClientLib PUBLIC
-        ${CMAKE_SOURCE_DIR}/internal
-        ${CMAKE_SOURCE_DIR}/internal/client
-        ${CMAKE_SOURCE_DIR}/src/client
-)
-target_link_libraries(ClientLib PUBLIC imgui ${CLIENT_SHARED_LIBS})
-target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-
-add_executable(Client apps/client/main.cpp
-        internal/editor/EditorUI.hpp)
-set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-target_link_libraries(Client PUBLIC ClientLib)
-target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
-target_include_directories(Client PRIVATE ${CMAKE_SOURCE_DIR}/thirdpartypoopers/stb)
-
-add_library(EditorLib
-        ${EDITOR_SRC_FILES}
-)
-target_include_directories(EditorLib PUBLIC
-        ${CMAKE_SOURCE_DIR}/internal
-        ${CMAKE_SOURCE_DIR}/internal/editor
-        ${CMAKE_SOURCE_DIR}/internal/client
-        ${CMAKE_SOURCE_DIR}/src/client
-        SLJA_ASSETS_DIR="${ASSETS_DIR}"
-)
-target_link_libraries(EditorLib PUBLIC imgui ClientLib)
-
-add_executable(Editor apps/editor/main.cpp)
-set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-target_link_libraries(Editor PRIVATE EditorLib)
+set(EXTRA_M_LIB)
+if(UNIX AND NOT APPLE)
+    set(EXTRA_M_LIB m)
+endif()
 
 add_executable(Server apps/server/main.cpp)
 set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-target_link_libraries(Server PRIVATE ServerLib)
+target_link_libraries(Server PRIVATE ServerLib SharedLib concurrentqueue EnTT::EnTT hv crossguid glm::glm)
+target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+
+add_executable(Client apps/client/main.cpp)
+
+set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
+target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
+target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+
+add_executable(Server apps/server/main.cpp)
+set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+target_link_libraries(Server PRIVATE ServerLib concurrentqueue EnTT::EnTT hv crossguid)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
 add_executable(GUI apps/gui/main.cpp)
-set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-target_include_directories(GUI PRIVATE ${CMAKE_SOURCE_DIR}/thirdpartypoopers/libhv)
-target_link_libraries(GUI PRIVATE hv imgui SDL3::SDL3 OpenGL::GL)
+target_link_libraries(GUI PRIVATE GuiLib)

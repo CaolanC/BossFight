@@ -8,13 +8,13 @@
 #include <future>
 #include <mutex>
 #include <crossguid/guid.hpp>
-#include <server/Server.hpp>
+#include <Server.hpp>
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
 int start_game() {
-    Server server(30000);
+    server::Server server(30000);
     server.start();
     const duration tick = nanoseconds(16'666'667); // Number of nanoseconds in 1/60th of a second
     const duration physics_tick = nanoseconds(0); // Need to find a good physics tick
