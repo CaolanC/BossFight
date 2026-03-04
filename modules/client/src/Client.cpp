@@ -89,7 +89,7 @@ void Client::enter_editor(int w, int h) {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
-        req.url = ip;
+        req.url = ip + "/join";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
         req.timeout = 10;

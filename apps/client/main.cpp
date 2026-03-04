@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
         client.run(1920, 1080);
     }
     else {
-         auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000/join", false);
+         auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000", false);
          client.run(1920, 1080);
     }
     return 0;
