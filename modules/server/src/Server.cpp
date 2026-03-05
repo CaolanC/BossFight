@@ -48,9 +48,8 @@ namespace server
                         xg::Guid sid = session_manager.create();
                         testtemp = sid;
 
-                        auto sessions = session_manager.getSessions();
-                        auto it = sessions.find(sid);
-                        if (it != sessions.end()) {
+                        auto it = session_manager.getSessions().find(sid);
+                        if (it != session_manager.getSessions().end()) {
                             sessiontemp = it->second.get();
                         }
 
