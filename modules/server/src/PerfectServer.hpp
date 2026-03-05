@@ -1,0 +1,40 @@
+#pragma once
+
+#include <ServerComponents.hpp>
+#include <SharedComponents.hpp>
+#include "entt/entity/registry.hpp"
+#include <glm/mat4x4.hpp>
+
+#include "glm/fwd.hpp"
+#include "glm/detail/type_quat.hpp"
+
+namespace server
+{
+    class PerfectServer {
+    public:
+        PerfectServer() {
+
+        }
+
+        // WS server goes here. ECS system goes
+    private:
+
+        entt::registry r;
+
+        void create_god() {
+            auto e = r.create();
+            r.emplace<server::components::god>(e);
+            r.emplace<shared::component::position>(e, glm::vec3(0.0f, 0.0f, 0.0f));
+            r.emplace<shared::component::rotation>(e);
+            r.emplace<shared::component::transform>(e);
+        }
+
+        void update_loop() {
+
+        }
+
+        void stop() {
+
+        }
+    };
+}
