@@ -26,7 +26,6 @@ private:
     NetBus bus = NetBus();
     entt::registry registry;
     NetIO io;
-    PerfectServer ps;
     int port;
     std::jthread thr_bus;   
     SessionManager session_manager;
