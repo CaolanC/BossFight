@@ -3,6 +3,7 @@
 #include <thread>
 #include <server/NetBus.hpp>
 #include <server/NetIO.hpp>
+#include <server/PerfectServer.hpp>
 #include <entt/entt.hpp>
 #include <server/SessionManager.hpp>
 
@@ -26,6 +27,7 @@ private:
     NetBus bus = NetBus();
     entt::registry registry;
     NetIO io;
+    PerfectServer ps;
     int port;
     std::jthread thr_bus;   
     SessionManager session_manager;

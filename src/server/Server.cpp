@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 namespace server
 {
 
-    Server::Server(int port) :  port(port), io(port, bus), session_manager(bus) {
+    Server::Server(int port) :  port(port), io(port, bus), ps(port + 1), session_manager(bus) {
 
     }
 
@@ -21,10 +21,12 @@ namespace server
                 circulate_messages(st);
             }
         );
+        ps.start();
     }
 
     void Server::stop() {
         io.stop();
+        ps.stop();
     }
 
     void Server::circulate_messages(std::stop_token st) {
