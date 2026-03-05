@@ -20,6 +20,7 @@ struct NetMsg
     xg::Guid id;
     NetMsgType type;
     xg::Guid req_id;
+    xg::Guid session_id;
 };
 
 };
