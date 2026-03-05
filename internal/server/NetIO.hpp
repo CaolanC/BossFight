@@ -27,9 +27,6 @@ private:
     std::jthread thr_reply_dispatch, thr_webserver;
     hv::HttpServer server;
     hv::HttpService router;
-    std::jthread ws_thread;
-    hv::WebSocketService ws;
-    hv::WebSocketServer ws_server;
     int listenfd;
     int port;
     bool running = false;
@@ -39,7 +36,6 @@ private:
     std::mutex req_prom_mut_join;
     std::mutex req_prom_mut_create;
     void async_run(std::stop_token st);
-    void async_ws_run(std::stop_token st);
 
     void setup_routes();
 };

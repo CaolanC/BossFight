@@ -31,30 +31,11 @@ namespace server
             }
         );
 
-        ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
-            std::cout << "WebSocket client connected\n";
-        };
-        ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
-            std::cout << "WS message: " << msg << "\n";
-        };
-        ws.onclose = [](const WebSocketChannelPtr& channel) {
-            std::cout << "WebSocket client disconnected\n";
-        };
-
-        ws_server = hv::WebSocketServer(&ws);
-        ws_server.setPort(port + 1);
-        ws_thread = std::jthread(
-            [this](std::stop_token st){
-                async_ws_run(st);
-            }
-        );
-
         running = true;
     }
 
     void NetIO::stop() {
         server.stop();
-        ws_server.stop();
     }
 
     void NetIO::handle_reply(NetMsg msg) {
@@ -102,10 +83,6 @@ namespace server
 
     void NetIO::async_run(std::stop_token st) {
         server.run();
-    }
-
-    void NetIO::async_ws_run(std::stop_token st) {
-        ws_server.run();
     }
 
     void NetIO::setup_routes() {
