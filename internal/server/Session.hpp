@@ -10,7 +10,7 @@ namespace server
 class Session
 {
 public:
-    Session() : id(xg::newGuid()) {
+    Session() : id(xg::newGuid()), ps(0) {
 
     };
 
@@ -18,9 +18,16 @@ public:
         return id;
     }
 
+    void setPSPort(int p) {
+        ps.setPort(p);
+    }
+
+    void startServer() { ps.start(); }
+    void stopServer()  { ps.stop(); }
+
 private:
     xg::Guid id;
-    server::PerfectServer perfect;
+    PerfectServer ps;
 
 };
 
