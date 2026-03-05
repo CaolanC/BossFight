@@ -16,7 +16,7 @@ public:
 
     xg::Guid create();
 
-    std::unordered_map<xg::Guid, std::unique_ptr<Session>> getSessions();
+    Session* getSession(const xg::Guid& sid);
 
 private:
     void start();

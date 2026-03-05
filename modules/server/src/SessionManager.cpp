@@ -29,8 +29,13 @@ namespace server
         return id;
     }
 
-    std::unordered_map<xg::Guid, std::unique_ptr<Session>> SessionManager::getSessions() {
-        return session_map;
+    Session* SessionManager::getSession(const xg::Guid& sid) {
+        auto it = session_map.find(sid);
+        if (it != session_map.end()) {
+            return it->second.get();
+        }
+
+        return nullptr;
     }
 
     void SessionManager::start() {

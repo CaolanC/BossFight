@@ -48,10 +48,7 @@ namespace server
                         xg::Guid sid = session_manager.create();
                         testtemp = sid;
 
-                        auto it = session_manager.getSessions().find(sid);
-                        if (it != session_manager.getSessions().end()) {
-                            sessiontemp = it->second.get();
-                        }
+                        sessiontemp = session_manager.getSession(sid);
 
                         sessiontemp->setPSPort(30001);
                         sessiontemp->startServer();
