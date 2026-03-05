@@ -24,6 +24,7 @@ namespace server
         };
         ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
             std::cout << "WS message: " << msg << "\n";
+            channel->send(msg);
         };
         ws.onclose = [](const WebSocketChannelPtr& channel) {
             std::cout << "WebSocket client disconnected\n";
@@ -45,6 +46,8 @@ namespace server
     }
 
     void PerfectServer::async_ws_run(std::stop_token st) {
+        std::cout << "[PerfectServer] ws_server.run() entering...\n";
         ws_server.run();
+        std::cout << "[PerfectServer] ws_server.run() exited\n";
     }
 };

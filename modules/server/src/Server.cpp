@@ -50,6 +50,7 @@ namespace server
 
                         sessiontemp = session_manager.getSession(sid);
 
+                        std::cout << "[Server] Starting session WS on 30001\n";
                         sessiontemp->setPSPort(30001);
                         sessiontemp->startServer();
 
