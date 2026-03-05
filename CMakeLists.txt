@@ -114,7 +114,8 @@ target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
-add_executable(Server apps/server/main.cpp)
+add_executable(Server apps/server/main.cpp
+        src/server/PerfectServer.cpp)
 set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_link_libraries(Server PRIVATE ServerLib concurrentqueue EnTT::EnTT hv crossguid)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
