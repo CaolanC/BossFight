@@ -8,12 +8,15 @@
 #include "glm/fwd.hpp"
 #include "glm/detail/type_quat.hpp"
 
+#include <hv/WebSocketServer.h>
+#include <thread>
+
 namespace server
 {
     class PerfectServer {
     public:
-        PerfectServer(int port) {
-        }
+        PerfectServer(int port);
+        ~PerfectServer();
 
         void setPort(int p);
 
