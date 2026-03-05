@@ -29,6 +29,8 @@ private:
     int port;
     std::jthread thr_bus;   
     SessionManager session_manager;
+    xg::Guid testtemp;
+    Session* sessiontemp;
 
     void circulate_messages(std::stop_token st);
 };

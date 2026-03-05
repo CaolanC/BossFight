@@ -29,6 +29,10 @@ namespace server
         return id;
     }
 
+    std::unordered_map<xg::Guid, std::unique_ptr<Session>> SessionManager::getSessions() {
+        return session_map;
+    }
+
     void SessionManager::start() {
         thread = std::jthread([this]{run_async();});
     }

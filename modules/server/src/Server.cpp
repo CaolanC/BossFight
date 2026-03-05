@@ -25,6 +25,7 @@ namespace server
 
     void Server::stop() {
         io.stop();
+        sessiontemp->stopServer();
     }
 
     void Server::circulate_messages(std::stop_token st) {
@@ -44,9 +45,20 @@ namespace server
                         break;
                     }
                     case CreateSessionRequest: {
-                        xg::Guid id = session_manager.create();
+                        xg::Guid sid = session_manager.create();
+                        testtemp = sid;
+
+                        auto sessions = session_manager.getSessions();
+                        auto it = sessions.find(sid);
+                        if (it != sessions.end()) {
+                            sessiontemp = it->second.get();
+                        }
+
+                        sessiontemp->setPSPort(30001);
+                        sessiontemp->startServer();
 
                         reply.type=CreateSessionReply;
+                        // reply.session_id = sid;
                         break;
                     }
 
