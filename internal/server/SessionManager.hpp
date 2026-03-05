@@ -3,6 +3,7 @@
 #include <server/NetBus.hpp>
 #include <server/Session.hpp>
 #include <thread>
+#include <memory>
 
 namespace server
 {
@@ -20,7 +21,7 @@ private:
     void run_async();
 
     NetBus& bus;
-    std::unordered_map<xg::Guid, Session> session_map;
+    std::unordered_map<xg::Guid, std::unique_ptr<Session>> session_map;
     std::jthread thread;
     bool running = true;
 };

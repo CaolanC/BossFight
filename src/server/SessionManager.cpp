@@ -13,13 +13,19 @@ namespace server
 
     SessionManager::~SessionManager() {
         running = false;
-        thread.join();
+        if (thread.joinable()) {
+            thread.join();
+        }
     }
 
     xg::Guid SessionManager::create() { // Returns the session ID or NULL on error
-        Session session;
-        auto id = session.get_id();
-        session_map.emplace(id, session);
+        auto session = std::make_unique<Session>();
+        session->setPSPort(30001);
+
+        session->startServer();
+
+        auto id = session->get_id();
+        session_map.emplace(id, std::move(session));
         return id;
     }
 
