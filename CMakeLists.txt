@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.28.3)
 project(Soulja LANGUAGES C CXX)
-
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 if(WIN32)
@@ -74,7 +72,6 @@ set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-
 
 add_executable(GUI apps/gui/main.cpp)
 target_link_libraries(GUI PRIVATE GuiLib)

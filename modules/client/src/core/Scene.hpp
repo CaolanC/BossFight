@@ -123,14 +123,19 @@ public:
          systems::GatherUserInput(r);
          systems::UserControl(r);
          systems::Transform(r);
-         systems::NewRender(r);
+         systems::NewRender(r, true, FBO);
          systems::Debug(r);
     }
+
+    unsigned int get_fbo() {
+         return FBO;
+     };
 
 private:
     entt::registry registry;
     core::MeshManager const& mesh_manager;
     core::ModelManager const& model_manager;
+    unsigned int FBO;
 };
 
 }

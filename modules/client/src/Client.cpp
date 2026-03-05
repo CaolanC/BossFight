@@ -9,11 +9,60 @@
 #include <Client.hpp>
 
 namespace client {
-    Client::Client(std::string name, std::string server_ip) : name(name), window(Platform::Window(name.c_str(), 1920, 1080)) {
+    Client::Client(std::string name, std::string server_ip, bool is_editor) : name(name), window(Platform::Window(name.c_str(), 1920, 1080)), is_editor(is_editor) {
         request_join(server_ip);
     }
 
     void Client::run(int w, int h) {
+
+        if (is_editor) {
+            enter_editor(w, h);
+        } else {
+            enter_client(w, h);
+        }
+    }
+
+void Client::enter_editor(int w, int h) {
+    glViewport(0, 0, w, h);
+
+    bool quit = false;
+    SDL_Event event;
+
+    scene.set_camera_position(glm::vec3(0, 0, 1));
+
+    while (!quit) {
+
+        while (SDL_PollEvent(&event)) {
+
+            if (event.type == SDL_EVENT_QUIT) {
+                quit = true;
+            }
+        }
+
+        GLuint sceneFbo       = scene.get_fbo();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, sceneFbo);
+        glEnable(GL_DEPTH_TEST);
+
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        scene.update();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+
+        glViewport(0, 0, w, h);
+        glDisable(GL_DEPTH_TEST);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        window.swap();
+    }
+}
+
+
+    void Client::enter_client(int w, int h) {
         glViewport(0, 0, w, h);
 
         bool quit = false;
@@ -40,7 +89,7 @@ namespace client {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
-        req.url = ip;
+        req.url = ip + "/join";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
         req.timeout = 10;

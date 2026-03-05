@@ -10,7 +10,7 @@
 #include <SharedComponents.hpp>
 
 namespace systems {
-    void NewRender(entt::registry& reg) {
+    void NewRender(entt::registry& reg, bool to_framebuffer, unsigned int FBO) {
         GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
         auto& model_manager = reg.ctx().get<component::model_manager>().manager;

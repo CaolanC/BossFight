@@ -9,5 +9,5 @@
 #include <utils/gl/helpers.hpp>
 
 namespace systems {
-    void NewRender(entt::registry& reg);
+    void NewRender(entt::registry& reg, bool is_framebuffer, unsigned int FBO);
 }
