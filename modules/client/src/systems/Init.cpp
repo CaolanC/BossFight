@@ -15,7 +15,7 @@ namespace systems {
     void Init(entt::registry& r) {
         // Basically we want to be able to load a model from memory and see it
         auto& model_m = r.ctx().get<component::model_manager>().manager;
-        rendering::Model m = LoadModel(r, "models/carl_johnson_cj/scene.gltf");
+        rendering::Model m = LoadModel(r, "models/sofa/Mallory Tufted Upholstered Sectional.gltf");
 
         ModelHandle h = model_m.add_model(m);
 
@@ -25,7 +25,7 @@ namespace systems {
         };
         ShaderProgramHandle program = r.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
-        auto model_e = spawn::model(r, h, program, glm::vec3(0, 0, 0), 1.0f, glm::angleAxis(glm::radians( 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        auto model_e = spawn::model(r, h, program, glm::vec3(0, 0, 0), 0.1f, glm::angleAxis(glm::radians( 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
         r.emplace<component::debug_spin>(model_e, 0.2f);
         rendering::Model model = rendering::Model();
         rendering::Node node = rendering::Node();
