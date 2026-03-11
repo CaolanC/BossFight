@@ -11,6 +11,7 @@
 namespace client {
     Client::Client(std::string name, std::string server_ip, bool is_editor) : name(name), window(Platform::Window(name.c_str(), 1920, 1080)), is_editor(is_editor) {
         request_join(server_ip);
+        request_join(server_ip);
     }
 
     void Client::run(int w, int h) {
@@ -89,7 +90,7 @@ void Client::enter_editor(int w, int h) {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
-        req.url = ip + "/join";
+        req.url = ip + "/create_session";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
         req.timeout = 10;
