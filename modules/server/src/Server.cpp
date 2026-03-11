@@ -25,7 +25,9 @@ namespace server
 
     void Server::stop() {
         io.stop();
-        sessiontemp->stopServer();
+        if (sessiontemp) {
+            sessiontemp->stopServer();
+        }
     }
 
     void Server::circulate_messages(std::stop_token st) {
@@ -50,9 +52,10 @@ namespace server
 
                         sessiontemp = session_manager.getSession(sid);
 
-                        std::cout << "[Server] Starting session WS on 30001\n";
-                        sessiontemp->setPSPort(30001);
+                        std::cout << "[Server] Starting session WS on " << nextport << "\n";
+                        sessiontemp->setPSPort(nextport);
                         sessiontemp->startServer();
+                        nextport += 1;
 
                         reply.type=CreateSessionReply;
                         // reply.session_id = sid;

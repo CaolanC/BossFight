@@ -19,6 +19,13 @@ namespace server
 
     void PerfectServer::start() {
 
+        if (running) {
+            std::cout << "[PerfectServer] start() called but already running\n";
+            return;
+        }
+
+        running = true;
+
         ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
             std::cout << "WebSocket client connected\n";
         };
@@ -38,7 +45,6 @@ namespace server
         }
         );
 
-        running = true;
     }
 
     void PerfectServer::stop() {
