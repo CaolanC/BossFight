@@ -11,7 +11,8 @@
 namespace client {
     Client::Client(std::string name, std::string server_ip, bool is_editor) : name(name), window(Platform::Window(name.c_str(), 1920, 1080)), is_editor(is_editor) {
         request_join(server_ip);
-        request_join(server_ip);
+
+        connect_client(30001);
     }
 
     void Client::run(int w, int h) {
@@ -103,4 +104,20 @@ void Client::enter_editor(int w, int h) {
             printf("%s %s\n", resp.body.c_str(), resp.headers["Connection"].c_str());
         }
     };
+
+    bool Client::connect_client(int port) {
+        for (int i = 0; i < 20; ++i) {
+            if (net_client.is_connected()) {
+                return true;
+            }
+
+            if (!net_client.is_connecting()) {
+                net_client.connect(port);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        }
+
+        return net_client.is_connected();
+    }
 }

@@ -7,6 +7,8 @@
 #include <core/ModelManager.hpp>
 #include <core/Scene.hpp>
 
+#include <NetClient.hpp>
+
 namespace client {
     class Client
     {
@@ -16,6 +18,7 @@ namespace client {
         void run(int w = 100, int h = 100);
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
+        bool connect_client(int port);
         bool is_editor;
         std::string name;
         Platform::Window window;
@@ -24,5 +27,8 @@ namespace client {
         core::Scene scene = core::Scene(mesh_manager, model_manager);
 
         void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
+
+    private:
+        NetClient net_client;
     };
 }
