@@ -36,14 +36,14 @@ class Scene
 {
 public:
 
-     Scene(core::MeshManager const& manager, core::ModelManager const& model_manager) : mesh_manager(manager), model_manager(model_manager) {
-         bootstrap();
+     Scene(core::MeshManager const& manager, core::ModelManager const& model_manager, bool loadPopulatedScene = true) : mesh_manager(manager), model_manager(model_manager) {
+         bootstrap(loadPopulatedScene);
         // spawn_default_camera();
         // spawn_triangle();
          // spawn_from_generator(generator::GridPlane);
     }
 
-    void bootstrap() {
+    void bootstrap(bool loadPopulatedScene) {
          int no_keys;
          const bool* k_state = SDL_GetKeyboardState(&no_keys);
          registry.ctx().emplace<component::keyboard_state>(k_state, no_keys);
@@ -53,7 +53,9 @@ public:
          registry.ctx().emplace<component::material_manager>(core::ShaderProgramManager());
          registry.ctx().emplace<component::model_manager>(model_manager);
 
-         systems::Init(registry);
+         if (loadPopulatedScene) {
+             systems::Init(registry);
+         }
      }
 
     entt::entity spawn_default_camera() {
