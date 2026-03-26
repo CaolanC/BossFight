@@ -5,11 +5,11 @@
 int main(int argc, char* argv[]) {
 
     if (argc == 2 ) {
-        auto client = client::Client(std::string("Perfect Client."), argv[1], false);
+        auto client = client::Client(std::string("Perfect Client."), argv[1], false, true);
         client.run(1920, 1080);
     }
     else {
-         auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000", false);
+         auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000", false, true);
          client.run(1920, 1080);
     }
     return 0;
