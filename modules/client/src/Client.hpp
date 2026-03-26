@@ -14,19 +14,20 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip, bool is_editor);
+        Client(std::string name, std::string server_ip, bool is_editor, bool is_host);
         void run(int w = 100, int h = 100);
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
         bool connect_client(int port);
         bool is_editor;
+        bool is_host;
         std::string name;
         Platform::Window window;
         core::MeshManager mesh_manager = core::MeshManager();
         core::ModelManager model_manager = core::ModelManager();
-        core::Scene scene = core::Scene(mesh_manager, model_manager);
+        core::Scene scene;
 
-        void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
+        void request_create_session(std::string const& ip = "http://127.0.0.1:30000/join");
 
     private:
         NetClient net_client;

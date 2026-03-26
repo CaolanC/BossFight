@@ -9,8 +9,14 @@
 #include <Client.hpp>
 
 namespace client {
-    Client::Client(std::string name, std::string server_ip, bool is_editor) : name(name), window(Platform::Window(name.c_str(), 1920, 1080)), is_editor(is_editor) {
-        request_join(server_ip);
+    Client::Client(std::string name, std::string server_ip, bool is_editor, bool is_host)
+    :   name(name),
+        window(Platform::Window(name.c_str(), 1920, 1080)),
+        is_editor(is_editor),
+        is_host(is_host),
+        scene(mesh_manager, model_manager, is_host)
+    {
+        request_create_session(server_ip);
 
         connect_client(30001);
     }
@@ -87,7 +93,7 @@ void Client::enter_editor(int w, int h) {
         };
     }
 
-    void Client::request_join(std::string const& ip) {
+    void Client::request_create_session(std::string const& ip) {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
