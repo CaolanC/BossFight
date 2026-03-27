@@ -25,6 +25,7 @@ namespace server
         }
 
         running = true;
+        ready = false;
 
         ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
             std::cout << "WebSocket client connected\n";
@@ -42,8 +43,7 @@ namespace server
         ws_thread = std::jthread(
         [this](std::stop_token st){
             async_ws_run(st);
-        }
-        );
+        });
 
     }
 
@@ -52,8 +52,20 @@ namespace server
     }
 
     void PerfectServer::async_ws_run(std::stop_token st) {
+        {
+            std::lock_guard<std::mutex> lock(ready_mutex);
+            ready = true;
+        }
+        ready_cv.notify_all();
         std::cout << "[PerfectServer] ws_server.run() entering...\n";
         ws_server.run();
+        running = false;
+        ready = false;
         std::cout << "[PerfectServer] ws_server.run() exited\n";
+    }
+
+    bool PerfectServer::wait_until_ready(std::chrono::milliseconds timeout) {
+        std::unique_lock<std::mutex> lock(ready_mutex);
+        return ready_cv.wait_for(lock, timeout, [this]() { return ready.load(); });
     }
 };
