@@ -29,7 +29,15 @@ namespace server
 
     class CreateSessionReplyPayload : public ReplyPayload {
     public:
-        CreateSessionReplyPayload() : ReplyPayload(CreateSessionRequest) {}
+        CreateSessionReplyPayload(xg::Guid session_id, int ws_port, bool ok)
+        : ReplyPayload(CreateSessionRequest),
+          session_id(session_id),
+          ws_port(ws_port),
+          ok(ok) {}
+
+        xg::Guid session_id;
+        int ws_port;
+        bool ok;
     };
 
 }
