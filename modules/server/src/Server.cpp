@@ -47,6 +47,7 @@ namespace server
                         break;
                     }
                     case CreateSessionRequest: {
+
                         xg::Guid sid = session_manager.create();
                         testtemp = sid;
 
@@ -55,10 +56,16 @@ namespace server
                         std::cout << "[Server] Starting session WS on " << nextport << "\n";
                         sessiontemp->setPSPort(nextport);
                         sessiontemp->startServer();
-                        nextport += 1;
+
+                        bool ready = sessiontemp->wait_until_ready(std::chrono::milliseconds(3000));
 
                         reply.type=CreateSessionReply;
-                        // reply.session_id = sid;
+                        reply.session_id = sid;
+                        reply.ws_port = nextport;
+                        reply.ok = ready;
+
+                        nextport += 1;
+
                         break;
                     }
 

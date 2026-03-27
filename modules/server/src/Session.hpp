@@ -22,6 +22,10 @@ public:
         ps.setPort(p);
     }
 
+    bool wait_until_ready(std::chrono::milliseconds timeout) {
+        return ps.wait_until_ready(timeout);
+    }
+
     void startServer() { ps.start(); }
     void stopServer()  { ps.stop(); }
 
