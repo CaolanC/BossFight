@@ -27,7 +27,7 @@ namespace client {
         core::ModelManager model_manager = core::ModelManager();
         core::Scene scene;
 
-        void request_create_session(std::string const& ip = "http://127.0.0.1:30000/join");
+        bool request_create_session(std::string const& ip, int& ws_port);
 
     private:
         NetClient net_client;

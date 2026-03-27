@@ -16,9 +16,11 @@ namespace client {
         is_host(is_host),
         scene(mesh_manager, model_manager, is_host)
     {
-        request_create_session(server_ip);
-
-        connect_client(30001);
+        int ws_port = 0;
+        if (request_create_session(server_ip, ws_port)) {
+            std::cout << "Creating session on " << ws_port << "\n";
+            connect_client(30001);
+        }
     }
 
     void Client::run(int w, int h) {
@@ -93,21 +95,31 @@ void Client::enter_editor(int w, int h) {
         };
     }
 
-    void Client::request_create_session(std::string const& ip) {
+    bool Client::request_create_session(std::string const& ip, int& ws_port) {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
         req.url = ip + "/create_session";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
-        req.timeout = 10;
+        req.timeout = 5;
         HttpResponse resp;
         int ret = cli.send(&req, &resp);
-        if (ret != 0) {
+        if (ret != 0 || resp.status_code != 200) {
             printf("request failed!\n");
+            return false;
         } else {
             printf("%d %s\r\n", resp.status_code, resp.status_message());
             printf("%s %s\n", resp.body.c_str(), resp.headers["Connection"].c_str());
+
+            std::istringstream iss(resp.body);
+            std::string status, sid;
+
+            if (!(iss >> status >> sid >> ws_port)){
+                return false;
+            }
+
+            return status == "ok";
         }
     };
 
