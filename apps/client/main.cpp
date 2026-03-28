@@ -4,17 +4,17 @@
 
 int main(int argc, char* argv[]) {
 
+    std::string ip = "http://localhost:30000";
+    bool is_host = true;
+
     if (argc == 2 ) {
-        auto client = client::Client(std::string("Perfect Client."), argv[1], false, true);
-        if (client.start(argv[1])) {
-            client.run(1920, 1080);
-        }
+        is_host = false;
     }
-    else {
-        auto client = client::Client(std::string("Perfect Client."), "http://localhost:30000", false, true);
-        if (client.start("http://localhost:30000")) {
-            client.run(1920, 1080);
-        }
+
+    auto client = client::Client(std::string("Perfect Client."), ip, false, is_host);
+    if (client.start(ip)) {
+        client.run(1920, 1080);
     }
+
     return 0;
 }
