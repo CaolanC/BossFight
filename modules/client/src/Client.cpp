@@ -9,17 +9,42 @@
 #include <Client.hpp>
 
 namespace client {
-    Client::Client(std::string name, std::string server_ip, bool is_editor, bool is_host)
+    Client::Client(std::string name, std::string server_ip, bool is_editor, bool is_host, int input_port)
     :   name(name),
         window(Platform::Window(name.c_str(), 1920, 1080)),
         is_editor(is_editor),
         is_host(is_host),
+        input_port(input_port),
         scene(mesh_manager, model_manager, is_host)
     {
-        int ws_port = 0;
-        if (request_create_session(server_ip, ws_port)) {
-            std::cout << "Creating session on " << ws_port << "\n";
-            connect_client(30001);
+
+    }
+
+    bool Client::start(std::string server_ip2) {
+        if (is_host){
+            int ws_port = 0;
+            if (request_create_session(server_ip2, ws_port)) {
+                std::cout << "Creating session on " << ws_port << "\n";
+                if (connect_client(ws_port)) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            if (connect_client(30001)) {
+                std::cout << "Connected to client on port 30001\n";
+                return true;
+            }
+            else {
+                std::cout << "Failed to connect to client on port 30001\n";
+                return false;
+            }
         }
     }
 
@@ -122,6 +147,18 @@ void Client::enter_editor(int w, int h) {
             return status == "ok";
         }
     };
+
+    bool Client::request_join(std::string const& ip, int input_port) {
+        hv::HttpClient cli;
+        HttpRequest req;
+        req.method = HTTP_GET;
+        req.url = ip + "/join";
+        req.headers["Connection"] = "keep-alive";
+        req.body = "This is a sync request.";
+        req.timeout = 5;
+        HttpResponse resp;
+        int ret = cli.send(&req, &resp);
+    }
 
     bool Client::connect_client(int port) {
         for (int i = 0; i < 20; ++i) {

@@ -14,13 +14,15 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip, bool is_editor, bool is_host);
+        Client(std::string name, std::string server_ip, bool is_editor, bool is_host, int input_port = 0);
+        bool start(std::string server_ip2);
         void run(int w = 100, int h = 100);
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
         bool connect_client(int port);
         bool is_editor;
         bool is_host;
+        int input_port;
         std::string name;
         Platform::Window window;
         core::MeshManager mesh_manager = core::MeshManager();
@@ -28,6 +30,7 @@ namespace client {
         core::Scene scene;
 
         bool request_create_session(std::string const& ip, int& ws_port);
+        bool request_join(std::string const& ip, int input_port);
 
     private:
         NetClient net_client;
