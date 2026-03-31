@@ -1,0 +1,8 @@
+//
+// Created by ethan on 31/03/2026.
+//
+
+#ifndef SOULJA_SERIALIZEDOBJECT_H
+#define SOULJA_SERIALIZEDOBJECT_H
+
+#endif //SOULJA_SERIALIZEDOBJECT_H
