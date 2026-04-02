@@ -48,8 +48,12 @@ namespace spawn {
         return e;
     }
 
-    static entt::entity model(entt::registry& r, xg::Guid model_ref, xg::Guid program_ref, glm::vec3 pos = glm::vec3(0, 0, 0), float scale = 1.0f, glm::quat rot = glm::quat()) {
+    static entt::entity model(entt::registry& r, xg::Guid model_ref, xg::Guid program_ref, glm::vec3 pos = glm::vec3(0, 0, 0), float scale = 1.0f, glm::quat rot = glm::quat(), std::string object_id = "") {
+        if (object_id.empty()) {
+            object_id = xg::newGuid().str();
+        }
         const auto e = r.create();
+        r.emplace<component::object_id>(e, object_id);
         r.emplace<component::model_ref>(e, model_ref);
         r.emplace<component::mat_ref>(e, program_ref);
         r.emplace<shared::component::position>(e, pos);
