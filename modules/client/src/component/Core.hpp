@@ -60,6 +60,10 @@ namespace component
         xg::Guid id;
     };
 
+    struct object_id {
+        std::string objectid;
+    };
+
     struct scale {
         float s;
     };
