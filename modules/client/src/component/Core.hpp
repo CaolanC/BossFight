@@ -61,7 +61,7 @@ namespace component
     };
 
     struct object_id {
-        std::string objectid;
+        std::string value;
     };
 
     struct scale {
