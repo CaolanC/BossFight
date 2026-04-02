@@ -15,6 +15,8 @@
 #include "systems/Render.hpp"
 #include <core/MeshManager.hpp>
 #include <core/sh_src.hpp>
+#include <core/SceneSnapshot.hpp>
+#include <core/SerializedObject.hpp>
 
 #include <core/ShaderProgramManager.hpp>
 
@@ -132,6 +134,36 @@ public:
     unsigned int get_fbo() {
          return FBO;
      };
+
+    const SceneSnapshot build_snapshot() {
+        SceneSnapshot snapshot;
+
+        auto view = registry.view<
+            component::object_id,
+            component::model_ref,
+            shared::component::position,
+            shared::component::rotation,
+            component::scale
+        >();
+
+        for (auto e : view) {
+            const auto& id   = view.get<component::object_id>(e);
+            const auto& pos  = view.get<shared::component::position>(e);
+            const auto& rot  = view.get<shared::component::rotation>(e);
+            const auto& scl  = view.get<component::scale>(e);
+
+            core::SerializedObject obj;
+            obj.objectID = id.value;
+            obj.position = pos;
+            obj.rotation = rot;
+            obj.scale = scl.s;
+
+            snapshot.insert(obj.objectID, obj);
+
+        }
+
+        return snapshot;
+    }
 
 private:
     entt::registry registry;
