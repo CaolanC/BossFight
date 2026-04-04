@@ -56,7 +56,30 @@ public:
          registry.ctx().emplace<component::model_manager>(model_manager);
 
          if (loadPopulatedScene) {
-             systems::Init(registry);
+             bool initialized = systems::Init(registry);
+             if (initialized) {
+                 SceneSnapshot snapshot = build_snapshot();
+                 for (const auto& [key, obj] : snapshot.getmap()) {
+                     std::cout << "Object ID: " << obj.objectID << "\n";
+                     std::cout << "Model Ref: " << obj.model_ref << "\n";
+                     std::cout << "Model Path: " << obj.model_path << "\n";
+
+                     std::cout << "Position: ("
+                               << obj.position.x << ", "
+                               << obj.position.y << ", "
+                               << obj.position.z << ")\n";
+
+                     std::cout << "Rotation: ("
+                               << obj.rotation.w << ", "
+                               << obj.rotation.x << ", "
+                               << obj.rotation.y << ", "
+                               << obj.rotation.z << ")\n";
+
+                     std::cout << "Scale: " << obj.scale << "\n";
+
+                     std::cout << "----------------------\n";
+                 }
+             }
          }
      }
 
@@ -140,6 +163,7 @@ public:
 
         auto view = registry.view<
             component::object_id,
+            component::model_path,
             component::model_ref,
             shared::component::position,
             shared::component::rotation,
@@ -148,12 +172,16 @@ public:
 
         for (auto e : view) {
             const auto& id   = view.get<component::object_id>(e);
+            const auto& ref = view.get<component::model_ref>(e);
+            const auto& path = view.get<component::model_path>(e);
             const auto& pos  = view.get<shared::component::position>(e);
             const auto& rot  = view.get<shared::component::rotation>(e);
             const auto& scl  = view.get<component::scale>(e);
 
             core::SerializedObject obj;
             obj.objectID = id.value;
+            obj.model_ref = ref.id;
+            obj.model_path = path.value;
             obj.position = pos;
             obj.rotation = rot;
             obj.scale = scl.s;
