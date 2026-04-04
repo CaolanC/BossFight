@@ -11,8 +11,10 @@ namespace core {
 
         };
 
-        xg::Guid add_model(rendering::Model model) {
-            auto g = xg::newGuid();
+        xg::Guid add_model(rendering::Model model, xg::Guid g = {}) {
+            if (!g.isValid()) {
+                g = xg::newGuid();
+            }
             model_map.insert({g, model});
 
             return g;
