@@ -10,5 +10,5 @@
 #include "generator/GridPlane.hpp"
 
 namespace systems {
-    void Init(entt::registry& r);
+    bool Init(entt::registry& r);
 }
