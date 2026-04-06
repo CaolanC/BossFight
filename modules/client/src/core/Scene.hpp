@@ -58,10 +58,9 @@ public:
          SceneSerializer sceneserializer = SceneSerializer();
 
          if (loadPopulatedScene) {
-             bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer);
+             bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot);
              if (initialized) {
-                 SceneSnapshot snapshot = build_snapshot();
-                 snapshot.debug_print();
+                 initial_snapshot.debug_print();
              }
          }
      }
@@ -176,11 +175,16 @@ public:
         return snapshot;
     }
 
+    const SceneSnapshot get_initial_snapshot() {
+        return initial_snapshot;
+    }
+
 private:
     entt::registry registry;
     core::MeshManager const& mesh_manager;
     core::ModelManager const& model_manager;
     unsigned int FBO;
+    SceneSnapshot initial_snapshot;
 };
 
 }
