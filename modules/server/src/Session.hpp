@@ -11,7 +11,7 @@ class Session
 {
 public:
     Session() : id(xg::newGuid()), ps(0) {
-
+        ps.set_session(this);
     };
 
     xg::Guid get_id() {
