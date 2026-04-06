@@ -17,6 +17,7 @@
 #include <core/sh_src.hpp>
 #include <core/SceneSnapshot.hpp>
 #include <core/SerializedObject.hpp>
+#include <core/SceneSerializer.hpp>
 
 #include <core/ShaderProgramManager.hpp>
 
@@ -54,31 +55,38 @@ public:
          registry.ctx().emplace<component::mesh_manager>(mesh_manager);
          registry.ctx().emplace<component::material_manager>(core::ShaderProgramManager());
          registry.ctx().emplace<component::model_manager>(model_manager);
+         SceneSerializer sceneserializer = SceneSerializer();
 
          if (loadPopulatedScene) {
              bool initialized = systems::Init(registry);
              if (initialized) {
-                 SceneSnapshot snapshot = build_snapshot();
-                 for (const auto& [key, obj] : snapshot.getmap()) {
-                     std::cout << "Object ID: " << obj.objectID << "\n";
-                     std::cout << "Model Ref: " << obj.model_ref << "\n";
-                     std::cout << "Model Path: " << obj.model_path << "\n";
+                 // SceneSnapshot snapshot = build_snapshot();
+                 SceneSnapshot snapshot = SceneSnapshot();
+                 bool ok = sceneserializer.load_from_file("scene.json", snapshot);
+                 if (ok) {
+                     for (const auto& [key, obj] : snapshot.getmap()) {
+                         std::cout << "Object ID: " << obj.objectID << "\n";
+                         std::cout << "Model Ref: " << obj.model_ref << "\n";
+                         std::cout << "Model Path: " << obj.model_path << "\n";
 
-                     std::cout << "Position: ("
-                               << obj.position.x << ", "
-                               << obj.position.y << ", "
-                               << obj.position.z << ")\n";
+                         std::cout << "Position: ("
+                                   << obj.position.x << ", "
+                                   << obj.position.y << ", "
+                                   << obj.position.z << ")\n";
 
-                     std::cout << "Rotation: ("
-                               << obj.rotation.w << ", "
-                               << obj.rotation.x << ", "
-                               << obj.rotation.y << ", "
-                               << obj.rotation.z << ")\n";
+                         std::cout << "Rotation: ("
+                                   << obj.rotation.w << ", "
+                                   << obj.rotation.x << ", "
+                                   << obj.rotation.y << ", "
+                                   << obj.rotation.z << ")\n";
 
-                     std::cout << "Scale: " << obj.scale << "\n";
+                         std::cout << "Scale: " << obj.scale << "\n";
 
-                     std::cout << "----------------------\n";
+                         std::cout << "----------------------\n";
+
+                     }
                  }
+
              }
          }
      }
