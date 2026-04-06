@@ -50,7 +50,7 @@ namespace systems {
         return true;
     }
 
-    bool Init_from_file(entt::registry& r, const std::string& path, core::SceneSerializer& scene_serializer) {
+    bool Init_from_file(entt::registry& r, const std::string& path, core::SceneSerializer& scene_serializer, core::SceneSnapshot& snapshot) {
         // Same code as above but changed to work from a file
         auto& model_m = r.ctx().get<component::model_manager>().manager;
 
@@ -59,8 +59,6 @@ namespace systems {
             core::sh_src::fSolid()
         };
         ShaderProgramHandle program = r.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
-
-        core::SceneSnapshot snapshot = core::SceneSnapshot();
 
         bool ok = scene_serializer.load_from_file(path, snapshot);
         snapshot.debug_print();
