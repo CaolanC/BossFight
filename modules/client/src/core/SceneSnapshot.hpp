@@ -2,6 +2,8 @@
 // Created by ethan on 31/03/2026.
 //
 
+#pragma once
+
 #include <unordered_map>
 #include <optional>
 #include <core/SerializedObject.hpp>
@@ -14,6 +16,7 @@ namespace core {
         void insert(const std::string& objectID, const SerializedObject& object);
         SerializedObject* find(const std::string& object_id);
         std::unordered_map<std::string, SerializedObject> getmap();
+        const std::unordered_map<std::string, SerializedObject>& getmap() const;
 
     private:
         std::unordered_map<std::string, SerializedObject> object_map;

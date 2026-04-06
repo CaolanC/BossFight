@@ -24,4 +24,8 @@ namespace core{
     std::unordered_map<std::string, SerializedObject> SceneSnapshot::getmap() {
         return object_map;
     }
+
+    const std::unordered_map<std::string, SerializedObject>& SceneSnapshot::getmap() const {
+        return object_map;
+    }
 }
