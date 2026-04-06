@@ -68,4 +68,8 @@ namespace server
         std::unique_lock<std::mutex> lock(ready_mutex);
         return ready_cv.wait_for(lock, timeout, [this]() { return ready.load(); });
     }
+
+    void PerfectServer::set_session(Session* s) {
+        session = s;
+    }
 };

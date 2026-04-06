@@ -11,6 +11,7 @@
 
 #include <hv/WebSocketServer.h>
 #include <thread>
+#include <Session.hpp>
 
 namespace server
 {
@@ -25,6 +26,8 @@ namespace server
         void stop();
 
         bool wait_until_ready(std::chrono::milliseconds timeout);
+
+        void set_session(Session* s);
 
         // WS server goes here. ECS system goes
     private:
@@ -52,5 +55,6 @@ namespace server
         std::atomic<bool> ready = false;
         std::mutex ready_mutex;
         std::condition_variable ready_cv;
+        Session* session;
     };
 }
