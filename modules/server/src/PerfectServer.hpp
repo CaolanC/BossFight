@@ -11,7 +11,10 @@
 
 #include <hv/WebSocketServer.h>
 #include <thread>
-#include <Session.hpp>
+
+namespace server {
+    class Session;
+}
 
 namespace server
 {
