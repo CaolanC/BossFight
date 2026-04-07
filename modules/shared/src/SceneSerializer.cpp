@@ -71,7 +71,7 @@ namespace core {
 
         for (auto& [id, value] : j["objects"].items()) {
             SerializedObject obj = deserialize_object(value);
-            out_snapshot.insert(id, obj); // or insert/update method name you use
+            out_snapshot.insert(id, obj);
         }
 
         return true;
