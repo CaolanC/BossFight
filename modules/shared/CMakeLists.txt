@@ -12,4 +12,6 @@ target_include_directories(SharedLib
 target_link_libraries(SharedLib
     PUBLIC
         glm::glm
+        nlohmann_json
+        crossguid
 )
