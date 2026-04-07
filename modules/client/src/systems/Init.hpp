@@ -9,9 +9,9 @@
 
 #include "generator/GridPlane.hpp"
 
-#include <core/SceneSerializer.hpp>
-#include <core/SceneSnapshot.hpp>
-#include <core/SerializedObject.hpp>
+#include <SceneSerializer.hpp>
+#include <SceneSnapshot.hpp>
+#include <SerializedObject.hpp>
 
 namespace systems {
     bool Init(entt::registry& r);

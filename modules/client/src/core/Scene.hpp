@@ -15,9 +15,9 @@
 #include "systems/Render.hpp"
 #include <core/MeshManager.hpp>
 #include <core/sh_src.hpp>
-#include <core/SceneSnapshot.hpp>
-#include <core/SerializedObject.hpp>
-#include <core/SceneSerializer.hpp>
+#include <SceneSnapshot.hpp>
+#include <SerializedObject.hpp>
+#include <SceneSerializer.hpp>
 
 #include <core/ShaderProgramManager.hpp>
 
