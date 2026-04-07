@@ -4,7 +4,7 @@
 
 #include "SceneSerializer.hpp"
 #include <nlohmann/json.hpp>
-#include <core/SerializedObject.hpp>
+#include <SerializedObject.hpp>
 #include <fstream>
 
 using json = nlohmann::json;

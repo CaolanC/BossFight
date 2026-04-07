@@ -5,7 +5,7 @@
 #pragma once
 
 #include <string>
-#include <core/SceneSnapshot.hpp>
+#include <SceneSnapshot.hpp>
 
 namespace core {
     class SceneSerializer {

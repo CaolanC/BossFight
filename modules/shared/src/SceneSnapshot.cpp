@@ -2,8 +2,8 @@
 // Created by ethan on 31/03/2026.
 //
 
-#include <core/SceneSnapshot.hpp>
-#include <core/SerializedObject.hpp>
+#include <SceneSnapshot.hpp>
+#include <SerializedObject.hpp>
 
 namespace core{
     SceneSnapshot::SceneSnapshot() {

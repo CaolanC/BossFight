@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 #include <optional>
-#include <core/SerializedObject.hpp>
+#include <SerializedObject.hpp>
 
 namespace core {
     class SceneSnapshot {
