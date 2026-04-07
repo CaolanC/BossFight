@@ -10,37 +10,9 @@
 using json = nlohmann::json;
 
 namespace core {
-    static json serialize_object(const SerializedObject& obj) {
-        return json{
-            {"objectID", obj.objectID},
-            {"modelpath", obj.model_path},
-            {"model_ref", obj.model_ref.str()},
-            {"position", {obj.position.x, obj.position.y, obj.position.z}},
-            {"rotation", {obj.rotation.w, obj.rotation.x, obj.rotation.y, obj.rotation.z}},
-            {"scale", obj.scale}
-        };
-    }
-
-    static SerializedObject deserialize_object(const nlohmann::json& j) {
-        SerializedObject obj;
-
-        obj.objectID = j.at("objectID").get<std::string>();
-        obj.model_path = j.at("modelpath").get<std::string>();
-        obj.model_ref = xg::Guid(j.at("model_ref").get<std::string>());
-        auto pos = j.at("position");
-        obj.position = glm::vec3(pos[0], pos[1], pos[2]);
-        auto rot = j.at("rotation");
-        obj.rotation = glm::quat(rot[0], rot[1], rot[2], rot[3]);
-        obj.scale = j.at("scale").get<float>();
-
-        return obj;
-    }
 
     bool SceneSerializer::save(const SceneSnapshot& snapshot, const std::string& path) {
-        json j;
-        for (const auto& [id, obj] : snapshot.getmap()) {
-            j["objects"][id] = serialize_object(obj);
-        }
+        json j = shared::JSONHelper::serialize_snapshot(snapshot);
 
         std::ofstream file(path);
 
@@ -62,17 +34,14 @@ namespace core {
             return false;
         }
 
-        nlohmann::json j;
+        json j;
         file >> j;
 
         if (!j.contains("objects")) {
             return false;
         }
 
-        for (auto& [id, value] : j["objects"].items()) {
-            SerializedObject obj = deserialize_object(value);
-            out_snapshot.insert(id, obj);
-        }
+        shared::JSONHelper::deserialize_snapshot_pointer(j, out_snapshot);
 
         return true;
     }

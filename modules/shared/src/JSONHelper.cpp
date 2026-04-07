@@ -5,23 +5,25 @@
 #include <JSONHelper.hpp>
 
 namespace shared {
-    JSONHelper::JSONHelper() {}
 
-    std::string JSONHelper::make_snapshot_message(core::SceneSnapshot& snapshot) {
+    std::string JSONHelper::make_snapshot_message(const core::SceneSnapshot& snapshot) {
         nlohmann::json message;
         message["type"] = "snapshot";
         message["payload"] = serialize_snapshot(snapshot);
 
+        return message.dump();
     }
 
-    nlohmann::json JSONHelper::serialize_snapshot(core::SceneSnapshot& snapshot) {
+    nlohmann::json JSONHelper::serialize_snapshot(const core::SceneSnapshot& snapshot) {
         nlohmann::json j;
         for (const auto& [id, obj] : snapshot.getmap()) {
             j["objects"][id] = serialize_object(obj);
         }
+
+        return j;
     }
 
-    nlohmann::json serialize_object(const core::SerializedObject& obj) {
+    nlohmann::json JSONHelper::serialize_object(const core::SerializedObject& obj) {
         return nlohmann::json{
                 {"objectID", obj.objectID},
                 {"modelpath", obj.model_path},
@@ -32,7 +34,7 @@ namespace shared {
         };
     }
 
-    core::SerializedObject deserialize_object(const nlohmann::json& j) {
+    core::SerializedObject JSONHelper::deserialize_object(const nlohmann::json& j) {
         core::SerializedObject obj;
 
         obj.objectID = j.at("objectID").get<std::string>();
@@ -47,9 +49,18 @@ namespace shared {
         return obj;
     }
 
-    core::SceneSnapshot deserialize_snapshot(const nlohmann::json& j) {
+    core::SceneSnapshot JSONHelper::deserialize_snapshot(const nlohmann::json& j) {
         core::SceneSnapshot snapshot;
 
+        for (auto& [id, value] : j["objects"].items()) {
+            core::SerializedObject obj = deserialize_object(value);
+            snapshot.insert(id, obj);
+        }
+
+        return snapshot;
+    }
+
+    void JSONHelper::deserialize_snapshot_pointer(const nlohmann::json& j, core::SceneSnapshot& snapshot) {
         for (auto& [id, value] : j["objects"].items()) {
             core::SerializedObject obj = deserialize_object(value);
             snapshot.insert(id, obj);
