@@ -11,6 +11,8 @@
 
 #include <hv/WebSocketServer.h>
 #include <thread>
+#include <nlohmann/json.hpp>
+#include <ClientInfo.hpp>
 
 namespace server {
     class Session;

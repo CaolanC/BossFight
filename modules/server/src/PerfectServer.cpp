@@ -1,5 +1,10 @@
 #include <PerfectServer.hpp>
 
+#include "nlohmann/json.hpp"
+#include <crossguid/guid.hpp>
+
+#include "Session.hpp"
+
 namespace server
 {
     PerfectServer::PerfectServer(int port) : port(port) {
@@ -30,8 +35,26 @@ namespace server
         ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
             std::cout << "WebSocket client connected\n";
         };
-        ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
-            std::cout << "WS message: " << msg << "\n";
+        ws.onmessage = [this](const WebSocketChannelPtr& channel, const std::string& msg) {
+            nlohmann::json data = nlohmann::json::parse(msg);
+            std::string type = data.at("type").get<std::string>();
+            std::string role = data.at("payload").at("role").get<std::string>();
+            std::string ci = data.at("payload").at("client_id").get<std::string>();
+            xg::Guid client_id(ci);
+            std::cout << client_id << "\n";
+
+            if (type == "handshake"){
+                ClientInfo client_info = ClientInfo();
+                client_info.client_id = client_id;
+                client_info.role = role;
+                session->addClient(channel, client_info);
+                if (role == "host") {
+                    std::cout << "Host handshake, request snapshot\n";
+                }
+                else {
+                    std::cout << "Guest handshake, send snapshot\n";
+                }
+            }
             channel->send(msg);
         };
         ws.onclose = [](const WebSocketChannelPtr& channel) {
