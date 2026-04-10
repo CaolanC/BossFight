@@ -7,6 +7,7 @@
 #include <core/Scene.hpp>
 #include <hv/HttpClient.h>
 #include <Client.hpp>
+#include <JSONHelper.hpp>
 
 namespace client {
     Client::Client(std::string name, std::string server_ip, bool is_editor, bool is_host, int input_port)
@@ -17,7 +18,7 @@ namespace client {
         input_port(input_port),
         scene(mesh_manager, model_manager, is_host)
     {
-
+        client_id = xg::newGuid();
     }
 
     bool Client::start(std::string server_ip2) {
@@ -26,6 +27,7 @@ namespace client {
             if (request_create_session(server_ip2, ws_port)) {
                 std::cout << "Creating session on " << ws_port << "\n";
                 if (connect_client(ws_port)) {
+                    net_client.send(shared::JSONHelper::make_handshake(client_id, is_host));
                     return true;
                 }
                 else {

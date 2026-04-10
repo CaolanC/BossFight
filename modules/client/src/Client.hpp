@@ -31,8 +31,10 @@ namespace client {
 
         bool request_create_session(std::string const& ip, int& ws_port);
         bool request_join(std::string const& ip, int input_port);
+        xg::Guid get_client_id();
 
     private:
         NetClient net_client;
+        xg::Guid client_id;
     };
 }
