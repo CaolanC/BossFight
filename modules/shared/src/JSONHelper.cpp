@@ -6,6 +6,14 @@
 
 namespace shared {
 
+    std::string JSONHelper::make_handshake(xg::Guid client_id, bool is_host) {
+        nlohmann::json message;
+        message["type"] = "handshake";
+        message["payload"] = serialize_client_info(client_id, is_host);
+
+        return message.dump();
+    }
+
     std::string JSONHelper::make_snapshot_message(const core::SceneSnapshot& snapshot) {
         nlohmann::json message;
         message["type"] = "snapshot";
@@ -47,6 +55,13 @@ namespace shared {
         obj.scale = j.at("scale").get<float>();
 
         return obj;
+    }
+
+    nlohmann::json JSONHelper::serialize_client_info(xg::Guid client_id, bool is_host) {
+        return nlohmann::json{
+            {"client_id", client_id.str()},
+            {"role", is_host ? "host" : "client"}
+        };
     }
 
     core::SceneSnapshot JSONHelper::deserialize_snapshot(const nlohmann::json& j) {
