@@ -1,9 +1,10 @@
 #include <PerfectServer.hpp>
 
-#include "nlohmann/json.hpp"
 #include <crossguid/guid.hpp>
 
 #include "Session.hpp"
+#include <JSONHelper.hpp>
+#include <SceneSnapshot.hpp>
 
 namespace server
 {
@@ -38,24 +39,34 @@ namespace server
         ws.onmessage = [this](const WebSocketChannelPtr& channel, const std::string& msg) {
             nlohmann::json data = nlohmann::json::parse(msg);
             std::string type = data.at("type").get<std::string>();
-            std::string role = data.at("payload").at("role").get<std::string>();
-            std::string ci = data.at("payload").at("client_id").get<std::string>();
-            xg::Guid client_id(ci);
-            std::cout << client_id << "\n";
+
+            std::cout << data << "\n";
 
             if (type == "handshake"){
+
+                std::string role = data.at("payload").at("role").get<std::string>();
+                std::string ci = data.at("payload").at("client_id").get<std::string>();
+                xg::Guid client_id(ci);
+                std::cout << client_id << "\n";
+
                 ClientInfo client_info = ClientInfo();
                 client_info.client_id = client_id;
                 client_info.role = role;
                 session->addClient(channel, client_info);
+
                 if (role == "host") {
-                    std::cout << "Host handshake, request snapshot\n";
+                    channel->send(shared::JSONHelper::make_handshake_ack());
                 }
                 else {
                     std::cout << "Guest handshake, send snapshot\n";
                 }
             }
-            channel->send(msg);
+            else if (type == "snapshot") {
+                const nlohmann::json j = data.at("payload");
+                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
+                session->setSnapshot(shared::JSONHelper::deserialize_snapshot(j));
+                session->getSnapshot().debug_print();
+            }
         };
         ws.onclose = [](const WebSocketChannelPtr& channel) {
             std::cout << "WebSocket client disconnected\n";
