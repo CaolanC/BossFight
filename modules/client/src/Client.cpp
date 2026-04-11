@@ -93,6 +93,12 @@ void Client::enter_editor(int w, int h) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        std::string msg;
+        bool gotmsg = net_client.pollMessage(msg);
+        if (gotmsg) {
+            nlohmann::json data = nlohmann::json::parse(msg);
+            handle_incoming_message(data);
+        }
 
         window.swap();
     }
@@ -118,8 +124,25 @@ void Client::enter_editor(int w, int h) {
                         break;
                 }
             }
+
+            std::string msg;
+            bool gotmsg = net_client.pollMessage(msg);
+            if (gotmsg) {
+                nlohmann::json data = nlohmann::json::parse(msg);
+                handle_incoming_message(data);
+            }
+
             window.swap();
         };
+    }
+
+    void Client::handle_incoming_message(nlohmann::json& message) {
+        std::string type = message.at("type").get<std::string>();
+
+        if (type == "handshake_ack") {
+            std::cout << "Handshake acknowledged. Sending snapshot.\n";
+            net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+        }
     }
 
     bool Client::request_create_session(std::string const& ip, int& ws_port) {
@@ -177,4 +200,5 @@ void Client::enter_editor(int w, int h) {
 
         return net_client.is_connected();
     }
+
 }
