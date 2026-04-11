@@ -3,6 +3,8 @@
 #include <crossguid/guid.hpp>
 #include <PerfectServer.hpp>
 #include <ClientInfo.hpp>
+#include <SceneSnapshot.hpp>
+#include <SerializedObject.hpp>
 
 namespace server
 
@@ -34,10 +36,28 @@ public:
         connected_clients[channel] = client_info;
     }
 
+    void setJoinable(bool status) {
+        guest_joinable = status;
+    }
+
+    bool isGuestJoinable() {
+        return guest_joinable;
+    }
+
+    void setSnapshot(core::SceneSnapshot snapshot) {
+        session_snapshot = snapshot;
+    }
+
+    core::SceneSnapshot getSnapshot() {
+        return session_snapshot;
+    }
+
 private:
     xg::Guid id;
     PerfectServer ps;
     std::unordered_map<WebSocketChannelPtr, ClientInfo> connected_clients;
+    bool guest_joinable = false;
+    core::SceneSnapshot session_snapshot;
 };
 
 }
