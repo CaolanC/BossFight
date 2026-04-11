@@ -41,6 +41,8 @@ namespace core {
             return false;
         }
 
+        std::cout << j << "\n";
+
         shared::JSONHelper::deserialize_snapshot_pointer(j, out_snapshot);
 
         return true;
