@@ -73,6 +73,7 @@ namespace shared {
 
     core::SceneSnapshot JSONHelper::deserialize_snapshot_string(const std::string& msg) {
         nlohmann::json j = nlohmann::json::parse(msg);
+        std::cout << j;
         return deserialize_snapshot(j);
     }
 
