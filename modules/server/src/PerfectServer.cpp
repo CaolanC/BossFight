@@ -59,13 +59,15 @@ namespace server
                 }
                 else {
                     std::cout << "Guest handshake, send snapshot\n";
+                    channel->send(shared::JSONHelper::make_snapshot_message(session->getSnapshot()));
                 }
             }
             else if (type == "snapshot") {
                 const nlohmann::json j = data.at("payload");
                 core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
-                session->setSnapshot(shared::JSONHelper::deserialize_snapshot(j));
+                session->setSnapshot(snapshot);
                 session->getSnapshot().debug_print();
+                session->setJoinable(true);
             }
         };
         ws.onclose = [](const WebSocketChannelPtr& channel) {
