@@ -179,6 +179,10 @@ public:
         return initial_snapshot;
     }
 
+    void guest_init(SceneSnapshot& snapshot) {
+        bool guest_initialized = systems::Init_from_snapshot(registry, snapshot);
+    }
+
 private:
     entt::registry registry;
     core::MeshManager const& mesh_manager;

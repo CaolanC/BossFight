@@ -20,7 +20,7 @@ namespace client {
         void run(int w = 100, int h = 100);
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
-        void handle_incoming_message(nlohmann::json& message);
+        void handle_incoming_message(std::string& msg);
         bool connect_client(int port);
         bool is_editor;
         bool is_host;

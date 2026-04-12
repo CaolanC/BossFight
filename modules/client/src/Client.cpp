@@ -25,9 +25,9 @@ namespace client {
         if (is_host){
             int ws_port = 0;
             if (request_create_session(server_ip2, ws_port)) {
-                std::cout << "Creating session on " << ws_port << "\n";
+                std::cout << "Created session on " << ws_port << "\n";
                 if (connect_client(ws_port)) {
-                    net_client.send(shared::JSONHelper::make_handshake(client_id, is_host));
+                    net_client.send(shared::JSONHelper::make_handshake(client_id, true));
                     return true;
                 }
                 else {
@@ -41,6 +41,7 @@ namespace client {
         else {
             if (connect_client(30001)) {
                 std::cout << "Connected to client on port 30001\n";
+                net_client.send(shared::JSONHelper::make_handshake(client_id, false));
                 return true;
             }
             else {
@@ -93,12 +94,12 @@ void Client::enter_editor(int w, int h) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        std::string msg;
-        bool gotmsg = net_client.pollMessage(msg);
-        if (gotmsg) {
-            nlohmann::json data = nlohmann::json::parse(msg);
-            handle_incoming_message(data);
-        }
+        // std::string msg;
+        // bool gotmsg = net_client.pollMessage(msg);
+        // if (gotmsg) {
+        //     nlohmann::json data = nlohmann::json::parse(msg);
+        //     handle_incoming_message(data);
+        // }
 
         window.swap();
     }
@@ -128,20 +129,29 @@ void Client::enter_editor(int w, int h) {
             std::string msg;
             bool gotmsg = net_client.pollMessage(msg);
             if (gotmsg) {
-                nlohmann::json data = nlohmann::json::parse(msg);
-                handle_incoming_message(data);
+                handle_incoming_message(msg);
             }
 
             window.swap();
         };
     }
 
-    void Client::handle_incoming_message(nlohmann::json& message) {
+    void Client::handle_incoming_message(std::string& msg) {
+        nlohmann::json message = nlohmann::json::parse(msg);
         std::string type = message.at("type").get<std::string>();
 
         if (type == "handshake_ack") {
             std::cout << "Handshake acknowledged. Sending snapshot.\n";
             net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+        }
+        else if (type == "snapshot") {
+            if (!is_host) {
+                std::cout << "Snapshot received. Preparing to initialize...\n";
+                nlohmann::json message_payload = message.at("payload");
+                std::cout << message_payload.dump() << "\n";
+                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
+                scene.guest_init(snapshot);
+            }
         }
     }
 
