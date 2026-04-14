@@ -26,12 +26,12 @@ namespace core {
 
         void move_entity(entt::entity entity, glm::vec3 position) {
             auto& pos = reg.get<shared::component::position>(entity);
-            pos += position;
+            pos.value += position;
         }
 
         void set_entity(entt::entity entity, glm::vec3 position) {
             auto&pos = reg.get<shared::component::position>(entity);
-            pos = position;
+            pos.value = position;
         }
 
         glm::mat4 get_entity_transform(entt::entity entity) {
@@ -44,8 +44,8 @@ namespace core {
         void update_transform() {
             auto view = reg.view<shared::component::transform, shared::component::position, shared::component::rotation>();
             for (auto [e, transform, position, rotation]: view.each()) {
-                std::cout << std::format("{}, {}, {}", position[0], position[1], position[2]) << '\n';
-                transform = glm::translate(glm::identity<glm::mat4>(), position) * glm::mat4_cast(rotation);
+                std::cout << std::format("{}, {}, {}", position.value[0], position.value[1], position.value[2]) << '\n';
+                transform = glm::translate(glm::identity<glm::mat4>(), position.value) * glm::mat4_cast(rotation);
             }
         }
     };

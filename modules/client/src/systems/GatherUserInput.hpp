@@ -5,6 +5,6 @@
 #include <SDL3/SDL_keyboard.h>
 #include <iostream>
 
-namespace systems {
-    void GatherUserInput(entt::registry& r);
-}
+// namespace systems {
+//     void GatherUserInput(entt::registry& r);
+// }

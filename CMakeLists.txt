@@ -74,4 +74,4 @@ target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
 add_executable(GUI apps/gui/main.cpp)
-target_link_libraries(GUI PRIVATE GuiLib)
+target_link_libraries(GUI PRIVATE GuiLib ClientLib)
