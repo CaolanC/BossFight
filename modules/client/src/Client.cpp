@@ -58,7 +58,7 @@ namespace client {
     }
 
     void Client::run(int w, int h) {
-        bool started = start_main_loop(w, h);
+        start_main_loop(w, h);
     }
 
     void Client::InitSDL() {
@@ -73,39 +73,42 @@ namespace client {
         bootstrapped = true;
     }
 
-    bool Client::start_main_loop(int w, int h) {
+    void Client::start_main_loop(int w, int h) {
         init_embedded();
-        if (!start(server_ip)) {
-            return false;
-        };
-        glViewport(0, 0, w, h);
-
-        bool quit = false;
-        SDL_Event event;
-
-        while (!quit) {
-            while (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                    case SDL_EVENT_QUIT:
-                        quit = true;
-                        break;
-                }
-            }
-
+        if (start(server_ip)) {
             glViewport(0, 0, w, h);
-            glEnable(GL_DEPTH_TEST);
-            glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            update();
+            bool quit = false;
+            SDL_Event event;
 
-            entt::registry& r = scene.getRegistry();
-            systems::Render(r, w, h);
+            while (!quit) {
+                while (SDL_PollEvent(&event)) {
+                    switch (event.type) {
+                        case SDL_EVENT_QUIT:
+                            quit = true;
+                            break;
+                    }
+                }
 
-            if (window) {
-                window->swap();
+                glViewport(0, 0, w, h);
+                glEnable(GL_DEPTH_TEST);
+                glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                std::string msg;
+                net_client.pollMessage(msg);
+                std::cout << msg << "\n";
+
+                update();
+
+                entt::registry& r = scene.getRegistry();
+                systems::Render(r, w, h);
+
+                if (window) {
+                    window->swap();
+                }
+
             }
-            return true;
         }
     }
 

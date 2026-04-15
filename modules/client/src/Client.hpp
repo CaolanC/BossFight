@@ -35,7 +35,7 @@ namespace client {
         bool is_editor;
         bool is_host;
         int input_port;
-        bool start_main_loop(int w, int h);
+        void start_main_loop(int w, int h);
         bool owns_window;
         std::string name;
         std::optional<Platform::Window> window;
