@@ -27,7 +27,7 @@ namespace client {
         void set_input_state(const bool* k_state);
         static void InitSDL();
 
-        void run(int w = 100, int h = 100);
+        void run();
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
         void handle_incoming_message(std::string& msg);

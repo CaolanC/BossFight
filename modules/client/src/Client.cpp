@@ -37,6 +37,7 @@ namespace client {
                     return true;
                 }
                 else {
+                    std::cout << "Failed to connect to sws on port " << ws_port << ".\n";
                     return false;
                 }
             }
@@ -57,8 +58,8 @@ namespace client {
         }
     }
 
-    void Client::run(int w, int h) {
-        bool started = start_main_loop(w, h);
+    void Client::run() {
+        bool started = start_main_loop(0, 0);
     }
 
     void Client::InitSDL() {
@@ -75,24 +76,37 @@ namespace client {
 
     bool Client::start_main_loop(int w, int h) {
         init_embedded();
+
         if (!start(server_ip)) {
             return false;
-        };
-        glViewport(0, 0, w, h);
+        }
 
         bool quit = false;
         SDL_Event event;
 
         while (!quit) {
+            begin_input_frame();
+
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {
                     case SDL_EVENT_QUIT:
                         quit = true;
                         break;
                 }
+
+                process_input_event(event);
             }
 
-            glViewport(0, 0, w, h);
+            end_input_frame();
+
+            int draw_w = w;
+            int draw_h = h;
+
+            if (window) {
+                SDL_GetWindowSizeInPixels(window->get_window(), &draw_w, &draw_h);
+            }
+
+            glViewport(0, 0, draw_w, draw_h);
             glEnable(GL_DEPTH_TEST);
             glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -100,16 +114,17 @@ namespace client {
             update();
 
             entt::registry& r = scene.getRegistry();
-            systems::Render(r, w, h);
+            systems::Render(r, draw_w, draw_h);
 
             if (window) {
                 window->swap();
             }
-            return true;
         }
+
+        return true;
     }
 
-    // void Client::set_input_state(const bool* k_state) {
+    // void Client::set_input_statsse(const bool* k_state) {
     //     entt::registry& r = scene.getRegistry();
     //
     //     auto& kb = r.ctx().get<component::keyboard_state>();
@@ -119,7 +134,7 @@ namespace client {
     // }
 
     void Client::update() {
-        init_embedded();
+        // init_embedded();
 
         entt::registry& r = scene.getRegistry();
 
