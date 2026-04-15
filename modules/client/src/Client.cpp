@@ -154,14 +154,16 @@ void Client::enter_editor(int w, int h) {
             }
         }
         else {
+            nlohmann::json message_payload = message.at("payload");
+            core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
             if (type == "update_add") {
-
+                bool ok = scene.add_obj(obj);
             }
             else if (type == "update_edit") {
-
+                bool ok = scene.edit_obj(obj);
             }
             else if (type == "update_delete") {
-
+                bool ok = scene.delete_obj(obj);
             }
         }
     }
