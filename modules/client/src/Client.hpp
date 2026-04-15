@@ -27,7 +27,7 @@ namespace client {
         void set_input_state(const bool* k_state);
         static void InitSDL();
 
-        void run(int w = 100, int h = 100);
+        void run();
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
         void handle_incoming_message(std::string& msg);
@@ -35,7 +35,7 @@ namespace client {
         bool is_editor;
         bool is_host;
         int input_port;
-        void start_main_loop(int w, int h);
+        bool start_main_loop(int w, int h);
         bool owns_window;
         std::string name;
         std::optional<Platform::Window> window;
