@@ -13,6 +13,10 @@ namespace core{
         object_map[objectID] = object;
     }
 
+    void SceneSnapshot::delete_object(const std::string& objectID) {
+        object_map.erase(objectID);
+    }
+
     SerializedObject* SceneSnapshot::find(const std::string& object_id) {
         auto it = object_map.find(object_id);
         if (it == object_map.end()) {

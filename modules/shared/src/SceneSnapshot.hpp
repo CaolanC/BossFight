@@ -14,6 +14,7 @@ namespace core {
         SceneSnapshot();
 
         void insert(const std::string& objectID, const SerializedObject& object);
+        void delete_object(const std::string& objectID);
         SerializedObject* find(const std::string& object_id);
         std::unordered_map<std::string, SerializedObject> getmap();
         const std::unordered_map<std::string, SerializedObject>& getmap() const;

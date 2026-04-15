@@ -21,6 +21,17 @@ namespace shared {
         return message.dump();
     }
 
+    std::string JSONHelper::make_update_message(const std::string& type, const core::SerializedObject& obj) {
+        if (!(type == "add" || type == "edit" || type == "delete")) {
+            return "Invalid";
+        }
+        nlohmann::json message;
+        message["type"] = "update_" + type;
+        message["payload"] = serialize_object(obj);
+
+        return message.dump();
+    }
+
     std::string JSONHelper::make_snapshot_message(const core::SceneSnapshot& snapshot) {
         nlohmann::json message;
         message["type"] = "snapshot";
@@ -47,6 +58,12 @@ namespace shared {
                 {"rotation", {obj.rotation.w, obj.rotation.x, obj.rotation.y, obj.rotation.z}},
                 {"scale", obj.scale}
         };
+    }
+
+    core::SerializedObject JSONHelper::deserialize_object_string(const std::string& msg) {
+        nlohmann::json j = nlohmann::json::parse(msg);
+        std::cout << j;
+        return deserialize_object(j);
     }
 
     core::SerializedObject JSONHelper::deserialize_object(const nlohmann::json& j) {
