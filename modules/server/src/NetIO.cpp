@@ -66,8 +66,9 @@ namespace server
                 }
 
                 std::cout << "Server ID created for request: " << msg.req_id <<'\n';
-                auto reply = server::CreateSessionReplyPayload();
+                auto reply = server::CreateSessionReplyPayload(msg.session_id, msg.ws_port, msg.ok);
                 it->second.set_value(reply);
+                waiting_create.erase(it);
 
                 std::cout << "Created Session: []" <<'\n';
 
@@ -125,14 +126,18 @@ namespace server
             auto fut = promise.get_future();
             auto id = xg::newGuid();
             {
-            std::lock_guard<std::mutex> lock(req_prom_mut_join);
+            std::lock_guard<std::mutex> lock(req_prom_mut_create);
                 waiting_create.emplace(id, std::move(promise));
             }
 
             bus.send_in(NetMsg{.id=id, .type=CreateSessionRequest});
 
             if (fut.wait_for(3000ms) == std::future_status::ready) {
-                return response->String("Created session.");
+                auto result = fut.get();
+
+                if (result.ok) {
+                    return response->String("ok " + result.session_id.str() + " " + std::to_string(result.ws_port));
+                }
             }
 
             return response->String("Server-side error creating the session.");

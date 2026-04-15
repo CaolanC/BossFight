@@ -20,9 +20,6 @@ namespace server
 
     xg::Guid SessionManager::create() { // Returns the session ID or NULL on error
         auto session = std::make_unique<Session>();
-        session->setPSPort(30001);
-
-        session->startServer();
 
         auto id = session->get_id();
         session_map.emplace(id, std::move(session));
@@ -32,6 +29,7 @@ namespace server
     Session* SessionManager::getSession(const xg::Guid& sid) {
         auto it = session_map.find(sid);
         if (it != session_map.end()) {
+            std::cout << "Session found, returning\n";
             return it->second.get();
         }
 

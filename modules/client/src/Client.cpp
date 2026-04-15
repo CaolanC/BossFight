@@ -7,10 +7,48 @@
 #include <core/Scene.hpp>
 #include <hv/HttpClient.h>
 #include <Client.hpp>
+#include <JSONHelper.hpp>
 
 namespace client {
-    Client::Client(std::string name, std::string server_ip, bool is_editor) : name(name), window(Platform::Window(name.c_str(), 1920, 1080)), is_editor(is_editor) {
-        request_join(server_ip);
+    Client::Client(std::string name, std::string server_ip, bool is_editor, bool is_host, int input_port)
+    :   name(name),
+        window(Platform::Window(name.c_str(), 1920, 1080)),
+        is_editor(is_editor),
+        is_host(is_host),
+        input_port(input_port),
+        scene(mesh_manager, model_manager, is_host)
+    {
+        client_id = xg::newGuid();
+    }
+
+    bool Client::start(std::string server_ip2) {
+        if (is_host){
+            int ws_port = 0;
+            if (request_create_session(server_ip2, ws_port)) {
+                std::cout << "Created session on " << ws_port << "\n";
+                if (connect_client(ws_port)) {
+                    net_client.send(shared::JSONHelper::make_handshake(client_id, true));
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        else {
+            if (connect_client(30001)) {
+                std::cout << "Connected to client on port 30001\n";
+                net_client.send(shared::JSONHelper::make_handshake(client_id, false));
+                return true;
+            }
+            else {
+                std::cout << "Failed to connect to client on port 30001\n";
+                return false;
+            }
+        }
     }
 
     void Client::run(int w, int h) {
@@ -56,6 +94,12 @@ void Client::enter_editor(int w, int h) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // std::string msg;
+        // bool gotmsg = net_client.pollMessage(msg);
+        // if (gotmsg) {
+        //     nlohmann::json data = nlohmann::json::parse(msg);
+        //     handle_incoming_message(data);
+        // }
 
         window.swap();
     }
@@ -81,25 +125,103 @@ void Client::enter_editor(int w, int h) {
                         break;
                 }
             }
+
+            std::string msg;
+            bool gotmsg = net_client.pollMessage(msg);
+            if (gotmsg) {
+                handle_incoming_message(msg);
+            }
+
             window.swap();
         };
     }
 
-    void Client::request_join(std::string const& ip) {
+    void Client::handle_incoming_message(std::string& msg) {
+        nlohmann::json message = nlohmann::json::parse(msg);
+        std::string type = message.at("type").get<std::string>();
+
+        if (type == "handshake_ack") {
+            std::cout << "Handshake acknowledged. Sending snapshot.\n";
+            net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+        }
+        else if (type == "snapshot") {
+            if (!is_host) {
+                std::cout << "Snapshot received. Preparing to initialize...\n";
+                nlohmann::json message_payload = message.at("payload");
+                std::cout << message_payload.dump() << "\n";
+                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
+                scene.guest_init(snapshot);
+            }
+        }
+        else {
+            nlohmann::json message_payload = message.at("payload");
+            core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
+            if (type == "update_add") {
+                bool ok = scene.add_obj(obj);
+            }
+            else if (type == "update_edit") {
+                bool ok = scene.edit_obj(obj);
+            }
+            else if (type == "update_delete") {
+                bool ok = scene.delete_obj(obj);
+            }
+        }
+    }
+
+    bool Client::request_create_session(std::string const& ip, int& ws_port) {
+        hv::HttpClient cli;
+        HttpRequest req;
+        req.method = HTTP_GET;
+        req.url = ip + "/create_session";
+        req.headers["Connection"] = "keep-alive";
+        req.body = "This is a sync request.";
+        req.timeout = 5;
+        HttpResponse resp;
+        int ret = cli.send(&req, &resp);
+        if (ret != 0 || resp.status_code != 200) {
+            printf("request failed!\n");
+            return false;
+        } else {
+            printf("%d %s\r\n", resp.status_code, resp.status_message());
+            printf("%s %s\n", resp.body.c_str(), resp.headers["Connection"].c_str());
+
+            std::istringstream iss(resp.body);
+            std::string status, sid;
+
+            if (!(iss >> status >> sid >> ws_port)){
+                return false;
+            }
+
+            return status == "ok";
+        }
+    };
+
+    bool Client::request_join(std::string const& ip, int input_port) {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
         req.url = ip + "/join";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
-        req.timeout = 10;
+        req.timeout = 5;
         HttpResponse resp;
         int ret = cli.send(&req, &resp);
-        if (ret != 0) {
-            printf("request failed!\n");
-        } else {
-            printf("%d %s\r\n", resp.status_code, resp.status_message());
-            printf("%s %s\n", resp.body.c_str(), resp.headers["Connection"].c_str());
+    }
+
+    bool Client::connect_client(int port) {
+        for (int i = 0; i < 20; ++i) {
+            if (net_client.is_connected()) {
+                return true;
+            }
+
+            if (!net_client.is_connecting()) {
+                net_client.connect(port);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
         }
-    };
+
+        return net_client.is_connected();
+    }
+
 }

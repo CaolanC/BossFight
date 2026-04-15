@@ -60,6 +60,14 @@ namespace component
         xg::Guid id;
     };
 
+    struct object_id {
+        std::string value;
+    };
+
+    struct model_path {
+        std::string value;
+    };
+
     struct scale {
         float s;
     };

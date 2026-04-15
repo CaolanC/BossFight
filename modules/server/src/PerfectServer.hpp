@@ -1,5 +1,6 @@
 #pragma once
 
+#include <condition_variable>
 #include <ServerComponents.hpp>
 #include <SharedComponents.hpp>
 #include "entt/entity/registry.hpp"
@@ -10,6 +11,12 @@
 
 #include <hv/WebSocketServer.h>
 #include <thread>
+#include <nlohmann/json.hpp>
+#include <ClientInfo.hpp>
+
+namespace server {
+    class Session;
+}
 
 namespace server
 {
@@ -22,6 +29,10 @@ namespace server
 
         void start();
         void stop();
+
+        bool wait_until_ready(std::chrono::milliseconds timeout);
+
+        void set_session(Session* s);
 
         // WS server goes here. ECS system goes
     private:
@@ -45,6 +56,10 @@ namespace server
         hv::WebSocketService ws;
         hv::WebSocketServer ws_server;
         void async_ws_run(std::stop_token st);
-        bool running = false;
+        std::atomic<bool> running = false;
+        std::atomic<bool> ready = false;
+        std::mutex ready_mutex;
+        std::condition_variable ready_cv;
+        Session* session;
     };
 }

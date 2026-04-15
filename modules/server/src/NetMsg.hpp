@@ -20,7 +20,9 @@ struct NetMsg
     xg::Guid id;
     NetMsgType type;
     xg::Guid req_id;
+    bool ok = false;
     xg::Guid session_id;
+    int ws_port;
 };
 
 };

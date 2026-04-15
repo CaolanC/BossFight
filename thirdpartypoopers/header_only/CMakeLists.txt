@@ -6,3 +6,8 @@ add_library(par_shapes STATIC
         par_shapes/par_shapes.cpp
 )
 target_include_directories(par_shapes PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/par_shapes)
+
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
