@@ -5,6 +5,8 @@
 #include <core/MeshManager.hpp>
 #include <core/ShaderProgramManager.hpp>
 #include <core/ModelManager.hpp>
+#include <array>
+#include <SDL3/SDL.h>
 
 namespace component
 {
@@ -26,12 +28,16 @@ namespace component
     };
 
     struct keyboard_state {
-        const bool* k_state;
-        int no_keys;
+        std::array<bool, SDL_SCANCODE_COUNT> down{};
     };
 
     struct mouse_state {
-        float dx, dy;
+        float x = 0.0f;
+        float y = 0.0f;
+        float dx = 0.0f;
+        float dy = 0.0f;
+        std::array<bool, 8> down{};
+        bool inside_viewport = false;
     };
 
     struct user_control {};

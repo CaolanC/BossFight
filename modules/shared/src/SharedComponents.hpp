@@ -3,7 +3,10 @@
 #include <glm/glm.hpp>
 
 namespace shared::component {
-    using position = glm::vec3;
+    struct position {
+        glm::vec3 value;
+        float pad;
+    };
 
     using rotation = glm::quat;
 

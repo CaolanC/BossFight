@@ -26,10 +26,10 @@ namespace systems {
             const glm::vec3 strafe = glm::normalize(rot * glm::vec3(1,0,0));
 
             // TODO: Normalize these values and set up an input actions maps,
-            if (kb.k_state[SDL_SCANCODE_W]) pos += fwd * speed;
-            if (kb.k_state[SDL_SCANCODE_S]) pos -= fwd * speed;
-            if (kb.k_state[SDL_SCANCODE_A]) pos -= strafe * speed;
-            if (kb.k_state[SDL_SCANCODE_D]) pos += strafe * speed;
+            if (kb.down[SDL_SCANCODE_W]) pos.value += fwd * speed;
+            if (kb.down[SDL_SCANCODE_S]) pos.value -= fwd * speed;
+            if (kb.down[SDL_SCANCODE_A]) pos.value -= strafe * speed;
+            if (kb.down[SDL_SCANCODE_D]) pos.value += strafe * speed;
         }
     }
 }

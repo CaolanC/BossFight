@@ -10,8 +10,7 @@ int main(int argc, char* argv[]) {
     if (argc == 2 ) {
         is_host = false;
     }
-
-    auto client = client::Client(std::string("Perfect Client."), ip, false, is_host);
+    auto client = client::Client(std::string("Perfect Client."), ip, false, is_host, client::InputMode::Client);
     if (client.start(ip)) {
         client.run(1920, 1080);
     }

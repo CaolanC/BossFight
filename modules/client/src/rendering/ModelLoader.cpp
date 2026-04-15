@@ -57,7 +57,7 @@ namespace rendering {
     Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, std::string const& p) { // We're just going to harcode the transform for now before things inherit it
         Node my_node;
 
-        if (node.matrix.data()) {
+        if (node.matrix.size() == 16) {
             my_node.local_transform = glm::make_mat4(node.matrix.data());;
             my_node.has_local_transform = true;
         }
