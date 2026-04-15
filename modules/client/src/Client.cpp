@@ -104,14 +104,15 @@ namespace client {
                     SDL_GetWindowSizeInPixels(window->get_window(), &draw_w, &draw_h);
                 }
 
-                glViewport(0, 0, w, h);
+                glViewport(0, 0, draw_w, draw_h);
                 glEnable(GL_DEPTH_TEST);
                 glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 std::string msg;
-                net_client.pollMessage(msg);
-                std::cout << msg << "\n";
+                while (net_client.pollMessage(msg)) {
+                    handle_incoming_message(msg);
+                }
 
                 update();
 
