@@ -52,6 +52,18 @@ public:
         return session_snapshot;
     }
 
+    void addOrEditSnapshot(core::SerializedObject& obj) {
+        session_snapshot.insert(obj.objectID, obj);
+    }
+
+    void deleteFromSnapshot(core::SerializedObject& obj) {
+        session_snapshot.delete_object(obj.objectID);
+    }
+
+    std::unordered_map<WebSocketChannelPtr, ClientInfo> getConnectedClients() {
+        return connected_clients;
+    }
+
 private:
     xg::Guid id;
     PerfectServer ps;

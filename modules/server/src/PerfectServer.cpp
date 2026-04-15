@@ -69,6 +69,24 @@ namespace server
                 session->getSnapshot().debug_print();
                 session->setJoinable(true);
             }
+            else {
+                const nlohmann::json j = data.at("payload");
+                core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(j.dump());
+                if (type == "update_add" || type == "update_edit") {
+                    std::cout << "Update of type: " << type << "\n";
+                    session->addOrEditSnapshot(obj);
+                }
+                else if (type == "update_delete") {
+                    std::cout << "Deleting object...\n";
+                    session->deleteFromSnapshot(obj);
+                }
+
+                for (const auto& [key, val] : session->getConnectedClients()) {
+                    if (channel != key) {
+                        key->send(msg);
+                    }
+                }
+            }
         };
         ws.onclose = [](const WebSocketChannelPtr& channel) {
             std::cout << "WebSocket client disconnected\n";
