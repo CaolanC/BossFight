@@ -42,10 +42,10 @@ class Scene
 public:
     // Todo, scene should be passed in a registry we've already initialized because think of how important some of this is like keyboard, mouse state, it might be able to keep the mesh manager and shader program manager, model manager.
 
-     Scene(core::MeshManager const& manager, core::ModelManager const& model_manager, bool loadPopulatedScene = true) :
+     Scene(core::MeshManager const& manager, core::ModelManager const& model_manager) :
             mesh_manager(manager),
             model_manager(model_manager)
-         {
+     {
         // spawn_default_camera();
         // spawn_triangle();
          // spawn_from_generator(generator::GridPlane);

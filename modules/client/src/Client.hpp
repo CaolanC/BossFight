@@ -21,7 +21,7 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip, bool is_host, int input_port = 0,bool owns_window, InputMode input_mode = InputMode::Client);
+        Client(std::string name, std::string server_ip, bool is_host, bool owns_window, int input_port = 0, InputMode input_mode = InputMode::Client);
         bool start(std::string server_ip2);
         Client(std::string name, std::string server_ip, bool owns_window, InputMode input_mode = InputMode::Client);
         void set_input_state(const bool* k_state);
@@ -35,7 +35,7 @@ namespace client {
         bool is_editor;
         bool is_host;
         int input_port;
-        void start_main_loop(int w, int h);
+        bool start_main_loop(int w, int h);
         bool owns_window;
         std::string name;
         std::optional<Platform::Window> window;
@@ -53,7 +53,7 @@ namespace client {
         void init_embedded();
 
         InputMode input_mode;
-
+        std::string server_ip;
         unsigned int framebuffer = 0;
         unsigned int color_texture = 0;
         unsigned int depth_rbo = 0;

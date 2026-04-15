@@ -10,19 +10,21 @@
 #include <JSONHelper.hpp>
 
 namespace client {
-    Client::Client(std::string name, std::string server_ip, bool owns_window, InputMode input_mode, bool is_host, int input_port)
+
+    Client::        Client(std::string name, std::string server_ip, bool is_host, bool owns_window, int input_port, InputMode input_mode)
         :   name(name),
             owns_window(owns_window),
             input_mode(input_mode),
             is_host(is_host),
             input_port(input_port),
-            scene(mesh_manager, model_manager, is_host)
+            scene(mesh_manager, model_manager),
+            server_ip(server_ip)
     {
         client_id = xg::newGuid();
         if (owns_window) {
             window.emplace(name.c_str(), 1920, 1080);
         }
-        request_join(server_ip);
+        // request_join(server_ip);
     }
 
     bool Client::start(std::string server_ip2) {
@@ -56,7 +58,7 @@ namespace client {
     }
 
     void Client::run(int w, int h) {
-        start_main_loop(w, h);
+        bool started = start_main_loop(w, h);
     }
 
     void Client::InitSDL() {
@@ -66,39 +68,29 @@ namespace client {
     void Client::init_embedded() {
         if (bootstrapped) return;
 
-        scene.bootstrap();
+        scene.bootstrap(is_host);
         scene.set_camera_position(glm::vec3(0, 0, 1));
         bootstrapped = true;
     }
 
-    void Client::start_main_loop(int w, int h) {
-        scene.bootstrap();
+    bool Client::start_main_loop(int w, int h) {
+        init_embedded();
+        if (!start(server_ip)) {
+            return false;
+        };
         glViewport(0, 0, w, h);
 
         bool quit = false;
         SDL_Event event;
-        // run_init_scripts(std::ref(scene));
-        scene.set_camera_position(glm::vec3(0, 0, 1));
-        while (!quit) {
-            begin_input_frame();
 
+        while (!quit) {
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {
                     case SDL_EVENT_QUIT:
                         quit = true;
                         break;
                 }
-
-                process_input_event(event);
             }
-
-            std::string msg;
-            bool gotmsg = net_client.pollMessage(msg);
-            if (gotmsg) {
-                handle_incoming_message(msg);
-            }
-
-            end_input_frame();
 
             glViewport(0, 0, w, h);
             glEnable(GL_DEPTH_TEST);
@@ -113,6 +105,7 @@ namespace client {
             if (window) {
                 window->swap();
             }
+            return true;
         }
     }
 
@@ -174,7 +167,7 @@ namespace client {
         hv::HttpClient cli;
         HttpRequest req;
         req.method = HTTP_GET;
-        req.url = ip + "/join";
+        req.url = ip + "/create_session";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
         req.timeout = 10;
@@ -316,5 +309,21 @@ namespace client {
 
     InputMode Client::get_input_mode() const {
         return input_mode;
+    }
+
+    bool Client::connect_client(int port) {
+        for (int i = 0; i < 20; ++i) {
+            if (net_client.is_connected()) {
+                return true;
+            }
+
+            if (!net_client.is_connecting()) {
+                net_client.connect(port);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        }
+
+        return net_client.is_connected();
     }
 }
