@@ -10,7 +10,7 @@
 #include <entt/entt.hpp>
 
 #include "EntityManager.hpp"
-#include "component/Core.hpp"
+#include <component/Core.hpp>
 #include "spawn/Spawn.hpp"
 #include "systems/Render.hpp"
 #include <core/MeshManager.hpp>
@@ -29,6 +29,8 @@
 
 #include "systems/Init.hpp"
 #include <core/ModelManager.hpp>
+#include <systems/MeshLoading.hpp>
+#include <rendering/Model.hpp>
 
 #include "systems/Debug.hpp"
 
@@ -58,7 +60,7 @@ public:
          SceneSerializer sceneserializer = SceneSerializer();
 
          if (loadPopulatedScene) {
-             bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot);
+             bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot, object_lookup);
              if (initialized) {
                  initial_snapshot.debug_print();
              }
@@ -179,8 +181,53 @@ public:
         return initial_snapshot;
     }
 
+    // Functions called from client's netclient msg handler
+
     void guest_init(SceneSnapshot& snapshot) {
-        bool guest_initialized = systems::Init_from_snapshot(registry, snapshot);
+        bool guest_initialized = systems::Init_from_snapshot(registry, snapshot, object_lookup);
+    }
+
+    bool add_obj(SerializedObject& obj) {
+        auto& model_m = registry.ctx().get<component::model_manager>().manager;
+        std::vector<core::ShaderSource> shader_sources = {
+            core::sh_src::v3D(),
+            core::sh_src::fSolid()
+        };
+        ShaderProgramHandle program = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
+
+        if (!(model_m.check_ref(obj.model_ref))) {
+            rendering::Model m = systems::LoadModel(registry, obj.model_path);
+            model_m.add_model(m, obj.model_ref);
+        }
+
+        auto model_e = spawn::model(registry, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+        object_lookup[obj.objectID] = model_e;
+
+        return true;
+    }
+
+    bool edit_obj(SerializedObject& obj) {
+        auto e = registry_lookup(obj.objectID);
+        auto& pos = registry.get<shared::component::position>(e);
+        auto& rot = registry.get<shared::component::rotation>(e);
+        auto& scale = registry.get<component::scale>(e);
+        pos = obj.position;
+        rot = obj.rotation;
+        scale.s = obj.scale;
+
+        return true;
+    }
+
+    bool delete_obj(SerializedObject& obj) {
+        auto e = registry_lookup(obj.objectID);
+        object_lookup.erase(obj.objectID);
+        registry.destroy(e);
+
+        return true;
+    }
+
+    entt::entity registry_lookup(const std::string& enttid) {
+        return object_lookup.at(enttid);
     }
 
 private:
@@ -189,6 +236,7 @@ private:
     core::ModelManager const& model_manager;
     unsigned int FBO;
     SceneSnapshot initial_snapshot;
+    std::unordered_map<std::string, entt::entity> object_lookup;
 };
 
 }

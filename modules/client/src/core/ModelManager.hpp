@@ -23,7 +23,13 @@ namespace core {
         rendering::Model get_model(ModelHandle id) {
             return model_map.at(id);
         }
+
+        bool check_ref(xg::Guid ref) {
+            return model_map.contains(ref);
+        }
+
     private:
         std::map<ModelHandle, rendering::Model> model_map;
+        std::unordered_map<std::string, ModelHandle> path_to_model;
     };
 }

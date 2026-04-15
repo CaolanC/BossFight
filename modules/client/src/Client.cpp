@@ -153,6 +153,17 @@ void Client::enter_editor(int w, int h) {
                 scene.guest_init(snapshot);
             }
         }
+        else {
+            if (type == "update_add") {
+
+            }
+            else if (type == "update_edit") {
+
+            }
+            else if (type == "update_delete") {
+
+            }
+        }
     }
 
     bool Client::request_create_session(std::string const& ip, int& ws_port) {

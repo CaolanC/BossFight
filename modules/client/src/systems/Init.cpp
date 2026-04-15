@@ -50,7 +50,7 @@ namespace systems {
         return true;
     }
 
-    bool Init_from_file(entt::registry& r, const std::string& path, core::SceneSerializer& scene_serializer, core::SceneSnapshot& snapshot) {
+    bool Init_from_file(entt::registry& r, const std::string& path, core::SceneSerializer& scene_serializer, core::SceneSnapshot& snapshot, std::unordered_map<std::string, entt::entity>& object_lookup) {
         // Same code as above but changed to work from a file
         auto& model_m = r.ctx().get<component::model_manager>().manager;
 
@@ -69,7 +69,8 @@ namespace systems {
                     par_shapes_mesh* k_par_m = par_shapes_create_trefoil_knot(100, 100, 1);
                     rendering::Model sphere_m = LoadModel(r, *par_m);
                     auto const sphere_h = model_m.add_model(sphere_m, obj.model_ref);
-                    spawn::model(r, sphere_h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                    entt::entity e = spawn::model(r, sphere_h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                    object_lookup[obj.objectID] = e;
                 }
                 else if (obj.model_path == "none") {
                     rendering::Model model = rendering::Model();
@@ -83,23 +84,30 @@ namespace systems {
                     node.mesh.add_primitive(rendering::pr_lines(v));
                     model.root_nodes.push_back(node);
                     ModelHandle const lh = model_m.add_model(model, obj.model_ref);
-                    spawn::model(r, lh, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                    entt::entity e = spawn::model(r, lh, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                    object_lookup[obj.objectID] = e;
                 }
                 else {
                     rendering::Model m = LoadModel(r, obj.model_path);
                     ModelHandle h = model_m.add_model(m, obj.model_ref);
                     auto model_e = spawn::model(r, h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
                     r.emplace<component::debug_spin>(model_e, 0.2f);
+                    object_lookup[obj.objectID] = model_e;
                 }
 
             }
+
+            for (const auto& [key, obj] : object_lookup) {
+                std::cout << key << ": " << r.get<component::model_path>(obj).value << "\n";
+            }
+
             return true;
         }
 
         return false;
     }
 
-    bool Init_from_snapshot(entt::registry& r, core::SceneSnapshot& snapshot) {
+    bool Init_from_snapshot(entt::registry& r, core::SceneSnapshot& snapshot, std::unordered_map<std::string, entt::entity>& object_lookup) {
 
         auto& model_m = r.ctx().get<component::model_manager>().manager;
 
@@ -116,7 +124,8 @@ namespace systems {
                 par_shapes_mesh* k_par_m = par_shapes_create_trefoil_knot(100, 100, 1);
                 rendering::Model sphere_m = LoadModel(r, *par_m);
                 auto const sphere_h = model_m.add_model(sphere_m, obj.model_ref);
-                spawn::model(r, sphere_h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                entt::entity e = spawn::model(r, sphere_h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                object_lookup[obj.objectID] = e;
             }
             else if (obj.model_path == "none") {
                 rendering::Model model = rendering::Model();
@@ -130,13 +139,15 @@ namespace systems {
                 node.mesh.add_primitive(rendering::pr_lines(v));
                 model.root_nodes.push_back(node);
                 ModelHandle const lh = model_m.add_model(model, obj.model_ref);
-                spawn::model(r, lh, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                entt::entity e = spawn::model(r, lh, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                object_lookup[obj.objectID] = e;
             }
             else {
                 rendering::Model m = LoadModel(r, obj.model_path);
                 ModelHandle h = model_m.add_model(m, obj.model_ref);
                 auto model_e = spawn::model(r, h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
                 r.emplace<component::debug_spin>(model_e, 0.2f);
+                object_lookup[obj.objectID] = model_e;
             }
 
         }
