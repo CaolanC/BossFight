@@ -76,52 +76,57 @@ namespace client {
 
     bool Client::start_main_loop(int w, int h) {
         init_embedded();
+        if (start(server_ip)) {
+            glViewport(0, 0, w, h);
 
-        if (!start(server_ip)) {
-            return false;
-        }
+            bool quit = false;
+            SDL_Event event;
 
-        bool quit = false;
-        SDL_Event event;
+            while (!quit) {
+                begin_input_frame();
 
-        while (!quit) {
-            begin_input_frame();
+                while (SDL_PollEvent(&event)) {
+                    switch (event.type) {
+                        case SDL_EVENT_QUIT:
+                            quit = true;
+                            break;
+                    }
 
-            while (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                    case SDL_EVENT_QUIT:
-                        quit = true;
-                        break;
+                    process_input_event(event);
                 }
 
-                process_input_event(event);
+                end_input_frame();
+
+                int draw_w = w;
+                int draw_h = h;
+
+                if (window) {
+                    SDL_GetWindowSizeInPixels(window->get_window(), &draw_w, &draw_h);
+                }
+
+                glViewport(0, 0, draw_w, draw_h);
+                glEnable(GL_DEPTH_TEST);
+                glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                std::string msg;
+                while (net_client.pollMessage(msg)) {
+                    handle_incoming_message(msg);
+                }
+
+                update();
+
+                entt::registry& r = scene.getRegistry();
+                systems::Render(r, draw_w, draw_h);
+
+                if (window) {
+                    window->swap();
+                }
+
             }
 
-            end_input_frame();
-
-            int draw_w = w;
-            int draw_h = h;
-
-            if (window) {
-                SDL_GetWindowSizeInPixels(window->get_window(), &draw_w, &draw_h);
-            }
-
-            glViewport(0, 0, draw_w, draw_h);
-            glEnable(GL_DEPTH_TEST);
-            glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            update();
-
-            entt::registry& r = scene.getRegistry();
-            systems::Render(r, draw_w, draw_h);
-
-            if (window) {
-                window->swap();
-            }
+            return true;
         }
-
-        return true;
     }
 
     // void Client::set_input_statsse(const bool* k_state) {
