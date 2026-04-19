@@ -89,3 +89,6 @@ set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+
+add_executable(GUI apps/gui/main.cpp)
+target_link_libraries(GUI PRIVATE GuiLib)

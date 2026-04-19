@@ -10,20 +10,28 @@
 #include <SharedComponents.hpp>
 
 namespace systems {
-    void NewRender(entt::registry& reg, bool to_framebuffer, unsigned int FBO) {
-        GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+    void Render(entt::registry& reg, int viewport_width, int viewport_height) {
+        // GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+        // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient); // TODO: Add an ambient lighting shader if we haven't adready.
         auto& model_manager = reg.ctx().get<component::model_manager>().manager;
         auto& material_mgr  = reg.ctx().get<component::material_manager>().manager;
 
+        float aspect = 1.0f;
+        if (viewport_height > 0) {
+            aspect = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
+        }
+
         glm::mat4 projection = glm::perspective(
             glm::radians(60.0f),
-            static_cast<float>(INIT_SCREEN_WIDTH) / static_cast<float>(INIT_SCREEN_HEIGHT),
-            0.1f, 1000.0f // (near=0.1 avoids bad depth precision)
+            aspect,
+            0.1f,
+            1000.0f
         );
             auto& curr_cam = reg.ctx().get<component::current_camera>();
-        glm::mat4 view_matrix = glm::inverse(reg.get<shared::component::transform>(curr_cam.e));
-            glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e);
+        glm::mat4 view_matrix = glm::inverse(
+            reg.get<shared::component::transform>(curr_cam.e)
+        );
+        glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
 
         auto view = reg.view<component::model_ref, component::mat_ref, shared::component::transform>();
 

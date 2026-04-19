@@ -15,9 +15,6 @@
 #include "systems/Render.hpp"
 #include <core/MeshManager.hpp>
 #include <core/sh_src.hpp>
-#include <core/SceneSnapshot.hpp>
-#include <core/SerializedObject.hpp>
-#include <core/SceneSerializer.hpp>
 
 #include <core/ShaderProgramManager.hpp>
 
@@ -38,9 +35,10 @@ namespace core
 class Scene
 {
 public:
+    // Todo, scene should be passed in a registry we've already initialized because think of how important some of this is like keyboard, mouse state, it might be able to keep the mesh manager and shader program manager, model manager.
 
      Scene(core::MeshManager const& manager, core::ModelManager const& model_manager, bool loadPopulatedScene = true) : mesh_manager(manager), model_manager(model_manager) {
-         bootstrap(loadPopulatedScene);
+         bootstrap(loadPopulatedScene),
         // spawn_default_camera();
         // spawn_triangle();
          // spawn_from_generator(generator::GridPlane);
@@ -64,6 +62,11 @@ public:
              }
          }
      }
+
+    entt::registry& getRegistry() {
+         return registry;
+     }
+
 
     entt::entity spawn_default_camera() {
         return spawn(spawn::freecam);
@@ -119,7 +122,7 @@ public:
 
     void set_camera_position(glm::vec3 position) {
         auto &pos = registry.get<shared::component::position>(registry.ctx().get<component::current_camera>().e);
-        pos = position;
+        pos.value = position;
     }
 
     // entt::registry& get_registry() { // Used for run_init_scripts, might be useful to refactor this later.
@@ -129,16 +132,14 @@ public:
     void update() {
 
          auto r = std::ref(registry);
-         systems::GatherUserInput(r);
+         // systems::GatherUserInput(r);
          systems::UserControl(r);
          systems::Transform(r);
-         systems::NewRender(r, true, FBO);
+         // systems::NewRender(r, true, FBO);
          systems::Debug(r);
-    }
-
-    unsigned int get_fbo() {
-         return FBO;
-     };
+    } // TODO: Move the render system out of here and finally rename it, maybe gather userinput needs moved need to check it's implementation tU.
+      // Who needs to own what?
+      //
 
     const SceneSnapshot build_snapshot() {
         SceneSnapshot snapshot;
@@ -183,7 +184,6 @@ private:
     entt::registry registry;
     core::MeshManager const& mesh_manager;
     core::ModelManager const& model_manager;
-    unsigned int FBO;
     SceneSnapshot initial_snapshot;
 };
 
