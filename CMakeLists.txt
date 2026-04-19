@@ -56,6 +56,11 @@ if(NOT TARGET ${SDL_TARGET})
     endif()
 endif()
 
+set_target_properties(hv PROPERTIES
+        IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/lib/libhv.dll.a"
+        IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bin/libhv.dll"
+)
+
 set(EXTRA_M_LIB)
 if(UNIX AND NOT APPLE)
     set(EXTRA_M_LIB m)
@@ -66,8 +71,16 @@ set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 target_link_libraries(Server PRIVATE ServerLib SharedLib concurrentqueue EnTT::EnTT hv crossguid glm::glm)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
+add_executable(Client apps/client/main.cpp)
+
+set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
+target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
+target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+
 add_executable(GUI apps/gui/main.cpp)
-target_link_libraries(GUI PRIVATE GuiLib)
+target_link_libraries(GUI PRIVATE GuiLib glad ClientLib)
+set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
 if (WIN32)
     add_custom_command(TARGET Server POST_BUILD
@@ -78,17 +91,13 @@ if (WIN32)
     )
     add_custom_command(TARGET GUI POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:GUI>
+            "${CMAKE_SOURCE_DIR}/bin/libhv.dll"
             $<TARGET_FILE_DIR:GUI>
+    )
+    add_custom_command(TARGET Client POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:Client>
+            $<TARGET_FILE_DIR:Client>
             COMMAND_EXPAND_LISTS
     )
 endif()
-add_executable(Client apps/client/main.cpp)
-
-set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
-target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
-target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-
-add_executable(GUI apps/gui/main.cpp)
-target_link_libraries(GUI PRIVATE GuiLib)

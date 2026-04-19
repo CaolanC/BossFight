@@ -58,13 +58,13 @@ namespace client {
     void Client::init_embedded() {
         if (bootstrapped) return;
 
-        scene.bootstrap();
+        scene.bootstrap(true);
         scene.set_camera_position(glm::vec3(0, 0, 1));
         bootstrapped = true;
     }
 
     void Client::start_main_loop(int w, int h) {
-        scene.bootstrap();
+        init_embedded();
         glViewport(0, 0, w, h);
 
         bool quit = false;

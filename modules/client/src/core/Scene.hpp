@@ -38,7 +38,7 @@ public:
     // Todo, scene should be passed in a registry we've already initialized because think of how important some of this is like keyboard, mouse state, it might be able to keep the mesh manager and shader program manager, model manager.
 
      Scene(core::MeshManager const& manager, core::ModelManager const& model_manager, bool loadPopulatedScene = true) : mesh_manager(manager), model_manager(model_manager) {
-         bootstrap(loadPopulatedScene),
+         // bootstrap(loadPopulatedScene);
         // spawn_default_camera();
         // spawn_triangle();
          // spawn_from_generator(generator::GridPlane);
@@ -47,7 +47,7 @@ public:
     void bootstrap(bool loadPopulatedScene) {
          int no_keys;
          const bool* k_state = SDL_GetKeyboardState(&no_keys);
-         registry.ctx().emplace<component::keyboard_state>(k_state, no_keys);
+         registry.ctx().emplace<component::keyboard_state>();
          registry.ctx().emplace<component::mouse_state>(0.0f, 0.0f);
          registry.ctx().emplace<component::current_camera>(spawn_default_camera());
          registry.ctx().emplace<component::mesh_manager>(mesh_manager);
@@ -165,7 +165,7 @@ public:
             obj.objectID = id.value;
             obj.model_ref = ref.id;
             obj.model_path = path.value;
-            obj.position = pos;
+            obj.position = pos.value;
             obj.rotation = rot;
             obj.scale = scl.s;
 
