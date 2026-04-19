@@ -66,12 +66,26 @@ set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 target_link_libraries(Server PRIVATE ServerLib SharedLib concurrentqueue EnTT::EnTT hv crossguid glm::glm)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
+add_executable(GUI apps/gui/main.cpp)
+target_link_libraries(GUI PRIVATE GuiLib)
+
+if (WIN32)
+    add_custom_command(TARGET Server POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:Server>
+            $<TARGET_FILE_DIR:Server>
+            COMMAND_EXPAND_LISTS
+    )
+    add_custom_command(TARGET GUI POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:GUI>
+            $<TARGET_FILE_DIR:GUI>
+            COMMAND_EXPAND_LISTS
+    )
+endif()
 add_executable(Client apps/client/main.cpp)
 
 set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-
-add_executable(GUI apps/gui/main.cpp)
-target_link_libraries(GUI PRIVATE GuiLib)

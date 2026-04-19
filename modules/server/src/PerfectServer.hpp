@@ -11,13 +11,13 @@
 
 #include <hv/WebSocketServer.h>
 #include <thread>
-#include <Session.hpp>
 
 namespace server
 {
+    class Session;
     class PerfectServer {
     public:
-        PerfectServer(int port);
+        explicit PerfectServer(int port);
         ~PerfectServer();
 
         void setPort(int p);
