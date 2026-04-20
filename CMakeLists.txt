@@ -45,6 +45,7 @@ add_subdirectory(modules/server)
 add_subdirectory(modules/shared)
 add_subdirectory(modules/client)
 add_subdirectory(modules/gui)
+add_subdirectory(modules/editor)
 
 if(NOT TARGET ${SDL_TARGET})
     if(TARGET SDL3::SDL3)
@@ -79,7 +80,7 @@ target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 
 add_executable(GUI apps/gui/main.cpp)
-target_link_libraries(GUI PRIVATE GuiLib glad ClientLib)
+target_link_libraries(GUI PUBLIC GuiLib glad  EditorLib ClientLib)
 set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
 if (WIN32)

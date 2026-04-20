@@ -3,13 +3,13 @@ file(GLOB_RECURSE CLIENT_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_library(ClientLib ${CLIENT_SOURCES})
-target_include_directories(ClientLib
+add_library(EditorLib ${CLIENT_SOURCES})
+target_include_directories(EditorLib
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-target_link_libraries(ClientLib
+target_link_libraries(EditorLib
         PUBLIC
         tinygltf
         glad
@@ -22,4 +22,6 @@ target_link_libraries(ClientLib
         concurrentqueue
         SharedLib
         nlohmann_json
+        imgui
+        ClientLib
 )
