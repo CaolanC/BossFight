@@ -288,6 +288,29 @@ namespace client {
                 if (event.key.scancode < SDL_SCANCODE_COUNT) {
                     kb.down[event.key.scancode] = true;
                 }
+                if (event.key.scancode == SDL_SCANCODE_U) {
+                    if (is_host) {
+                        auto e = scene.registry_lookup("32033ec4-648a-4aba-a4cf-e943651aaa35");
+                        auto& pos = r.get<shared::component::position>(e);
+                        auto& rot = r.get<shared::component::rotation>(e);
+                        auto& scale = r.get<component::scale>(e);
+                        auto& id = r.get<component::object_id>(e);
+                        auto& model_ref = r.get<component::model_ref>(e);
+                        auto& model_path = r.get<component::model_path>(e);
+
+                        core::SerializedObject obj;
+                        obj.objectID = id.value;
+                        obj.model_ref = model_ref.id;
+                        obj.model_path = model_path.value;
+                        obj.position = glm::vec3(10.0f, 0.0f, 0.0f);
+                        obj.rotation = rot;
+                        obj.scale = scale.s;
+
+                        scene.edit_obj(obj);
+                        auto msg = shared::JSONHelper::make_update_message("edit", obj);
+                        net_client.send(msg);
+                    }
+                }
                 break;
 
             case SDL_EVENT_KEY_UP:

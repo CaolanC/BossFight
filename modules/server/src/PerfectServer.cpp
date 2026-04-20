@@ -5,6 +5,7 @@
 #include "Session.hpp"
 #include <JSONHelper.hpp>
 #include <SceneSnapshot.hpp>
+#include <vector>
 
 namespace server
 {
@@ -36,6 +37,7 @@ namespace server
         ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
             std::cout << "WebSocket client connected\n";
         };
+
         ws.onmessage = [this](const WebSocketChannelPtr& channel, const std::string& msg) {
             nlohmann::json data = nlohmann::json::parse(msg);
             std::string type = data.at("type").get<std::string>();
@@ -66,30 +68,35 @@ namespace server
                 const nlohmann::json j = data.at("payload");
                 core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
                 session->setSnapshot(snapshot);
-                session->getSnapshot().debug_print();
+                session->debugPrintSnapshot();
                 session->setJoinable(true);
             }
             else {
                 const nlohmann::json j = data.at("payload");
                 core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(j.dump());
-                if (type == "update_add" || type == "update_edit") {
-                    std::cout << "Update of type: " << type << "\n";
-                    session->addOrEditSnapshot(obj);
+                if (type == "update_add") {
+                    std::cout << "Adding object...\n";
+                    session->addSnapshot(obj);
+                }
+                else if (type == "update_edit") {
+                    std::cout << "Editing object...\n";
+                    session->editSnapshot(obj);
                 }
                 else if (type == "update_delete") {
                     std::cout << "Deleting object...\n";
                     session->deleteFromSnapshot(obj);
                 }
 
-                for (const auto& [key, val] : session->getConnectedClients()) {
-                    if (channel != key) {
-                        key->send(msg);
-                    }
+                auto recipients = session->getClientsExcept(channel);
+                for (const auto& recipient : recipients) {
+                    recipient->send(msg);
                 }
             }
         };
-        ws.onclose = [](const WebSocketChannelPtr& channel) {
+
+        ws.onclose = [this](const WebSocketChannelPtr& channel) {
             std::cout << "WebSocket client disconnected\n";
+            session->removeClient(channel);
         };
 
         ws_server = hv::WebSocketServer(&ws);

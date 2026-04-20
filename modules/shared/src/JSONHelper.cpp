@@ -91,14 +91,14 @@ namespace shared {
     core::SceneSnapshot JSONHelper::deserialize_snapshot_string(const std::string& msg) {
         nlohmann::json j = nlohmann::json::parse(msg);
         std::cout << j;
-        return deserialize_snapshot(j);
+        return shared::JSONHelper::deserialize_snapshot(j);
     }
 
     core::SceneSnapshot JSONHelper::deserialize_snapshot(const nlohmann::json& j) {
         core::SceneSnapshot snapshot;
 
         for (auto& [id, value] : j["objects"].items()) {
-            core::SerializedObject obj = deserialize_object(value);
+            core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
             snapshot.insert(id, obj);
         }
 
@@ -107,7 +107,7 @@ namespace shared {
 
     void JSONHelper::deserialize_snapshot_pointer(const nlohmann::json& j, core::SceneSnapshot& snapshot) {
         for (auto& [id, value] : j["objects"].items()) {
-            core::SerializedObject obj = deserialize_object(value);
+            core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
             snapshot.insert(id, obj);
         }
     }
