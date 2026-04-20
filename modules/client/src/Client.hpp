@@ -61,15 +61,15 @@ namespace client {
 
         int framebuffer_width = 0;
         int framebuffer_height = 0;
+        void begin_input_frame();
+        void process_input_event(const SDL_Event& event);
+        void end_input_frame();
 
     private:
         NetClient net_client;
         xg::Guid client_id;
         //void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
         void update();
-        void begin_input_frame();
-        void process_input_event(const SDL_Event& event);
-        void end_input_frame();
 
         void set_input_mode(InputMode mode);
         InputMode get_input_mode() const;
