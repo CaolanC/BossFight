@@ -2,8 +2,8 @@
 // Created by ethan on 31/03/2026.
 //
 
-#include <core/SceneSnapshot.hpp>
-#include <core/SerializedObject.hpp>
+#include <SceneSnapshot.hpp>
+#include <SerializedObject.hpp>
 
 namespace core{
     SceneSnapshot::SceneSnapshot() {
@@ -11,6 +11,10 @@ namespace core{
 
     void SceneSnapshot::insert(const std::string& objectID, const SerializedObject& object) {
         object_map[objectID] = object;
+    }
+
+    void SceneSnapshot::delete_object(const std::string& objectID) {
+        object_map.erase(objectID);
     }
 
     SerializedObject* SceneSnapshot::find(const std::string& object_id) {

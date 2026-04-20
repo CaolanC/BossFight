@@ -11,10 +11,15 @@
 
 #include <hv/WebSocketServer.h>
 #include <thread>
+#include <nlohmann/json.hpp>
+#include <ClientInfo.hpp>
+
+namespace server {
+    class Session;
+}
 
 namespace server
 {
-    class Session;
     class PerfectServer {
     public:
         explicit PerfectServer(int port);

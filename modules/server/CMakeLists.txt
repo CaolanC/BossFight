@@ -3,7 +3,8 @@ file(GLOB_RECURSE SERVER_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
 )
 
-add_library(ServerLib ${SERVER_SOURCES})
+add_library(ServerLib ${SERVER_SOURCES}
+        src/ClientInfo.hpp)
 target_include_directories(ServerLib
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
@@ -16,4 +17,5 @@ target_link_libraries(ServerLib
         concurrentqueue
         hv
         EnTT::EnTT
+        nlohmann_json
 )

@@ -7,31 +7,37 @@
 #include <core/Scene.hpp>
 #include <hv/HttpClient.h>
 #include <Client.hpp>
+#include <JSONHelper.hpp>
 
 namespace client {
-    Client::Client(std::string name, std::string server_ip, bool is_editor, bool is_host, int input_port, bool owns_window, InputMode input_mode)
-    :   name(name),
-        owns_window(owns_window),
-        input_mode(input_mode),
-        is_editor(is_editor),
-        is_host(is_host),
-        input_port(input_port),
-        scene(mesh_manager, model_manager, is_host)
+
+    Client::        Client(std::string name, std::string server_ip, bool is_host, bool owns_window, int input_port, InputMode input_mode)
+        :   name(name),
+            owns_window(owns_window),
+            input_mode(input_mode),
+            is_host(is_host),
+            input_port(input_port),
+            scene(mesh_manager, model_manager),
+            server_ip(server_ip)
     {
+        client_id = xg::newGuid();
         if (owns_window) {
             window.emplace(name.c_str(), 1920, 1080);
         }
+        // request_join(server_ip);
     }
 
     bool Client::start(std::string server_ip2) {
         if (is_host){
             int ws_port = 0;
             if (request_create_session(server_ip2, ws_port)) {
-                std::cout << "Creating session on " << ws_port << "\n";
+                std::cout << "Created session on " << ws_port << "\n";
                 if (connect_client(ws_port)) {
+                    net_client.send(shared::JSONHelper::make_handshake(client_id, true));
                     return true;
                 }
                 else {
+                    std::cout << "Failed to connect to sws on port " << ws_port << ".\n";
                     return false;
                 }
             }
@@ -42,6 +48,7 @@ namespace client {
         else {
             if (connect_client(30001)) {
                 std::cout << "Connected to client on port 30001\n";
+                net_client.send(shared::JSONHelper::make_handshake(client_id, false));
                 return true;
             }
             else {
@@ -51,58 +58,78 @@ namespace client {
         }
     }
 
-    void Client::run(int w, int h) {
-        start_main_loop(w, h);
+    void Client::run() {
+        bool started = start_main_loop(0, 0);
+    }
+
+    void Client::InitSDL() {
+
     }
 
     void Client::init_embedded() {
         if (bootstrapped) return;
 
-        scene.bootstrap(true);
+        scene.bootstrap(is_host);
         scene.set_camera_position(glm::vec3(0, 0, 1));
         bootstrapped = true;
     }
 
-    void Client::start_main_loop(int w, int h) {
+    bool Client::start_main_loop(int w, int h) {
         init_embedded();
-        glViewport(0, 0, w, h);
+        if (start(server_ip)) {
+            glViewport(0, 0, w, h);
 
-        bool quit = false;
-        SDL_Event event;
-        // run_init_scripts(std::ref(scene));
-        scene.set_camera_position(glm::vec3(0, 0, 1));
-        while (!quit) {
-            begin_input_frame();
+            bool quit = false;
+            SDL_Event event;
 
-            while (SDL_PollEvent(&event)) {
-                switch (event.type) {
-                    case SDL_EVENT_QUIT:
-                        quit = true;
-                        break;
+            while (!quit) {
+                begin_input_frame();
+
+                while (SDL_PollEvent(&event)) {
+                    switch (event.type) {
+                        case SDL_EVENT_QUIT:
+                            quit = true;
+                            break;
+                    }
+
+                    process_input_event(event);
                 }
 
-                process_input_event(event);
+                end_input_frame();
+
+                int draw_w = w;
+                int draw_h = h;
+
+                if (window) {
+                    SDL_GetWindowSizeInPixels(window->get_window(), &draw_w, &draw_h);
+                }
+
+                glViewport(0, 0, draw_w, draw_h);
+                glEnable(GL_DEPTH_TEST);
+                glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                std::string msg;
+                while (net_client.pollMessage(msg)) {
+                    handle_incoming_message(msg);
+                }
+
+                update();
+
+                entt::registry& r = scene.getRegistry();
+                systems::Render(r, draw_w, draw_h);
+
+                if (window) {
+                    window->swap();
+                }
+
             }
 
-            end_input_frame();
-
-            glViewport(0, 0, w, h);
-            glEnable(GL_DEPTH_TEST);
-            glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            update();
-
-            entt::registry& r = scene.getRegistry();
-            systems::Render(r, w, h);
-
-            if (window) {
-                window->swap();
-            }
+            return true;
         }
     }
 
-    // void Client::set_input_state(const bool* k_state) {
+    // void Client::set_input_statsse(const bool* k_state) {
     //     entt::registry& r = scene.getRegistry();
     //
     //     auto& kb = r.ctx().get<component::keyboard_state>();
@@ -112,7 +139,7 @@ namespace client {
     // }
 
     void Client::update() {
-        init_embedded();
+        // init_embedded();
 
         entt::registry& r = scene.getRegistry();
 
@@ -124,6 +151,38 @@ namespace client {
         systems::Debug(r);
     }
 
+    void Client::handle_incoming_message(std::string& msg) {
+        nlohmann::json message = nlohmann::json::parse(msg);
+        std::string type = message.at("type").get<std::string>();
+
+        if (type == "handshake_ack") {
+            std::cout << "Handshake acknowledged. Sending snapshot.\n";
+            net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+        }
+        else if (type == "snapshot") {
+            if (!is_host) {
+                std::cout << "Snapshot received. Preparing to initialize...\n";
+                nlohmann::json message_payload = message.at("payload");
+                std::cout << message_payload.dump() << "\n";
+                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
+                scene.guest_init(snapshot);
+            }
+        }
+        else {
+            nlohmann::json message_payload = message.at("payload");
+            core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
+            if (type == "update_add") {
+                bool ok = scene.add_obj(obj);
+            }
+            else if (type == "update_edit") {
+                bool ok = scene.edit_obj(obj);
+            }
+            else if (type == "update_delete") {
+                bool ok = scene.delete_obj(obj);
+            }
+        }
+    }
+
     bool Client::request_create_session(std::string const& ip, int& ws_port) {
         hv::HttpClient cli;
         HttpRequest req;
@@ -131,7 +190,7 @@ namespace client {
         req.url = ip + "/create_session";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
-        req.timeout = 5;
+        req.timeout = 10;
         HttpResponse resp;
         int ret = cli.send(&req, &resp);
         if (ret != 0 || resp.status_code != 200) {
@@ -151,22 +210,6 @@ namespace client {
             return status == "ok";
         }
     };
-
-    bool Client::connect_client(int port) {
-        for (int i = 0; i < 20; ++i) {
-            if (net_client.is_connected()) {
-                return true;
-            }
-
-            if (!net_client.is_connecting()) {
-                net_client.connect(port);
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        }
-
-        return net_client.is_connected();
-    }
 
     void Client::ensure_framebuffer(int w, int h) {
         if (framebuffer != 0 && framebuffer_width == w && framebuffer_height == h) {
@@ -245,6 +288,29 @@ namespace client {
                 if (event.key.scancode < SDL_SCANCODE_COUNT) {
                     kb.down[event.key.scancode] = true;
                 }
+                if (event.key.scancode == SDL_SCANCODE_U) {
+                    if (is_host) {
+                        auto e = scene.registry_lookup("32033ec4-648a-4aba-a4cf-e943651aaa35");
+                        auto& pos = r.get<shared::component::position>(e);
+                        auto& rot = r.get<shared::component::rotation>(e);
+                        auto& scale = r.get<component::scale>(e);
+                        auto& id = r.get<component::object_id>(e);
+                        auto& model_ref = r.get<component::model_ref>(e);
+                        auto& model_path = r.get<component::model_path>(e);
+
+                        core::SerializedObject obj;
+                        obj.objectID = id.value;
+                        obj.model_ref = model_ref.id;
+                        obj.model_path = model_path.value;
+                        obj.position = glm::vec3(10.0f, 0.0f, 0.0f);
+                        obj.rotation = rot;
+                        obj.scale = scale.s;
+
+                        scene.edit_obj(obj);
+                        auto msg = shared::JSONHelper::make_update_message("edit", obj);
+                        net_client.send(msg);
+                    }
+                }
                 break;
 
             case SDL_EVENT_KEY_UP:
@@ -286,5 +352,21 @@ namespace client {
 
     InputMode Client::get_input_mode() const {
         return input_mode;
+    }
+
+    bool Client::connect_client(int port) {
+        for (int i = 0; i < 20; ++i) {
+            if (net_client.is_connected()) {
+                return true;
+            }
+
+            if (!net_client.is_connecting()) {
+                net_client.connect(port);
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        }
+
+        return net_client.is_connected();
     }
 }

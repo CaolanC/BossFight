@@ -24,6 +24,7 @@ namespace client
         };
 
         ws.onmessage = [this](const std::string& msg) {
+            std::cout << "repeat msg from server";
             messages.enqueue(msg);
         };
 

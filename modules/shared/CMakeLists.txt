@@ -3,7 +3,9 @@ file(GLOB_RECURSE SHARED_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
 )
 
-add_library(SharedLib ${SHARED_SOURCES})
+add_library(SharedLib ${SHARED_SOURCES}
+        src/JSONHelper.hpp
+        src/JSONHelper.cpp)
 target_include_directories(SharedLib
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
@@ -12,4 +14,6 @@ target_include_directories(SharedLib
 target_link_libraries(SharedLib
     PUBLIC
         glm::glm
+        nlohmann_json
+        crossguid
 )

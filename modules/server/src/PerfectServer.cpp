@@ -1,5 +1,12 @@
 #include <PerfectServer.hpp>
 
+#include <crossguid/guid.hpp>
+
+#include "Session.hpp"
+#include <JSONHelper.hpp>
+#include <SceneSnapshot.hpp>
+#include <vector>
+
 namespace server
 {
     PerfectServer::PerfectServer(int port) : port(port) {
@@ -30,12 +37,66 @@ namespace server
         ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
             std::cout << "WebSocket client connected\n";
         };
-        ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
-            std::cout << "WS message: " << msg << "\n";
-            channel->send(msg);
+
+        ws.onmessage = [this](const WebSocketChannelPtr& channel, const std::string& msg) {
+            nlohmann::json data = nlohmann::json::parse(msg);
+            std::string type = data.at("type").get<std::string>();
+
+            std::cout << data << "\n";
+
+            if (type == "handshake"){
+
+                std::string role = data.at("payload").at("role").get<std::string>();
+                std::string ci = data.at("payload").at("client_id").get<std::string>();
+                xg::Guid client_id(ci);
+                std::cout << client_id << "\n";
+
+                ClientInfo client_info = ClientInfo();
+                client_info.client_id = client_id;
+                client_info.role = role;
+                session->addClient(channel, client_info);
+
+                if (role == "host") {
+                    channel->send(shared::JSONHelper::make_handshake_ack());
+                }
+                else {
+                    std::cout << "Guest handshake, send snapshot\n";
+                    channel->send(shared::JSONHelper::make_snapshot_message(session->getSnapshot()));
+                }
+            }
+            else if (type == "snapshot") {
+                const nlohmann::json j = data.at("payload");
+                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
+                session->setSnapshot(snapshot);
+                session->debugPrintSnapshot();
+                session->setJoinable(true);
+            }
+            else {
+                const nlohmann::json j = data.at("payload");
+                core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(j.dump());
+                if (type == "update_add") {
+                    std::cout << "Adding object...\n";
+                    session->addSnapshot(obj);
+                }
+                else if (type == "update_edit") {
+                    std::cout << "Editing object...\n";
+                    session->editSnapshot(obj);
+                }
+                else if (type == "update_delete") {
+                    std::cout << "Deleting object...\n";
+                    session->deleteFromSnapshot(obj);
+                }
+
+                auto recipients = session->getClientsExcept(channel);
+                for (const auto& recipient : recipients) {
+                    recipient->send(msg);
+                }
+            }
         };
-        ws.onclose = [](const WebSocketChannelPtr& channel) {
+
+        ws.onclose = [this](const WebSocketChannelPtr& channel) {
             std::cout << "WebSocket client disconnected\n";
+            session->removeClient(channel);
         };
 
         ws_server = hv::WebSocketServer(&ws);
