@@ -8,6 +8,7 @@
 
 #include <Client.hpp>
 #include <Editor.hpp>
+#include <SerializedObject.hpp>
 
 namespace gui {
 
@@ -30,7 +31,7 @@ struct AppContext {
     bool viewport_clicked = false;
     bool dock_built = false;
 
-    char ip_input[64] = "127.0.0.1";
+    char ip_input[64] = "http://localhost:30000";
 
     enum class SessionFlowMode {
         None,
@@ -55,6 +56,9 @@ struct AppContext {
 
     bool launch_requested = false;
     std::string status_text = "Idle";
+
+    std::string selected_object_id;
+    core::SerializedObject selected_object{};
 };
 
 static const char* get_glsl_version() {
@@ -186,7 +190,9 @@ static void shutdown(AppContext& app) {
 
 static void process_events(AppContext& app) {
     SDL_Event e;
-    app.client.begin_input_frame();
+    if (app.client.is_scene_ready()) {
+        app.client.begin_input_frame();
+    }
 
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
@@ -200,12 +206,14 @@ static void process_events(AppContext& app) {
             SDL_SetWindowRelativeMouseMode(app.window, false);
         }
 
-        if (app.client.get_input_mode() == client::InputMode::Client) {
+        if (app.client.is_scene_ready() && app.client.get_input_mode() == client::InputMode::Client) {
             app.client.process_input_event(e);
         }
     }
 
-    app.client.end_input_frame();
+    if (app.client.is_scene_ready()) {
+        app.client.end_input_frame();
+    }
 }
 
 static void draw_dockspace(AppContext& app) {
@@ -268,15 +276,14 @@ static void draw_tools(AppContext& app) {
             app.status_text = "Load-from-file selected";
         }
 
-        ImGui::Spacing;
+        ImGui::Spacing();
 
         if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
             ImGui::TextWrapped("A blank scene will be created when host flow is hooked up");
 
             if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                // Put actual hookup in client
-                app.client.setIsHost(true);
-                app.status_text = "Host is set to true, load blank scene";
+                bool ok = app.client.start_host_blank(app.ip_input);
+                app.status_text = ok ? "Host session started (blank scene)" : "Failed to start host session";
             }
 
         }
@@ -285,9 +292,14 @@ static void draw_tools(AppContext& app) {
             ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
 
             if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                app.client.setIsHost(true);
-                app.status_text = "Host is set to true on loading scene from file";
+                bool ok = app.client.start_host_file(
+                    std::string(app.ip_input),
+                    std::string(app.file_input)
+                    );
+                app.status_text = ok? std::string("Host session started from file: ") + app.file_input : "Failed to start host session from file";
             }
+
+
         }
     }
 
@@ -304,10 +316,10 @@ static void draw_tools(AppContext& app) {
         ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
 
         if (ImGui::Button("Join", ImVec2(-1, 30))) {
-            // GUI-only for now.
             app.client.setIsHost(false);
-            app.status_text =
-                std::string("TODO: join ") + app.ip_input + ":" + app.port_input;
+            int port = std::atoi(app.port_input);
+            bool ok = app.client.start_guest(std::string(app.ip_input), port);
+            app.status_text = ok? std::string("Joining session at ") + app.ip_input + ":" + app.port_input : "Failed to start guest session";
         }
     }
 
@@ -320,6 +332,22 @@ static void draw_tools(AppContext& app) {
 static void draw_viewport(AppContext& app) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
+
+    app.client.process_network_messages();
+
+    if (!app.client.is_scene_ready()) {
+        ImGui::Dummy(ImVec2(0.0f, 40.0f));
+        ImGui::TextWrapped("No active scene yet.");
+        ImGui::Spacing();
+        ImGui::TextWrapped("Choose one of the options in the Tools panel:");
+        ImGui::BulletText("Host Session -> New Scene");
+        ImGui::BulletText("Host Session -> Load From File");
+        ImGui::BulletText("Join Session -> enter port and join");
+
+        ImGui::End();
+        ImGui::PopStyleVar();
+        return;
+    }
 
     ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -346,21 +374,98 @@ static void draw_viewport(AppContext& app) {
 
 static void draw_right(AppContext& app) {
     ImGui::Begin("RightPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Text("Scene Objects");
     ImGui::Separator();
 
-    const char* flow = "None";
-    if (app.flow_mode == AppContext::SessionFlowMode::Host) flow = "Host";
-    else if (app.flow_mode == AppContext::SessionFlowMode::Join) flow = "Join";
+    // const char* flow = "None";
+    // if (app.flow_mode == AppContext::SessionFlowMode::Host) flow = "Host";
+    // else if (app.flow_mode == AppContext::SessionFlowMode::Join) flow = "Join";
+    //
+    // const char* host_scene = "None";
+    // if (app.host_scene_mode == AppContext::HostSceneMode::Blank) host_scene = "Blank";
+    // else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) host_scene = "FromFile";
+    //
+    // ImGui::Text("Flow Mode: %s", flow);
+    // ImGui::Text("Host Scene Mode: %s", host_scene);
+    // ImGui::TextWrapped("Server IP: %s", app.ip_input);
+    // ImGui::TextWrapped("Port: %s", app.port_input);
+    // ImGui::TextWrapped("Scene File: %s", app.file_input);
 
-    const char* host_scene = "None";
-    if (app.host_scene_mode == AppContext::HostSceneMode::Blank) host_scene = "Blank";
-    else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) host_scene = "FromFile";
+    if (!app.client.is_scene_ready()) {
+        ImGui::TextWrapped("No active scene.");
+        ImGui::End();
+        return;
+    }
 
-    ImGui::Text("Flow Mode: %s", flow);
-    ImGui::Text("Host Scene Mode: %s", host_scene);
-    ImGui::TextWrapped("Server IP: %s", app.ip_input);
-    ImGui::TextWrapped("Port: %s", app.port_input);
-    ImGui::TextWrapped("Scene File: %s", app.file_input);
+    auto objects = app.client.get_scene_objects();
+
+    ImGui::BeginChild("object_list", ImVec2(0, 220), true);
+
+    for (const auto& obj : objects) {
+        bool selected = (app.selected_object_id == obj.objectID);
+
+        if (ImGui::Selectable(obj.objectID.c_str(), selected)) {
+            app.selected_object_id = obj.objectID;
+            app.selected_object = obj;
+        }
+    }
+
+    ImGui::EndChild();
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Text("Selected Object");
+    ImGui::Spacing();
+
+    if (app.selected_object_id.empty()) {
+        ImGui::TextWrapped("Select an object from the list above.");
+        ImGui::End();
+        return;
+    }
+
+    ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
+    ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
+
+    float pos[3] = {
+        app.selected_object.position.x,
+        app.selected_object.position.y,
+        app.selected_object.position.z
+    };
+
+    float rot[4] = {
+        app.selected_object.rotation.x,
+        app.selected_object.rotation.y,
+        app.selected_object.rotation.z,
+        app.selected_object.rotation.w
+    };
+
+    float scale = app.selected_object.scale;
+
+    ImGui::Spacing();
+    ImGui::Text("Transform");
+
+    bool changed = false;
+    changed |= ImGui::DragFloat3("Position", pos, 0.05f);
+    changed |= ImGui::DragFloat4("Rotation (quat)", rot, 0.05f);
+    changed |= ImGui::DragFloat("Scale", &scale, 0.05f, 0.01f, 100.0f);
+
+    if (changed) {
+        app.selected_object.position = glm::vec3(pos[0], pos[1], pos[2]);
+        app.selected_object.rotation = glm::quat(rot[3], rot[0], rot[1], rot[2]);
+        app.selected_object.scale = scale;
+    }
+
+    if (ImGui::Button("Apply Edit", ImVec2(-1, 30))) {
+        bool ok = app.client.apply_gui_edit(app.selected_object);
+        app.status_text = ok ? "Object edited successfully" : "Failed to edit object";
+
+        if (ok) {
+            core::SerializedObject latest;
+            if (app.client.get_scene_object(app.selected_object_id, latest)) {
+                app.selected_object = latest;
+            }
+        }
+    }
 
     ImGui::End();
 }
