@@ -21,7 +21,6 @@ struct AppContext {
         true,
         true,
         0,
-        false,
         client::InputMode::Editor
     };
 
@@ -32,6 +31,30 @@ struct AppContext {
     bool dock_built = false;
 
     char ip_input[64] = "127.0.0.1";
+
+    enum class SessionFlowMode {
+        None,
+        Host,
+        Join
+    };
+
+    enum class HostSceneMode {
+        None,
+        Blank,
+        FromFile
+    };
+
+    SessionFlowMode flow_mode = SessionFlowMode::None;
+    HostSceneMode host_scene_mode = HostSceneMode::None;
+
+    char port_input[64] = "30001";
+    char file_input[260] = "scene.json";
+
+    bool host_started = false;
+    bool guest_started = false;
+
+    bool launch_requested = false;
+    std::string status_text = "Idle";
 };
 
 static const char* get_glsl_version() {
@@ -213,17 +236,83 @@ static void draw_dockspace(AppContext& app) {
 
 static void draw_tools(AppContext& app) {
     ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Text("Session");
+    ImGui::Separator();
 
-    ImGui::Button("Create Scene", ImVec2(-1, 30));
-    ImGui::Button("Load Scene", ImVec2(-1, 30));
+    if (ImGui::Button("Host Session", ImVec2(-1, 30))) {
+        app.flow_mode = AppContext::SessionFlowMode::Host;
+        app.host_scene_mode = AppContext::HostSceneMode::None;
+        app.status_text = "Hosting session";
+    }
+    if (ImGui::Button("Join Session", ImVec2(-1, 30))){
+        app.flow_mode = AppContext::SessionFlowMode::Join;
+        app.host_scene_mode = AppContext::HostSceneMode::None;
+        app.status_text = "Joining session";
+    }
 
     ImGui::Separator();
 
-    ImGui::InputText("##ip", app.ip_input, sizeof(app.ip_input));
-    ImGui::SameLine();
-    if (ImGui::Button("Join")) {
-        // app.client.connect(std::string(app.ip_input));
+    // Host flow
+
+    if (app.flow_mode == AppContext::SessionFlowMode::Host) {
+        ImGui::Text("Host Session Setup");
+        ImGui::Spacing();
+
+        if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
+            app.host_scene_mode = AppContext::HostSceneMode::Blank;
+            app.status_text = "Blank scene selected";
+        }
+
+        if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
+            app.host_scene_mode = AppContext::HostSceneMode::FromFile;
+            app.status_text = "Load-from-file selected";
+        }
+
+        ImGui::Spacing;
+
+        if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
+            ImGui::TextWrapped("A blank scene will be created when host flow is hooked up");
+
+            if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
+                // Put actual hookup in client
+                app.client.setIsHost(true);
+                app.status_text = "Host is set to true, load blank scene";
+            }
+
+        }
+        else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
+            ImGui::Text("Scene file");
+            ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
+
+            if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
+                app.client.setIsHost(true);
+                app.status_text = "Host is set to true on loading scene from file";
+            }
+        }
     }
+
+    // Joining
+
+    else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
+        ImGui::Text("Join Session");
+        ImGui::Spacing();
+
+        ImGui::Text("Server IP");
+        ImGui::InputText("##ip", app.ip_input, sizeof(app.ip_input));
+
+        ImGui::Text("Port");
+        ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
+
+        if (ImGui::Button("Join", ImVec2(-1, 30))) {
+            // GUI-only for now.
+            app.client.setIsHost(false);
+            app.status_text =
+                std::string("TODO: join ") + app.ip_input + ":" + app.port_input;
+        }
+    }
+
+    ImGui::Separator();
+    ImGui::TextWrapped("Status: %s", app.status_text.c_str());
 
     ImGui::End();
 }
@@ -255,9 +344,24 @@ static void draw_viewport(AppContext& app) {
     ImGui::PopStyleVar();
 }
 
-static void draw_right() {
+static void draw_right(AppContext& app) {
     ImGui::Begin("RightPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
-    ImGui::Text("Properties");
+    ImGui::Separator();
+
+    const char* flow = "None";
+    if (app.flow_mode == AppContext::SessionFlowMode::Host) flow = "Host";
+    else if (app.flow_mode == AppContext::SessionFlowMode::Join) flow = "Join";
+
+    const char* host_scene = "None";
+    if (app.host_scene_mode == AppContext::HostSceneMode::Blank) host_scene = "Blank";
+    else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) host_scene = "FromFile";
+
+    ImGui::Text("Flow Mode: %s", flow);
+    ImGui::Text("Host Scene Mode: %s", host_scene);
+    ImGui::TextWrapped("Server IP: %s", app.ip_input);
+    ImGui::TextWrapped("Port: %s", app.port_input);
+    ImGui::TextWrapped("Scene File: %s", app.file_input);
+
     ImGui::End();
 }
 
@@ -277,7 +381,7 @@ static void render(AppContext& app) {
     draw_dockspace(app);
     draw_tools(app);
     draw_viewport(app);
-    draw_right();
+    draw_right(app);
     draw_bottom();
 
     ImGui::Render();
