@@ -51,7 +51,18 @@ public:
          // spawn_from_generator(generator::GridPlane);
     }
 
-    void bootstrap(bool client_host) {
+    void bootstrap() {
+         int no_keys;
+         const bool* k_state = SDL_GetKeyboardState(&no_keys);
+         registry.ctx().emplace<component::keyboard_state>();
+         registry.ctx().emplace<component::mouse_state>(0.0f, 0.0f);
+         registry.ctx().emplace<component::current_camera>(spawn_default_camera());
+         registry.ctx().emplace<component::mesh_manager>(mesh_manager);
+         registry.ctx().emplace<component::material_manager>(core::ShaderProgramManager());
+         registry.ctx().emplace<component::model_manager>(model_manager);
+     }
+
+    void bootstrap_from_file(const std::string& file_path) {
          int no_keys;
          const bool* k_state = SDL_GetKeyboardState(&no_keys);
          registry.ctx().emplace<component::keyboard_state>();
@@ -62,11 +73,9 @@ public:
          registry.ctx().emplace<component::model_manager>(model_manager);
          SceneSerializer sceneserializer = SceneSerializer();
 
-         if (client_host) {
-             bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot, object_lookup);
-             if (initialized) {
-                 initial_snapshot.debug_print();
-             }
+         bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot, object_lookup);
+         if (initialized) {
+             initial_snapshot.debug_print();
          }
      }
 
@@ -234,6 +243,65 @@ public:
     entt::entity registry_lookup(const std::string& enttid) {
         return object_lookup.at(enttid);
     }
+
+    bool registry_lookup_to_obj(const std::string& enttid, core::SerializedObject& out) const {
+         auto it = object_lookup.find(enttid);
+         if (it == object_lookup.end()) {
+             return false;
+         }
+
+         entt::entity e = it->second;
+         const auto& id  = registry.get<component::object_id>(e);
+         const auto& ref = registry.get<component::model_ref>(e);
+         const auto& path = registry.get<component::model_path>(e);
+         const auto& pos = registry.get<shared::component::position>(e);
+         const auto& rot = registry.get<shared::component::rotation>(e);
+         const auto& scale = registry.get<component::scale>(e);
+
+         out.objectID  = id.value;
+         out.model_ref = ref.id;
+         out.model_path = path.value;
+         out.position = pos.value;
+         out.rotation = rot;
+         out.scale = scale.s;
+
+         return true;
+     }
+
+    std::vector<core::SerializedObject> get_object_info() const {
+         std::vector<core::SerializedObject> out;
+         out.reserve(object_lookup.size());
+
+         auto view = registry.view<
+            component::object_id,
+            component::model_ref,
+            component::model_path,
+            shared::component::position,
+            shared::component::rotation,
+            component::scale
+        >();
+
+         for (auto e : view) {
+             const auto& id = view.get<component::object_id>(e);
+             const auto& ref = view.get<component::model_ref>(e);
+             const auto& path = view.get<component::model_path>(e);
+             const auto& pos = view.get<shared::component::position>(e);
+             const auto& rot = view.get<shared::component::rotation>(e);
+             const auto& scale = view.get<component::scale>(e);
+
+             core::SerializedObject obj;
+             obj.objectID  = id.value;
+             obj.model_ref = ref.id;
+             obj.model_path = path.value;
+             obj.position = pos.value;
+             obj.rotation = rot;
+             obj.scale = scale.s;
+
+             out.push_back(obj);
+         }
+
+         return out;
+     }
 
 private:
     entt::registry registry;
