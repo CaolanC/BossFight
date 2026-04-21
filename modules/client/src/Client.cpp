@@ -11,11 +11,11 @@
 
 namespace client {
 
-    Client::        Client(std::string name, std::string server_ip, bool is_host, bool owns_window, int input_port, InputMode input_mode)
+    Client::Client(std::string name, std::string server_ip, bool is_editor, bool owns_window, int input_port, InputMode input_mode)
         :   name(name),
             owns_window(owns_window),
             input_mode(input_mode),
-            is_host(is_host),
+            is_editor(is_editor),
             input_port(input_port),
             scene(mesh_manager, model_manager),
             server_ip(server_ip)
@@ -69,7 +69,7 @@ namespace client {
     void Client::init_embedded() {
         if (bootstrapped) return;
 
-        scene.bootstrap(is_host);
+        scene.bootstrap(true);
         scene.set_camera_position(glm::vec3(0, 0, 1));
         bootstrapped = true;
     }
@@ -156,8 +156,10 @@ namespace client {
         std::string type = message.at("type").get<std::string>();
 
         if (type == "handshake_ack") {
-            std::cout << "Handshake acknowledged. Sending snapshot.\n";
-            net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+            if (is_host) {
+                std::cout << "Handshake acknowledged. Sending snapshot.\n";
+                net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+            }
         }
         else if (type == "snapshot") {
             if (!is_host) {
@@ -368,5 +370,13 @@ namespace client {
         }
 
         return net_client.is_connected();
+    }
+
+    void Client::setIsHost(bool status) {
+        is_host = status;
+    }
+
+    bool Client::getIsHost() const {
+        return is_host;
     }
 }

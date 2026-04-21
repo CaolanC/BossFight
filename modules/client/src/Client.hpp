@@ -21,7 +21,7 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip, bool is_host, bool owns_window, int input_port = 0, InputMode input_mode = InputMode::Client);
+        Client(std::string name, std::string server_ip, bool is_editor, bool owns_window, int input_port = 0, InputMode input_mode = InputMode::Client);
         bool start(std::string server_ip2);
         Client(std::string name, std::string server_ip, bool owns_window, InputMode input_mode = InputMode::Client);
         void set_input_state(const bool* k_state);
@@ -33,7 +33,6 @@ namespace client {
         void handle_incoming_message(std::string& msg);
         bool connect_client(int port);
         bool is_editor;
-        bool is_host;
         int input_port;
         bool start_main_loop(int w, int h);
         bool owns_window;
@@ -64,14 +63,18 @@ namespace client {
         void begin_input_frame();
         void process_input_event(const SDL_Event& event);
         void end_input_frame();
+        void set_input_mode(InputMode mode);
+        InputMode get_input_mode() const;
+        void update();
+
+        void setIsHost(bool status);
+        bool getIsHost() const;
 
     private:
         NetClient net_client;
         xg::Guid client_id;
         //void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
-        void update();
+        bool is_host = false;
 
-        void set_input_mode(InputMode mode);
-        InputMode get_input_mode() const;
     };
 }
