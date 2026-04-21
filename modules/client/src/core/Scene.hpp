@@ -51,7 +51,7 @@ public:
          // spawn_from_generator(generator::GridPlane);
     }
 
-    void bootstrap(bool loadPopulatedScene) {
+    void bootstrap(bool client_host) {
          int no_keys;
          const bool* k_state = SDL_GetKeyboardState(&no_keys);
          registry.ctx().emplace<component::keyboard_state>();
@@ -62,7 +62,7 @@ public:
          registry.ctx().emplace<component::model_manager>(model_manager);
          SceneSerializer sceneserializer = SceneSerializer();
 
-         if (loadPopulatedScene) {
+         if (client_host) {
              bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot, object_lookup);
              if (initialized) {
                  initial_snapshot.debug_print();
