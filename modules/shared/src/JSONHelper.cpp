@@ -41,7 +41,9 @@ namespace shared {
     }
 
     nlohmann::json JSONHelper::serialize_snapshot(const core::SceneSnapshot& snapshot) {
-        nlohmann::json j;
+        nlohmann::json j = nlohmann::json::object();
+        j["objects"] = nlohmann::json::object();
+
         for (const auto& [id, obj] : snapshot.getmap()) {
             j["objects"][id] = serialize_object(obj);
         }
@@ -97,6 +99,10 @@ namespace shared {
     core::SceneSnapshot JSONHelper::deserialize_snapshot(const nlohmann::json& j) {
         core::SceneSnapshot snapshot;
 
+        if (!j.is_object() || !j.contains("objects") || !j.at("objects").is_object()) {
+            return snapshot;
+        }
+
         for (auto& [id, value] : j["objects"].items()) {
             core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
             snapshot.insert(id, obj);
@@ -106,6 +112,10 @@ namespace shared {
     }
 
     void JSONHelper::deserialize_snapshot_pointer(const nlohmann::json& j, core::SceneSnapshot& snapshot) {
+        if (!j.is_object() || !j.contains("objects") || !j.at("objects").is_object()) {
+            return;
+        }
+
         for (auto& [id, value] : j["objects"].items()) {
             core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
             snapshot.insert(id, obj);
