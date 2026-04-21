@@ -46,7 +46,7 @@ namespace client {
             }
         }
         else {
-            if (connect_client(30001)) {
+            if (connect_client(input_port)) {
                 std::cout << "Connected to client on port 30001\n";
                 net_client.send(shared::JSONHelper::make_handshake(client_id, false));
                 return true;
@@ -57,6 +57,38 @@ namespace client {
             }
         }
     }
+
+    bool Client::start_host_blank(const std::string& server_ip2) {
+        setIsHost(true);
+
+        scene.bootstrap();
+        scene.set_camera_position(glm::vec3(0, 0, 1));
+        scene_ready = true;
+
+        return start(server_ip2);
+    }
+
+    bool Client::start_host_file(const std::string &server_ip2, const std::string &file_path) {
+        setIsHost(true);
+
+        scene.bootstrap_from_file(file_path);
+        scene.set_camera_position(glm::vec3(0, 0, 1));
+        scene_ready = true;
+
+        return start(server_ip2);
+    }
+
+    bool Client::start_guest(const std::string &server_ip2, int port) {
+        setIsHost(false);
+        setInputPort(port);
+
+        scene.bootstrap();
+        scene.set_camera_position(glm::vec3(0, 0, 1));
+        scene_ready = false;
+
+        return start(server_ip2);
+    }
+
 
     void Client::run() {
         bool started = start_main_loop(0, 0);
@@ -69,8 +101,7 @@ namespace client {
     void Client::init_embedded() {
         if (bootstrapped) return;
 
-        scene.bootstrap(true);
-        scene.set_camera_position(glm::vec3(0, 0, 1));
+        scene_ready = false;
         bootstrapped = true;
     }
 
@@ -151,6 +182,14 @@ namespace client {
         systems::Debug(r);
     }
 
+    void Client::process_network_messages() {
+        std::string msg;
+
+        while (net_client.pollMessage(msg)) {
+            handle_incoming_message(msg);
+        }
+    }
+
     void Client::handle_incoming_message(std::string& msg) {
         nlohmann::json message = nlohmann::json::parse(msg);
         std::string type = message.at("type").get<std::string>();
@@ -168,6 +207,7 @@ namespace client {
                 std::cout << message_payload.dump() << "\n";
                 core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
                 scene.guest_init(snapshot);
+                scene_ready = true;
             }
         }
         else {
@@ -379,4 +419,32 @@ namespace client {
     bool Client::getIsHost() const {
         return is_host;
     }
+
+    bool Client::is_scene_ready() const {
+        return scene_ready;
+    }
+
+    void Client::setInputPort(int port) {
+        input_port = port;
+    }
+
+    std::vector<core::SerializedObject> Client::get_scene_objects() const {
+        return scene.get_object_info();
+    }
+
+    bool Client::get_scene_object(const std::string& object_id, core::SerializedObject& out) const {
+        return scene.registry_lookup_to_obj(object_id, out);
+    }
+
+    bool Client::apply_gui_edit(core::SerializedObject &obj) {
+        bool ok = scene.edit_obj(obj);
+
+        if (ok) {
+            net_client.send(shared::JSONHelper::make_update_message("edit", obj));
+        }
+
+        return ok;
+    }
+
+
 }

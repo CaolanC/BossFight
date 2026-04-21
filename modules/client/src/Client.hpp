@@ -6,6 +6,7 @@
 #include <core/MeshManager.hpp>
 #include <core/ModelManager.hpp>
 #include <core/Scene.hpp>
+#include <vector>
 
 #include <NetClient.hpp>
 #include <nlohmann/json.hpp>
@@ -27,9 +28,16 @@ namespace client {
         void set_input_state(const bool* k_state);
         static void InitSDL();
 
+        bool start_host_blank(const std::string& server_ip2);
+        bool start_host_file(const std::string& server_ip2, const std::string& file_path);
+        bool start_guest(const std::string& server_ip2, int port);
+
+        bool is_scene_ready() const;
+
         void run();
         void enter_editor(int w, int h);
         void enter_client(int w, int h);
+        void process_network_messages();
         void handle_incoming_message(std::string& msg);
         bool connect_client(int port);
         bool is_editor;
@@ -67,14 +75,20 @@ namespace client {
         InputMode get_input_mode() const;
         void update();
 
+        std::vector<core::SerializedObject> get_scene_objects() const;
+        bool get_scene_object(const std::string& object_id, core::SerializedObject& out) const;
+        bool apply_gui_edit(core::SerializedObject& obj);
+
         void setIsHost(bool status);
         bool getIsHost() const;
+
+        void setInputPort(int port);
 
     private:
         NetClient net_client;
         xg::Guid client_id;
         //void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
         bool is_host = false;
-
+        bool scene_ready = false;
     };
 }
