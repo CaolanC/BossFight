@@ -90,9 +90,8 @@ namespace systems {
                 }
                 else {
                     rendering::Model m = LoadModel(r, obj.model_path);
-                    ModelHandle h = model_m.add_model(m, obj.model_ref);
+                    ModelHandle h = model_m.add_model(m, obj.model_path, obj.model_ref);
                     auto model_e = spawn::model(r, h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                    r.emplace<component::debug_spin>(model_e, 0.2f);
                     object_lookup[obj.objectID] = model_e;
                 }
 
@@ -145,9 +144,8 @@ namespace systems {
             }
             else {
                 rendering::Model m = LoadModel(r, obj.model_path);
-                ModelHandle h = model_m.add_model(m, obj.model_ref);
+                ModelHandle h = model_m.add_model(m, obj.model_path, obj.model_ref);
                 auto model_e = spawn::model(r, h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                r.emplace<component::debug_spin>(model_e, 0.2f);
                 object_lookup[obj.objectID] = model_e;
             }
 

@@ -83,6 +83,8 @@ namespace client {
         bool getIsHost() const;
 
         void setInputPort(int port);
+        std::vector<core::LoadedModelInfo> get_loaded_models() const;
+        bool add_object_from_loaded_model(const core::LoadedModelInfo& model_info);
 
     private:
         NetClient net_client;

@@ -18,6 +18,7 @@
 #include <SceneSnapshot.hpp>
 #include <SerializedObject.hpp>
 #include <SceneSerializer.hpp>
+#include <LoadedModelInfo.hpp>
 
 #include <core/ShaderProgramManager.hpp>
 
@@ -211,7 +212,7 @@ public:
 
         if (!(model_m.check_ref(obj.model_ref))) {
             rendering::Model m = systems::LoadModel(registry, obj.model_path);
-            model_m.add_model(m, obj.model_ref);
+            model_m.add_model(m, obj.model_path, obj.model_ref);
         }
 
         auto model_e = spawn::model(registry, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
@@ -301,6 +302,11 @@ public:
          }
 
          return out;
+     }
+
+    std::vector<core::LoadedModelInfo> get_loaded_models() const {
+         const auto& model_manager = registry.ctx().get<component::model_manager>().manager;
+         return model_manager.get_loaded_models();
      }
 
 private:

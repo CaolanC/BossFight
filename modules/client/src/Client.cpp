@@ -446,5 +446,26 @@ namespace client {
         return ok;
     }
 
+    std::vector<core::LoadedModelInfo> Client::get_loaded_models() const {
+        return scene.get_loaded_models();
+    }
+
+    bool Client::add_object_from_loaded_model(const core::LoadedModelInfo& model_info) {
+        core::SerializedObject obj;
+        obj.objectID = xg::newGuid().str();
+        obj.model_ref = model_info.model_ref;
+        obj.model_path = model_info.model_path;
+        obj.position = glm::vec3(0.0f, 0.0f, 0.0f);
+        obj.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        obj.scale = 1.0f;
+
+        bool ok = scene.add_obj(obj);
+
+        if (ok) {
+            net_client.send(shared::JSONHelper::make_update_message("add", obj));
+        }
+
+        return ok;
+    }
 
 }
