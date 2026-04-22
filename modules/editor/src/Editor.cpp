@@ -9,6 +9,7 @@
 #include <Client.hpp>
 #include <Editor.hpp>
 #include <SerializedObject.hpp>
+#include <LoadedModelInfo.hpp>
 
 namespace gui {
 
@@ -59,6 +60,10 @@ struct AppContext {
 
     std::string selected_object_id;
     core::SerializedObject selected_object{};
+
+    xg::Guid selected_model_ref{};
+    std::string selected_model_path;
+
 };
 
 static const char* get_glsl_version() {
@@ -470,9 +475,69 @@ static void draw_right(AppContext& app) {
     ImGui::End();
 }
 
-static void draw_bottom() {
+static void draw_bottom(AppContext& app) {
     ImGui::Begin("BottomPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
-    ImGui::Text("Console");
+
+    if (ImGui::BeginTabBar("BottomTabs")) {
+        if (ImGui::BeginTabItem("Console")) {
+            ImGui::TextWrapped("Status: %s", app.status_text.c_str());
+            ImGui::Separator();
+            ImGui::TextWrapped("Console output / logs can go here.");
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Loaded Models")) {
+            if (!app.client.is_scene_ready()) {
+                ImGui::TextWrapped("No active scene.");
+            }
+            else {
+                auto loaded_models = app.client.get_loaded_models();
+
+                if (loaded_models.empty()) {
+                    ImGui::TextWrapped("No loaded models.");
+                } else {
+                    for (const auto& model : loaded_models) {
+                        std::string label = model.model_path.empty()
+                            ? model.model_ref.str()
+                            : model.model_path;
+
+                        bool selected = (app.selected_model_ref == model.model_ref);
+
+                        if (ImGui::Selectable(label.c_str(), selected)) {
+                            app.selected_model_ref = model.model_ref;
+                            app.selected_model_path = model.model_path;
+                        }
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::Separator();
+
+                    if (app.selected_model_ref.isValid()) {
+                        ImGui::TextWrapped(
+                            "Selected model: %s",
+                            app.selected_model_path.empty()
+                                ? app.selected_model_ref.str().c_str()
+                                : app.selected_model_path.c_str()
+                        );
+
+                        if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
+                            core::LoadedModelInfo info;
+                            info.model_ref = app.selected_model_ref;
+                            info.model_path = app.selected_model_path;
+
+                            bool ok = app.client.add_object_from_loaded_model(info);
+                            app.status_text = ok
+                                ? "Object added from selected model"
+                                : "Failed to add object from selected model";
+                        }
+                    }
+                }
+            }
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+
     ImGui::End();
 }
 
@@ -487,7 +552,7 @@ static void render(AppContext& app) {
     draw_tools(app);
     draw_viewport(app);
     draw_right(app);
-    draw_bottom();
+    draw_bottom(app);
 
     ImGui::Render();
 
