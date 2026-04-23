@@ -1,0 +1,55 @@
+{
+    "objects": {
+        "32033ec4-648a-4aba-a4cf-e943651aaa35": {
+            "model_ref": "6a405970-fa0f-4861-8f9c-c3f5107b37a0",
+            "modelpath": "models/carl_johnson_cj/scene.gltf",
+            "objectID": "32033ec4-648a-4aba-a4cf-e943651aaa35",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "7d90b473-9e33-475d-8567-aa9f4ba59c10": {
+            "model_ref": "7350eca7-4361-4a29-852f-c281520d4a94",
+            "modelpath": "none",
+            "objectID": "7d90b473-9e33-475d-8567-aa9f4ba59c10",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "fcc733e9-577d-42b2-9bb1-9976ebbd3c3d": {
+            "model_ref": "a945de85-149f-46d9-88e9-5eb2c6b6df72",
+            "modelpath": "basicsphere",
+            "objectID": "fcc733e9-577d-42b2-9bb1-9976ebbd3c3d",
+            "position": [
+                2.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        }
+    }
+}
