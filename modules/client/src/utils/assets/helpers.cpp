@@ -7,4 +7,9 @@ namespace utils::assets {
         auto s = SLJA_ASSETS_DIR + path;
         return s;
     }
+
+    std::string get_filepath(std::string const& path) {
+        auto s = SLJA_SAVES_DIR + path;
+        return s;
+    };
 }
