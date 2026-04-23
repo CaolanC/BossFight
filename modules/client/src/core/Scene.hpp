@@ -74,7 +74,7 @@ public:
          registry.ctx().emplace<component::model_manager>(model_manager);
          SceneSerializer sceneserializer = SceneSerializer();
 
-         bool initialized = systems::Init_from_file(registry, "scene.json", sceneserializer, initial_snapshot, object_lookup);
+         bool initialized = systems::Init_from_file(registry, utils::assets::get_filepath(file_path), sceneserializer, initial_snapshot, object_lookup);
          if (initialized) {
              initial_snapshot.debug_print();
          }
