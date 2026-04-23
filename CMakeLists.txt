@@ -22,7 +22,8 @@ set(SDL_STATIC ON  CACHE BOOL "" FORCE)
 set(SDL_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
 
 
-set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets/")
+set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/res/assets/")
+set(SAVES_DIR "${CMAKE_SOURCE_DIR}/res/saves/")
 find_package(OpenGL REQUIRED)
 
 set(SDL_TARGET SDL3::SDL3-static)
@@ -78,6 +79,7 @@ set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE
 target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
 target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
+target_compile_definitions(ClientLib PRIVATE SLJA_SAVES_DIR="${SAVES_DIR}")
 
 add_executable(GUI apps/gui/main.cpp)
 target_link_libraries(GUI PUBLIC GuiLib glad  EditorLib ClientLib)

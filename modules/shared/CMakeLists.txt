@@ -5,7 +5,8 @@ file(GLOB_RECURSE SHARED_SOURCES CONFIGURE_DEPENDS
 
 add_library(SharedLib ${SHARED_SOURCES}
         src/JSONHelper.hpp
-        src/JSONHelper.cpp)
+        src/JSONHelper.cpp
+        src/LoadedModelInfo.hpp)
 target_include_directories(SharedLib
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
