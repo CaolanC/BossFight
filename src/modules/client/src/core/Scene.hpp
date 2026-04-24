@@ -241,9 +241,26 @@ public:
         return true;
     }
 
+    bool load_model_from_gui(const std::string& file_path) {
+         auto& model_m = registry.ctx().get<component::model_manager>().manager;
+
+         if (model_m.has_model_path(file_path)) {
+             return true;
+         }
+
+         rendering::Model m = systems::LoadModel(registry, file_path);
+         model_m.add_model(m, file_path);
+
+         return true;
+     }
+
     entt::entity registry_lookup(const std::string& enttid) {
         return object_lookup.at(enttid);
     }
+
+    bool check_registry(const std::string& enttid) {
+         return object_lookup.find(enttid) != object_lookup.end();
+     }
 
     bool registry_lookup_to_obj(const std::string& enttid, core::SerializedObject& out) const {
          auto it = object_lookup.find(enttid);
