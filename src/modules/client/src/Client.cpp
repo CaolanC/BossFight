@@ -9,6 +9,8 @@
 #include <Client.hpp>
 #include <JSONHelper.hpp>
 
+#include "hv/json.hpp"
+
 namespace client {
 
     Client::Client(std::string name, std::string server_ip, bool is_editor, bool owns_window, int input_port, InputMode input_mode)
@@ -204,9 +206,21 @@ namespace client {
             if (!is_host) {
                 std::cout << "Snapshot received. Preparing to initialize...\n";
                 nlohmann::json message_payload = message.at("payload");
-                std::cout << message_payload.dump() << "\n";
+                // std::cout << message_payload.dump() << "\n";
                 core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
-                scene.guest_init(snapshot);
+
+                core::SceneSnapshot snapshot_no_defers;
+
+                for (const auto& [key, obj] : snapshot.getmap()) {
+                    if (checkAsset(obj.model_path)) {
+                        snapshot_no_defers.insert(key, obj);
+                    }
+                    else {
+                        deferred_updates[obj.objectID] = obj;
+                        std::cout << "Deferred snapshot object. Missing asset: " << obj.model_path << "\n";
+                    }
+                }
+                scene.guest_init(snapshot_no_defers);
                 scene_ready = true;
             }
         }
@@ -214,16 +228,53 @@ namespace client {
             nlohmann::json message_payload = message.at("payload");
             core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
             if (type == "update_add") {
+                if (!(checkAsset(obj.model_path))) {
+                    deferred_updates[obj.objectID] = obj;
+                    std::cout << "Deferred add. Missing asset: " << obj.model_path << "\n";
+                    return;
+                }
                 bool ok = scene.add_obj(obj);
             }
             else if (type == "update_edit") {
+                if (deferred_updates.contains(obj.objectID)) {
+                    deferred_updates[obj.objectID] = obj;
+                    std::cout << "Updated deferred object: " << obj.objectID << "\n";
+                    return;
+                }
                 bool ok = scene.edit_obj(obj);
             }
             else if (type == "update_delete") {
-                bool ok = scene.delete_obj(obj);
+                if (deferred_updates.contains(obj.objectID)) {
+                    deferred_updates.erase(obj.objectID);
+                }
+                if (scene.check_registry(obj.objectID)) {
+                    bool ok = scene.delete_obj(obj);
+                }
             }
         }
     }
+
+    void Client::poll_deferred_updates() {
+        for (auto it = deferred_updates.begin(); it != deferred_updates.end(); ) {
+            core::SerializedObject obj = it->second;
+
+            if (!(checkAsset(obj.model_path))) {
+                it++;
+                continue;
+            }
+
+            bool ok = scene.add_obj(obj);
+
+            if (ok) {
+                it = deferred_updates.erase(it);
+            }
+            else {
+                ++it;
+            }
+
+        }
+    }
+
 
     bool Client::request_create_session(std::string const& ip, int& ws_port) {
         hv::HttpClient cli;
@@ -423,6 +474,17 @@ namespace client {
         return ok;
     }
 
+    bool Client::apply_gui_delete(core::SerializedObject &obj) {
+        bool ok = scene.delete_obj(obj);
+
+        if (ok) {
+            net_client.send(shared::JSONHelper::make_update_message("delete", obj));
+        }
+
+        return ok;
+    }
+
+
     std::vector<core::LoadedModelInfo> Client::get_loaded_models() const {
         return scene.get_loaded_models();
     }
@@ -444,5 +506,23 @@ namespace client {
 
         return ok;
     }
+
+    bool Client::importLocalModel(const std::string& file_path) {
+        if (!(checkAsset(file_path))) {
+            return false;
+        }
+        bool ok = scene.load_model_from_gui(file_path);
+
+        if (ok) {
+            poll_deferred_updates();
+        }
+
+        return ok;
+    }
+
+    bool Client::checkAsset(const std::string& file_path) {
+        return utils::assets::asset_exists(file_path);
+    }
+
 
 }

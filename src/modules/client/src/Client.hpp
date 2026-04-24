@@ -39,6 +39,7 @@ namespace client {
         void enter_client(int w, int h);
         void process_network_messages();
         void handle_incoming_message(std::string& msg);
+        void poll_deferred_updates();
         bool connect_client(int port);
         bool is_editor;
         int input_port;
@@ -78,6 +79,7 @@ namespace client {
         std::vector<core::SerializedObject> get_scene_objects() const;
         bool get_scene_object(const std::string& object_id, core::SerializedObject& out) const;
         bool apply_gui_edit(core::SerializedObject& obj);
+        bool apply_gui_delete(core::SerializedObject& obj);
 
         void setIsHost(bool status);
         bool getIsHost() const;
@@ -86,11 +88,15 @@ namespace client {
         std::vector<core::LoadedModelInfo> get_loaded_models() const;
         bool add_object_from_loaded_model(const core::LoadedModelInfo& model_info);
 
+        bool importLocalModel(const std::string& file_path);
+        bool checkAsset(const std::string& file_path);
+
     private:
         NetClient net_client;
         xg::Guid client_id;
         //void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
         bool is_host = false;
         bool scene_ready = false;
+        std::unordered_map<std::string, core::SerializedObject> deferred_updates;
     };
 }
