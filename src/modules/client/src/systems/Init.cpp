@@ -51,6 +51,17 @@ namespace systems {
 //         return true;
 //     }
 
+    bool Local_files_exist(core::SceneSnapshot& snapshot) {
+        for (const auto& [key, obj] : snapshot.getmap()) {
+            if (!(utils::assets::asset_exists(obj.model_path))) {
+                std::cout << "Missing asset for object " << obj.objectID << ": " << obj.model_path << "\n";
+                return false;
+            }
+
+        }
+        return true;
+    }
+
     bool Init_from_file(entt::registry& r, const std::string& path, core::SceneSerializer& scene_serializer, core::SceneSnapshot& snapshot, std::unordered_map<std::string, entt::entity>& object_lookup) {
         // Same code as above but changed to work from a file
         auto& model_m = r.ctx().get<component::model_manager>().manager;
@@ -62,43 +73,21 @@ namespace systems {
         ShaderProgramHandle program = r.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
         bool ok = scene_serializer.load_from_file(path, snapshot);
-        snapshot.debug_print();
+        // snapshot.debug_print();
         if (ok) {
-            for (const auto& [key, obj] : snapshot.getmap()) {
-                if (obj.model_path == "basicsphere") {
-                    par_shapes_mesh* par_m = par_shapes_create_subdivided_sphere(4);
-                    par_shapes_mesh* k_par_m = par_shapes_create_trefoil_knot(100, 100, 1);
-                    rendering::Model sphere_m = LoadModel(r, *par_m);
-                    auto const sphere_h = model_m.add_model(sphere_m, obj.model_ref);
-                    entt::entity e = spawn::model(r, sphere_h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                    object_lookup[obj.objectID] = e;
-                }
-                else if (obj.model_path == "none") {
-                    rendering::Model model = rendering::Model();
-                    rendering::Node node = rendering::Node();
-                    std::vector<float> const v = {
-                        0.0f, 0.0f, 0.0f, 10.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 10.0f,
-                        10.0f, 0.0f, 10.0f, 10.0f, 0.0f, 0.0f,
-                        10.0f, 0.0f, 10.0f, 0.0f, 0.0f, 10.0f
-                    };
-                    node.mesh.add_primitive(rendering::pr_lines(v));
-                    model.root_nodes.push_back(node);
-                    ModelHandle const lh = model_m.add_model(model, obj.model_ref);
-                    entt::entity e = spawn::model(r, lh, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                    object_lookup[obj.objectID] = e;
-                }
-                else {
-                    rendering::Model m = LoadModel(r, obj.model_path);
-                    ModelHandle h = model_m.add_model(m, obj.model_path, obj.model_ref);
-                    auto model_e = spawn::model(r, h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                    object_lookup[obj.objectID] = model_e;
-                }
-
+            if (!(Local_files_exist(snapshot))) {
+                return false;
             }
+            for (const auto& [key, obj] : snapshot.getmap()) {
 
-            for (const auto& [key, obj] : object_lookup) {
-                std::cout << key << ": " << r.get<component::model_path>(obj).value << "\n";
+                if (!(model_m.check_ref(obj.model_ref))) {
+                    rendering::Model m = LoadModel(r, obj.model_path);
+                    model_m.add_model(m, obj.model_path, obj.model_ref);
+                }
+
+                auto model_e = spawn::model(r, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+                object_lookup[obj.objectID] = model_e;
+
             }
 
             return true;
@@ -119,35 +108,12 @@ namespace systems {
 
         for (const auto& [key, obj] : snapshot.getmap()) {
 
-            if (obj.model_path == "basicsphere") {
-                par_shapes_mesh* par_m = par_shapes_create_subdivided_sphere(4);
-                par_shapes_mesh* k_par_m = par_shapes_create_trefoil_knot(100, 100, 1);
-                rendering::Model sphere_m = LoadModel(r, *par_m);
-                auto const sphere_h = model_m.add_model(sphere_m, obj.model_ref);
-                entt::entity e = spawn::model(r, sphere_h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                object_lookup[obj.objectID] = e;
-            }
-            else if (obj.model_path == "none") {
-                rendering::Model model = rendering::Model();
-                rendering::Node node = rendering::Node();
-                std::vector<float> const v = {
-                    0.0f, 0.0f, 0.0f, 10.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 10.0f,
-                    10.0f, 0.0f, 10.0f, 10.0f, 0.0f, 0.0f,
-                    10.0f, 0.0f, 10.0f, 0.0f, 0.0f, 10.0f
-                };
-                node.mesh.add_primitive(rendering::pr_lines(v));
-                model.root_nodes.push_back(node);
-                ModelHandle const lh = model_m.add_model(model, obj.model_ref);
-                entt::entity e = spawn::model(r, lh, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                object_lookup[obj.objectID] = e;
-            }
-            else {
+            if (!(model_m.check_ref(obj.model_ref))) {
                 rendering::Model m = LoadModel(r, obj.model_path);
-                ModelHandle h = model_m.add_model(m, obj.model_path, obj.model_ref);
-                auto model_e = spawn::model(r, h, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-                object_lookup[obj.objectID] = model_e;
+                model_m.add_model(m, obj.model_path, obj.model_ref);
             }
+            auto model_e = spawn::model(r, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
+            object_lookup[obj.objectID] = model_e;
 
         }
 

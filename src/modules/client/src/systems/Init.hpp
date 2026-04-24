@@ -14,7 +14,7 @@
 #include <SerializedObject.hpp>
 
 namespace systems {
-    bool Init(entt::registry& r);
+    bool Local_files_exist(core::SceneSnapshot& snapshot);
     bool Init_from_file(entt::registry& r, const std::string& path, core::SceneSerializer& scene_serializer, core::SceneSnapshot& snapshot, std::unordered_map<std::string, entt::entity>& object_lookup);
     bool Init_from_snapshot(entt::registry& r, core::SceneSnapshot& snapshot, std::unordered_map<std::string, entt::entity>& object_lookup);
 }
