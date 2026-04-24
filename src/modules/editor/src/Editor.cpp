@@ -21,7 +21,7 @@ struct AppContext {
         "Perfect Client.",
         "http://127.0.0.1:30000",
         true,
-        true,
+        false,
         0,
         client::InputMode::Editor
     };
@@ -64,6 +64,8 @@ struct AppContext {
     xg::Guid selected_model_ref{};
     std::string selected_model_path;
 
+    char import_model_path[260] = "";
+
 };
 
 static const char* get_glsl_version() {
@@ -76,7 +78,7 @@ static bool init(AppContext& app) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-    app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
     app.gl_context = SDL_GL_CreateContext(app.window);
 
     SDL_GL_MakeCurrent(app.window, app.gl_context);
@@ -428,6 +430,11 @@ static void draw_right(AppContext& app) {
         return;
     }
 
+    if (!(app.selected_object_id.empty()) && !(app.client.scene.check_registry(app.selected_object.objectID))) {
+        app.selected_object_id = "";
+        app.selected_object = core::SerializedObject();
+    }
+
     ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
     ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
 
@@ -472,6 +479,16 @@ static void draw_right(AppContext& app) {
         }
     }
 
+    if (ImGui::Button("Delete Object", ImVec2(-1, 30))) {
+        bool ok = app.client.apply_gui_delete(app.selected_object);
+        app.status_text = ok ? "Object deleted successfully" : "Failed to delete object";
+
+        if (ok) {
+            app.selected_object = core::SerializedObject();
+            app.selected_object_id = "";
+        }
+    }
+
     ImGui::End();
 }
 
@@ -491,6 +508,7 @@ static void draw_bottom(AppContext& app) {
                 ImGui::TextWrapped("No active scene.");
             }
             else {
+
                 auto loaded_models = app.client.get_loaded_models();
 
                 if (loaded_models.empty()) {
@@ -532,6 +550,28 @@ static void draw_bottom(AppContext& app) {
                         }
                     }
                 }
+            }
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Import Models")) {
+            if (!app.client.is_scene_ready()) {
+                ImGui::TextWrapped("No active scene.");
+            }
+            else {
+                ImGui::Text("Import Model");
+                ImGui::TextWrapped("Path relative to assets folder:");
+                ImGui::InputText("##import_model_path", app.import_model_path, sizeof(app.import_model_path));
+
+                if (ImGui::Button("Import Model", ImVec2(-1, 30))) {
+                    std::string path = app.import_model_path;
+
+                    bool ok = app.client.importLocalModel(path);
+
+                    app.status_text = ok
+                        ? std::string("Imported model: ") + path
+                        : std::string("Failed to import model. Missing asset: ") + path;
+                }
+
             }
             ImGui::EndTabItem();
         }
