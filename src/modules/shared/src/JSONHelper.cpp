@@ -40,6 +40,13 @@ namespace shared {
         return message.dump();
     }
 
+    std::string JSONHelper::make_session_closed_message() {
+        nlohmann::json message;
+        message["type"] = "session_close";
+        return message.dump();
+    }
+
+
     nlohmann::json JSONHelper::serialize_snapshot(const core::SceneSnapshot& snapshot) {
         nlohmann::json j = nlohmann::json::object();
         j["objects"] = nlohmann::json::object();

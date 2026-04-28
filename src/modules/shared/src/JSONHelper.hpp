@@ -15,6 +15,7 @@ namespace shared
         static std::string make_handshake_ack();
         static std::string make_update_message(const std::string& type, const core::SerializedObject& obj);
         static std::string make_snapshot_message(const core::SceneSnapshot& snapshot);
+        static std::string make_session_closed_message();
         static nlohmann::json serialize_snapshot(const core::SceneSnapshot& snapshot);
         static nlohmann::json serialize_object(const core::SerializedObject& obj);
         static nlohmann::json serialize_client_info(xg::Guid client_id, bool is_host);
