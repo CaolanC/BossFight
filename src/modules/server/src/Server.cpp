@@ -48,23 +48,46 @@ namespace server
                     }
                     case CreateSessionRequest: {
 
-                        xg::Guid sid = session_manager.create();
-                        testtemp = sid;
+                        xg::Guid sid;
 
-                        sessiontemp = session_manager.getSession(sid);
+                        bool ready;
 
-                        std::cout << "[Server] Starting session WS on " << nextport << "\n";
-                        sessiontemp->setPSPort(nextport);
-                        sessiontemp->startServer();
+                        int port = session_manager.find_free_port();
 
-                        bool ready = sessiontemp->wait_until_ready(std::chrono::milliseconds(3000));
+                        Session* existing = session_manager.getSessionByPort(port);
 
-                        reply.type=CreateSessionReply;
-                        reply.session_id = sid;
-                        reply.ws_port = nextport;
-                        reply.ok = ready;
+                        if (existing && !(existing->isActive())) {
 
-                        nextport += 1;
+                            existing->reset();
+                            std::cout << "[Server] Starting session WS on " << port << "\n";
+                            existing->setActive(true);
+                            existing->startServer();
+                            sid = existing->get_id();
+                            session_manager.setportID(nextport, sid);
+
+                            ready = existing->wait_until_ready(std::chrono::milliseconds(3000));
+                            reply.type=CreateSessionReply;
+                            reply.session_id = sid;
+                            reply.ws_port = port;
+                            reply.ok = ready;
+                        }
+                        else {
+
+                            sid = session_manager.create();
+                            sessiontemp = session_manager.getSession(sid);
+                            std::cout << "[Server] Starting session WS on " << port << "\n";
+                            session_manager.setportID(port, sid);
+                            sessiontemp->setPSPort(port);
+                            sessiontemp->setActive(true);
+                            sessiontemp->startServer();
+
+                            ready = sessiontemp->wait_until_ready(std::chrono::milliseconds(3000));
+                            reply.type=CreateSessionReply;
+                            reply.session_id = sid;
+                            reply.ws_port = nextport;
+                            reply.ok = ready;
+                            nextport += 1;
+                        }
 
                         break;
                     }
