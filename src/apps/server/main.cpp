@@ -13,7 +13,7 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-int start_game() {
+int start_server() {
     server::Server server(30000);
     server.start();
     const duration tick = nanoseconds(16'666'667); // Number of nanoseconds in 1/60th of a second
@@ -46,6 +46,6 @@ int start_game() {
     return 0;
 }
 
-int main() { // TODO: Add the ability to hurt other developers, like throw a rock at them or something and kill them. toggle dev_friendly_fire
-    return start_game();
+int main() {
+    return start_server();
 }
