@@ -40,7 +40,7 @@ namespace client {
         void process_network_messages();
         void handle_incoming_message(std::string& msg);
         void poll_deferred_updates();
-        bool connect_client(int port);
+        bool connect_client(std::string& host, int port);
         bool is_editor;
         int input_port;
         bool start_main_loop(int w, int h);
@@ -91,12 +91,19 @@ namespace client {
         bool importLocalModel(const std::string& file_path);
         bool checkAsset(const std::string& file_path);
 
+        bool save_to_file(std::string& file_path);
+        bool save_and_quit(const std::string& file_path);
+        void disconnect_and_quit();
+
+        bool isDone();
+
     private:
         NetClient net_client;
         xg::Guid client_id;
         //void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
         bool is_host = false;
         bool scene_ready = false;
+        bool timeToShutdown = false;
         std::unordered_map<std::string, core::SerializedObject> deferred_updates;
     };
 }

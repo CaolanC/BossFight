@@ -29,13 +29,39 @@ namespace client {
         // request_join(server_ip);
     }
 
+    static std::string extract_host_from_http_url(std::string& url) {
+        std::string s = url;
+
+        const std::string http = "http://";
+        const std::string https = "https://";
+
+        if (s.rfind(http, 0) == 0) {
+            s = s.substr(http.size());
+        } else if (s.rfind(https, 0) == 0) {
+            s = s.substr(https.size());
+        }
+
+        auto slash_pos = s.find('/');
+        if (slash_pos != std::string::npos) {
+            s = s.substr(0, slash_pos);
+        }
+
+        auto colon_pos = s.find(':');
+        if (colon_pos != std::string::npos) {
+            s = s.substr(0, colon_pos);
+        }
+
+        return s;
+    }
+
     bool Client::start(std::string server_ip2) {
+        std::string ws_host = extract_host_from_http_url(server_ip2);
         if (is_host){
             int ws_port = 0;
             if (request_create_session(server_ip2, ws_port)) {
                 std::cout << "Created session on " << ws_port << "\n";
-                if (connect_client(ws_port)) {
-                    net_client.send(shared::JSONHelper::make_handshake(client_id, true));
+                if (connect_client(ws_host, ws_port)) {
+                    std::cout << "Connected to client\n";
                     return true;
                 }
                 else {
@@ -48,13 +74,12 @@ namespace client {
             }
         }
         else {
-            if (connect_client(input_port)) {
-                std::cout << "Connected to client on port 30001\n";
-                net_client.send(shared::JSONHelper::make_handshake(client_id, false));
+            if (connect_client(ws_host, input_port)) {
+                std::cout << "Connected to client on port " << input_port << "\n";
                 return true;
             }
             else {
-                std::cout << "Failed to connect to client on port 30001\n";
+                std::cout << "Failed to connect to client on port " << input_port << "\n";
                 return false;
             }
         }
@@ -63,34 +88,65 @@ namespace client {
     bool Client::start_host_blank(const std::string& server_ip2) {
         setIsHost(true);
 
+        if (!(start(server_ip2))){
+            scene_ready = false;
+            return false;
+        }
+
         scene.bootstrap();
-        scene.set_camera_position(glm::vec3(0, 0, 1));
+        scene.set_camera_position(glm::vec3(0, 3, 3));
         scene_ready = true;
 
-        return start(server_ip2);
+        net_client.send(shared::JSONHelper::make_handshake(client_id, true));
+
+        return true;
     }
 
-    bool Client::start_host_file(const std::string &server_ip2, const std::string &file_path) {
+    bool Client::start_host_file(const std::string& server_ip2, const std::string& file_path) {
         setIsHost(true);
 
-        scene.bootstrap_from_file(file_path);
-        scene.set_camera_position(glm::vec3(0, 0, 1));
+        if (!(utils::assets::filepath_exists(file_path))) {
+            scene_ready = false;
+            return false;
+        }
+
+        if (!(start(server_ip2))){
+            scene_ready = false;
+            return false;
+        }
+
+        bool ok = scene.bootstrap_from_file(file_path);
+        if (!ok) {
+            scene_ready = false;
+            return false;
+        }
+
+        scene.set_camera_position(glm::vec3(0, 3, 3));
         scene_ready = true;
 
-        return start(server_ip2);
+        net_client.send(shared::JSONHelper::make_handshake(client_id, true));
+
+        return true;
     }
 
     bool Client::start_guest(const std::string &server_ip2, int port) {
+        net_client.disconnect();
         setIsHost(false);
         setInputPort(port);
 
+        if(!(start(server_ip2))) {
+            scene_ready = false;
+            return false;
+        }
+
         scene.bootstrap();
-        scene.set_camera_position(glm::vec3(0, 0, 1));
+        scene.set_camera_position(glm::vec3(0, 3, 3));
         scene_ready = false;
 
-        return start(server_ip2);
-    }
+        net_client.send(shared::JSONHelper::make_handshake(client_id, false));
 
+        return true;
+    }
 
     void Client::run() {
         bool started = start_main_loop(0, 0);
@@ -223,6 +279,10 @@ namespace client {
                 scene.guest_init(snapshot_no_defers);
                 scene_ready = true;
             }
+        }
+        else if (type == "session_close") {
+            std::cout << "Session closed by host\n";
+            disconnect_and_quit();
         }
         else {
             nlohmann::json message_payload = message.at("payload");
@@ -424,14 +484,14 @@ namespace client {
         return input_mode;
     }
 
-    bool Client::connect_client(int port) {
+    bool Client::connect_client(std::string& host, int port) {
         for (int i = 0; i < 20; ++i) {
             if (net_client.is_connected()) {
                 return true;
             }
 
             if (!net_client.is_connecting()) {
-                net_client.connect(port);
+                net_client.connect(host, port);
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -524,5 +584,35 @@ namespace client {
         return utils::assets::asset_exists(file_path);
     }
 
+    bool Client::save_to_file(std::string& file_path) {
+        core::SceneSnapshot save_snapshot = scene.build_snapshot();
+        return core::SceneSerializer::save(save_snapshot, utils::assets::get_filepath(file_path));
+    }
+
+    bool Client::save_and_quit(const std::string& file_path) {
+        if (!is_host) {
+            return false;
+        }
+
+        std::string jsonfile = file_path + ".json";
+        bool ok = save_to_file(jsonfile);
+
+        if (!ok) {
+            return false;
+        }
+
+        net_client.send(shared::JSONHelper::make_session_closed_message());
+        return true;
+    }
+
+    void Client::disconnect_and_quit() {
+        net_client.disconnect();
+
+        timeToShutdown = true;
+    }
+
+    bool Client::isDone() {
+        return timeToShutdown;
+    }
 
 }

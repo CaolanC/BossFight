@@ -63,7 +63,7 @@ public:
          registry.ctx().emplace<component::model_manager>(model_manager);
      }
 
-    void bootstrap_from_file(const std::string& file_path) {
+    bool bootstrap_from_file(const std::string& file_path) {
          int no_keys;
          const bool* k_state = SDL_GetKeyboardState(&no_keys);
          registry.ctx().emplace<component::keyboard_state>();
@@ -77,6 +77,10 @@ public:
          bool initialized = systems::Init_from_file(registry, utils::assets::get_filepath(file_path), sceneserializer, initial_snapshot, object_lookup);
          if (initialized) {
              initial_snapshot.debug_print();
+             return true;
+         }
+         else {
+             return false;
          }
      }
 
@@ -211,8 +215,13 @@ public:
         ShaderProgramHandle program = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
         if (!(model_m.check_ref(obj.model_ref))) {
-            rendering::Model m = systems::LoadModel(registry, obj.model_path);
-            model_m.add_model(m, obj.model_path, obj.model_ref);
+            if (model_m.has_model_path(obj.model_path)) {
+                obj.model_ref = model_m.get_model_ref_from_path(obj.model_path);
+            }
+            else {
+                rendering::Model m = systems::LoadModel(registry, obj.model_path);
+                model_m.add_model(m, obj.model_path, obj.model_ref);
+            }
         }
 
         auto model_e = spawn::model(registry, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
