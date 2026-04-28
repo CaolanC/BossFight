@@ -2,6 +2,7 @@
 #include <imgui_internal.h>
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
+#include <cstring>
 
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
@@ -66,6 +67,7 @@ struct AppContext {
     std::string selected_model_path;
 
     char import_model_path[260] = "";
+    char objectname[128] = "";
 
 };
 
@@ -431,8 +433,10 @@ static void draw_right(AppContext& app) {
 
     for (const auto& obj : objects) {
         bool selected = (app.selected_object_id == obj.objectID);
+        std::string display_name = obj.name.empty() ? "Object" : obj.name;
+        std::string label = display_name + "##" + obj.objectID;
 
-        if (ImGui::Selectable(obj.objectID.c_str(), selected)) {
+        if (ImGui::Selectable(label.c_str(), selected)) {
             app.selected_object_id = obj.objectID;
             app.selected_object = obj;
         }
@@ -517,12 +521,6 @@ static void draw_bottom(AppContext& app) {
     ImGui::Begin("BottomPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
 
     if (ImGui::BeginTabBar("BottomTabs")) {
-        if (ImGui::BeginTabItem("Console")) {
-            ImGui::TextWrapped("Status: %s", app.status_text.c_str());
-            ImGui::Separator();
-            ImGui::TextWrapped("Console output / logs can go here.");
-            ImGui::EndTabItem();
-        }
 
         if (ImGui::BeginTabItem("Loaded Models")) {
             if (!app.client.is_scene_ready()) {
@@ -559,12 +557,14 @@ static void draw_bottom(AppContext& app) {
                                 : app.selected_model_path.c_str()
                         );
 
+                        ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
+
                         if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
                             core::LoadedModelInfo info;
                             info.model_ref = app.selected_model_ref;
                             info.model_path = app.selected_model_path;
 
-                            bool ok = app.client.add_object_from_loaded_model(info);
+                            bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
                             app.status_text = ok
                                 ? "Object added from selected model"
                                 : "Failed to add object from selected model";

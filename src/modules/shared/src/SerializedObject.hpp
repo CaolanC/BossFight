@@ -9,6 +9,7 @@ namespace core
 {
     struct SerializedObject {
         std::string objectID;
+        std::string name;
         std::string model_path;
         xg::Guid model_ref;
         glm::vec3 position;

@@ -549,10 +549,14 @@ namespace client {
         return scene.get_loaded_models();
     }
 
-    bool Client::add_object_from_loaded_model(const core::LoadedModelInfo& model_info) {
+    bool Client::add_object_from_loaded_model(const core::LoadedModelInfo& model_info, std::string name) {
+        if (name.empty()) {
+            name = "Object";
+        }
         core::SerializedObject obj;
         obj.objectID = xg::newGuid().str();
         obj.model_ref = model_info.model_ref;
+        obj.name = name;
         obj.model_path = model_info.model_path;
         obj.position = glm::vec3(0.0f, 0.0f, 0.0f);
         obj.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);

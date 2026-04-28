@@ -70,6 +70,10 @@ namespace component
         std::string value;
     };
 
+    struct name {
+        std::string value;
+    };
+
     struct model_path {
         std::string value;
     };

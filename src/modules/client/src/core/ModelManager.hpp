@@ -62,11 +62,9 @@ namespace core {
                 auto it = model_to_path.find(ref);
                 if (it != model_to_path.end()) {
                     info.model_path = it->second;
-                } else {
-                    info.model_path = "";
+                    out.push_back(info);
                 }
 
-                out.push_back(info);
             }
 
             return out;

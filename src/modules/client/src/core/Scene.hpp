@@ -61,6 +61,7 @@ public:
          registry.ctx().emplace<component::mesh_manager>(mesh_manager);
          registry.ctx().emplace<component::material_manager>(core::ShaderProgramManager());
          registry.ctx().emplace<component::model_manager>(model_manager);
+         systems::Init_spawn_platform(registry);
      }
 
     bool bootstrap_from_file(const std::string& file_path) {
@@ -72,6 +73,7 @@ public:
          registry.ctx().emplace<component::mesh_manager>(mesh_manager);
          registry.ctx().emplace<component::material_manager>(core::ShaderProgramManager());
          registry.ctx().emplace<component::model_manager>(model_manager);
+         systems::Init_spawn_platform(registry);
          SceneSerializer sceneserializer = SceneSerializer();
 
          bool initialized = systems::Init_from_file(registry, utils::assets::get_filepath(file_path), sceneserializer, initial_snapshot, object_lookup);
@@ -89,7 +91,7 @@ public:
      }
 
     entt::entity spawn_default_camera() {
-        return spawn(spawn::freecam);
+         return spawn(spawn::freecam);
     }
 
     void spawn_from_generator(std::function<std::tuple<std::vector<float>, std::vector<unsigned int>>()>const& generator) {
@@ -112,37 +114,37 @@ public:
 
     void spawn_triangle() {
 
-        std::vector<float> vertices = {
-            0.0f, 0.5f, 0.0f,
-           -0.5f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.0f
-        };
-        std::vector<unsigned int> indices = {
-            0, 1, 2
-        };
+         std::vector<float> vertices = {
+             0.0f, 0.5f, 0.0f,
+            -0.5f, 0.0f, 0.0f,
+             0.0f, 0.0f, 0.0f
+         };
+         std::vector<unsigned int> indices = {
+             0, 1, 2
+         };
 
-        core::MeshSerialiser mesh_serialiser(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        core::Mesh mesh(vertices, indices, mesh_serialiser);
+         core::MeshSerialiser mesh_serialiser(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+         core::Mesh mesh(vertices, indices, mesh_serialiser);
          core::MeshManager& mm = registry.ctx().get<component::mesh_manager>().manager;
-        xg::Guid triangle_mesh_ref = mm.createIndexedMeshFromVertices(vertices, indices, mesh_serialiser);
+         xg::Guid triangle_mesh_ref = mm.createIndexedMeshFromVertices(vertices, indices, mesh_serialiser);
 
-        std::vector<core::ShaderSource> shader_sources = {
-            core::sh_src::v3D(),
-            core::sh_src::fSolid()
-        };
-        ShaderProgramHandle triangle_program_ref = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
+         std::vector<core::ShaderSource> shader_sources = {
+             core::sh_src::v3D(),
+             core::sh_src::fSolid()
+         };
+         ShaderProgramHandle triangle_program_ref = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
-        spawn::triangle(std::ref(registry), triangle_mesh_ref, triangle_program_ref);
+         spawn::triangle(std::ref(registry), triangle_mesh_ref, triangle_program_ref);
 
     }
 
     entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function) {
-        return spawn_function(std::ref(registry));
+         return spawn_function(std::ref(registry));
     }
 
     void set_camera_position(glm::vec3 position) {
-        auto &pos = registry.get<shared::component::position>(registry.ctx().get<component::current_camera>().e);
-        pos.value = position;
+         auto &pos = registry.get<shared::component::position>(registry.ctx().get<component::current_camera>().e);
+         pos.value = position;
     }
 
     // entt::registry& get_registry() { // Used for run_init_scripts, might be useful to refactor this later.
@@ -162,92 +164,96 @@ public:
       //
 
     const SceneSnapshot build_snapshot() {
-        SceneSnapshot snapshot;
+         SceneSnapshot snapshot;
 
-        auto view = registry.view<
-            component::object_id,
-            component::model_path,
-            component::model_ref,
-            shared::component::position,
-            shared::component::rotation,
-            component::scale
-        >();
+         auto view = registry.view<
+             component::object_id,
+             component::model_path,
+             component::name,
+             component::model_ref,
+             shared::component::position,
+             shared::component::rotation,
+             component::scale
+         >();
 
-        for (auto e : view) {
-            const auto& id   = view.get<component::object_id>(e);
-            const auto& ref = view.get<component::model_ref>(e);
-            const auto& path = view.get<component::model_path>(e);
-            const auto& pos  = view.get<shared::component::position>(e);
-            const auto& rot  = view.get<shared::component::rotation>(e);
-            const auto& scl  = view.get<component::scale>(e);
+         for (auto e : view) {
+             const auto& id   = view.get<component::object_id>(e);
+             const auto& ref = view.get<component::model_ref>(e);
+             const auto& objname = view.get<component::name>(e);
+             const auto& path = view.get<component::model_path>(e);
+             const auto& pos  = view.get<shared::component::position>(e);
+             const auto& rot  = view.get<shared::component::rotation>(e);
+             const auto& scl  = view.get<component::scale>(e);
 
-            core::SerializedObject obj;
-            obj.objectID = id.value;
-            obj.model_ref = ref.id;
-            obj.model_path = path.value;
-            obj.position = pos.value;
-            obj.rotation = rot;
-            obj.scale = scl.s;
+             core::SerializedObject obj;
+             obj.objectID = id.value;
+             obj.model_ref = ref.id;
+             obj.name = objname.value;
+             obj.model_path = path.value;
+             obj.position = pos.value;
+             obj.rotation = rot;
+             obj.scale = scl.s;
 
-            snapshot.insert(obj.objectID, obj);
+             snapshot.insert(obj.objectID, obj);
 
-        }
+         }
 
-        return snapshot;
-    }
+         return snapshot;
+     }
 
     const SceneSnapshot get_initial_snapshot() {
-        return initial_snapshot;
-    }
+         return initial_snapshot;
+     }
 
     // Functions called from client's netclient msg handler
 
     void guest_init(SceneSnapshot& snapshot) {
-        bool guest_initialized = systems::Init_from_snapshot(registry, snapshot, object_lookup);
+         bool guest_initialized = systems::Init_from_snapshot(registry, snapshot, object_lookup);
     }
 
     bool add_obj(SerializedObject& obj) {
-        auto& model_m = registry.ctx().get<component::model_manager>().manager;
-        std::vector<core::ShaderSource> shader_sources = {
-            core::sh_src::v3D(),
-            core::sh_src::fSolid()
-        };
-        ShaderProgramHandle program = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
+         auto& model_m = registry.ctx().get<component::model_manager>().manager;
+         std::vector<core::ShaderSource> shader_sources = {
+             core::sh_src::v3D(),
+             core::sh_src::fSolid()
+         };
+         ShaderProgramHandle program = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
 
-        if (!(model_m.check_ref(obj.model_ref))) {
-            if (model_m.has_model_path(obj.model_path)) {
-                obj.model_ref = model_m.get_model_ref_from_path(obj.model_path);
-            }
-            else {
-                rendering::Model m = systems::LoadModel(registry, obj.model_path);
-                model_m.add_model(m, obj.model_path, obj.model_ref);
-            }
-        }
+         if (!(model_m.check_ref(obj.model_ref))) {
+             if (model_m.has_model_path(obj.model_path)) {
+                 obj.model_ref = model_m.get_model_ref_from_path(obj.model_path);
+             }
+             else {
+                 rendering::Model m = systems::LoadModel(registry, obj.model_path);
+                 model_m.add_model(m, obj.model_path, obj.model_ref);
+             }
+         }
 
-        auto model_e = spawn::model(registry, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID);
-        object_lookup[obj.objectID] = model_e;
+         auto model_e = spawn::model(registry, obj.model_ref, program, obj.model_path, obj.position, obj.scale, obj.rotation, obj.objectID, obj.name);
+         object_lookup[obj.objectID] = model_e;
 
-        return true;
-    }
+         return true;
+     }
 
     bool edit_obj(SerializedObject& obj) {
-        auto e = registry_lookup(obj.objectID);
-        auto& pos = registry.get<shared::component::position>(e);
-        auto& rot = registry.get<shared::component::rotation>(e);
-        auto& scale = registry.get<component::scale>(e);
-        pos.value = obj.position;
-        rot = obj.rotation;
-        scale.s = obj.scale;
+         auto e = registry_lookup(obj.objectID);
+         auto& pos = registry.get<shared::component::position>(e);
+         auto& rot = registry.get<shared::component::rotation>(e);
+         auto& scale = registry.get<component::scale>(e);
+         auto& name = registry.get<component::name>(e);
+         pos.value = obj.position;
+         rot = obj.rotation;
+         scale.s = obj.scale;
 
-        return true;
+         return true;
     }
 
     bool delete_obj(SerializedObject& obj) {
-        auto e = registry_lookup(obj.objectID);
-        object_lookup.erase(obj.objectID);
-        registry.destroy(e);
+         auto e = registry_lookup(obj.objectID);
+         object_lookup.erase(obj.objectID);
+         registry.destroy(e);
 
-        return true;
+         return true;
     }
 
     bool load_model_from_gui(const std::string& file_path) {
@@ -264,7 +270,7 @@ public:
      }
 
     entt::entity registry_lookup(const std::string& enttid) {
-        return object_lookup.at(enttid);
+         return object_lookup.at(enttid);
     }
 
     bool check_registry(const std::string& enttid) {
@@ -280,6 +286,7 @@ public:
          entt::entity e = it->second;
          const auto& id  = registry.get<component::object_id>(e);
          const auto& ref = registry.get<component::model_ref>(e);
+         const auto& objname = registry.get<component::name>(e);
          const auto& path = registry.get<component::model_path>(e);
          const auto& pos = registry.get<shared::component::position>(e);
          const auto& rot = registry.get<shared::component::rotation>(e);
@@ -287,6 +294,7 @@ public:
 
          out.objectID  = id.value;
          out.model_ref = ref.id;
+         out.name = objname.value;
          out.model_path = path.value;
          out.position = pos.value;
          out.rotation = rot;
@@ -302,6 +310,7 @@ public:
          auto view = registry.view<
             component::object_id,
             component::model_ref,
+            component::name,
             component::model_path,
             shared::component::position,
             shared::component::rotation,
@@ -311,6 +320,7 @@ public:
          for (auto e : view) {
              const auto& id = view.get<component::object_id>(e);
              const auto& ref = view.get<component::model_ref>(e);
+             const auto& objname = view.get<component::name>(e);
              const auto& path = view.get<component::model_path>(e);
              const auto& pos = view.get<shared::component::position>(e);
              const auto& rot = view.get<shared::component::rotation>(e);
@@ -319,6 +329,7 @@ public:
              core::SerializedObject obj;
              obj.objectID  = id.value;
              obj.model_ref = ref.id;
+             obj.name = objname.value;
              obj.model_path = path.value;
              obj.position = pos.value;
              obj.rotation = rot;

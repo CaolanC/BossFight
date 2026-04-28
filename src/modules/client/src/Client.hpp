@@ -86,7 +86,7 @@ namespace client {
 
         void setInputPort(int port);
         std::vector<core::LoadedModelInfo> get_loaded_models() const;
-        bool add_object_from_loaded_model(const core::LoadedModelInfo& model_info);
+        bool add_object_from_loaded_model(const core::LoadedModelInfo& model_info, std::string name);
 
         bool importLocalModel(const std::string& file_path);
         bool checkAsset(const std::string& file_path);

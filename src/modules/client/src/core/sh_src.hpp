@@ -19,4 +19,11 @@ namespace core::sh_src
 
         }
     };
+
+    class fPlatform : public core::ShaderSource {
+    public:
+        fPlatform() : core::ShaderSource("shaders/fPlatform.glsl", ShaderType::Fragment) {
+
+        }
+    };
 }

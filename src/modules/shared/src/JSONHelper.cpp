@@ -62,6 +62,7 @@ namespace shared {
         return nlohmann::json{
                 {"objectID", obj.objectID},
                 {"modelpath", obj.model_path},
+                {"name", obj.name},
                 {"model_ref", obj.model_ref.str()},
                 {"position", {obj.position.x, obj.position.y, obj.position.z}},
                 {"rotation", {obj.rotation.w, obj.rotation.x, obj.rotation.y, obj.rotation.z}},
@@ -80,6 +81,7 @@ namespace shared {
 
         obj.objectID = j.at("objectID").get<std::string>();
         obj.model_path = j.at("modelpath").get<std::string>();
+        obj.name = j.at("name").get<std::string>();
         obj.model_ref = xg::Guid(j.at("model_ref").get<std::string>());
         auto pos = j.at("position");
         obj.position = glm::vec3(pos[0], pos[1], pos[2]);

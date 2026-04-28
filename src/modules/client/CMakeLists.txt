@@ -7,7 +7,8 @@ add_library(ClientLib ${CLIENT_SOURCES}
         src/NetClient.cpp
         src/NetClient.hpp
         src/WebsocketMsg.cpp
-        src/WebsocketMsg.hpp)
+        src/WebsocketMsg.hpp
+)
 target_include_directories(ClientLib
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"
