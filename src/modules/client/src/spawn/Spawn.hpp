@@ -1,7 +1,3 @@
-//
-// Created by cochrac2 on 29/09/2025.
-//
-
 #pragma once
 #include <entt/entt.hpp>
 #include <component/Core.hpp>

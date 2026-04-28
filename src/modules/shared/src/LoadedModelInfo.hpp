@@ -1,4 +1,3 @@
-
 #pragma once
 #include <string>
 #include <crossguid/guid.hpp>

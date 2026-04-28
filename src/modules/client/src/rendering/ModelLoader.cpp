@@ -163,8 +163,6 @@ namespace rendering {
             glEnableVertexAttribArray(0);
         }
 
-        // TODO: NORMAL, TEXCOORD_0, etc. (same pattern; may share view/stride with different byte offsets)
-
         if (primitive.indices >= 0) {
             const auto& iacc  = model.accessors.at(primitive.indices);
             const auto& iview = model.bufferViews.at(iacc.bufferView);

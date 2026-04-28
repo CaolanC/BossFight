@@ -52,13 +52,13 @@ public:
             return mesh_handle;
         }
 
-        void run_frame_scripts() { // TODO: Lock guard scripts so they can't be appended and read from at the same time
+        void run_frame_scripts() {
             for (auto script : frame_scripts) {
                 script.run();
             }
         }
 
-        void run_init_scripts() { // TODO: Lock guard scripts so they can't be appended and read from at the same time
+        void run_init_scripts() {
             for (auto script : init_scripts) {
                 script.run();
             }

@@ -11,6 +11,8 @@
 namespace component
 {
 
+    // Holds components for ENTT registry.
+
     struct camera {
 
     };

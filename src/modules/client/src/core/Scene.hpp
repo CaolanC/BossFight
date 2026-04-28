@@ -147,10 +147,6 @@ public:
          pos.value = position;
     }
 
-    // entt::registry& get_registry() { // Used for run_init_scripts, might be useful to refactor this later.
-    //     return std::ref(entities);
-    // }
-
     void update() {
 
          auto r = std::ref(registry);
@@ -159,9 +155,9 @@ public:
          systems::Transform(r);
          // systems::NewRender(r, true, FBO);
          systems::Debug(r);
-    } // TODO: Move the render system out of here and finally rename it, maybe gather userinput needs moved need to check it's implementation tU.
-      // Who needs to own what?
-      //
+    }
+
+    // Snapshot builder (mainly for writing to file use)
 
     const SceneSnapshot build_snapshot() {
          SceneSnapshot snapshot;
@@ -205,11 +201,15 @@ public:
          return initial_snapshot;
      }
 
-    // Functions called from client's netclient msg handler
+    // Functions called from client's netclient msg handler (a.k.a helpers for websockets)
+
+    // Initialize guest client (clients that join)
 
     void guest_init(SceneSnapshot& snapshot) {
          bool guest_initialized = systems::Init_from_snapshot(registry, snapshot, object_lookup);
     }
+
+    // Add object to scene
 
     bool add_obj(SerializedObject& obj) {
          auto& model_m = registry.ctx().get<component::model_manager>().manager;
@@ -235,6 +235,8 @@ public:
          return true;
      }
 
+    // Edit object
+
     bool edit_obj(SerializedObject& obj) {
          auto e = registry_lookup(obj.objectID);
          auto& pos = registry.get<shared::component::position>(e);
@@ -249,6 +251,8 @@ public:
          return true;
     }
 
+    // Delete object
+
     bool delete_obj(SerializedObject& obj) {
          auto e = registry_lookup(obj.objectID);
          object_lookup.erase(obj.objectID);
@@ -256,6 +260,8 @@ public:
 
          return true;
     }
+
+    // Local, used to load models from filepath
 
     bool load_model_from_gui(const std::string& file_path) {
          auto& model_m = registry.ctx().get<component::model_manager>().manager;
@@ -269,6 +275,8 @@ public:
 
          return true;
      }
+
+    // ENTT registry lookup methods
 
     entt::entity registry_lookup(const std::string& enttid) {
          return object_lookup.at(enttid);

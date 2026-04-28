@@ -1,7 +1,3 @@
-//
-// Created by ethan on 07/10/2025.
-//
-
 #include "TextureManager.hpp"
 #include <utils/Texture.hpp>
 

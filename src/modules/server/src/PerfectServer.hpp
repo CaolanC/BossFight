@@ -35,18 +35,9 @@ namespace server
 
         void set_session(Session* s);
 
-        // WS server goes here. ECS system goes
     private:
 
         entt::registry r;
-
-        void create_god() {
-            auto e = r.create();
-            r.emplace<server::components::god>(e);
-            r.emplace<shared::component::position>(e, glm::vec3(0.0f, 0.0f, 0.0f));
-            r.emplace<shared::component::rotation>(e);
-            r.emplace<shared::component::transform>(e);
-        }
 
         void update_loop() {
 

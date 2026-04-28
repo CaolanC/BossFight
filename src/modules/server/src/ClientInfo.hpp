@@ -1,7 +1,3 @@
-//
-// Created by ethan on 10/04/2026.
-//
-
 #pragma once
 
 #include <crossguid/guid.hpp>

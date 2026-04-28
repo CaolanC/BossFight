@@ -1,7 +1,3 @@
-//
-// Created by ethan on 07/04/2026.
-//
-
 #include <JSONHelper.hpp>
 
 namespace shared {

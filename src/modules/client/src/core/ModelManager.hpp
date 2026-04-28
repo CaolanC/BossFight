@@ -51,6 +51,8 @@ namespace core {
             return path_to_model.at(path);
         }
 
+        // Get a vector of all loaded models for GUI
+
         std::vector<LoadedModelInfo> get_loaded_models() const {
             std::vector<LoadedModelInfo> out;
             out.reserve(model_map.size());

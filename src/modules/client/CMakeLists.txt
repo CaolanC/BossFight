@@ -6,8 +6,6 @@ file(GLOB_RECURSE CLIENT_SOURCES CONFIGURE_DEPENDS
 add_library(ClientLib ${CLIENT_SOURCES}
         src/NetClient.cpp
         src/NetClient.hpp
-        src/WebsocketMsg.cpp
-        src/WebsocketMsg.hpp
 )
 target_include_directories(ClientLib
     PUBLIC

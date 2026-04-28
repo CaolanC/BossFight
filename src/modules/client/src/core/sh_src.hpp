@@ -20,6 +20,8 @@ namespace core::sh_src
         }
     };
 
+    // Extra shader for platform
+
     class fPlatform : public core::ShaderSource {
     public:
         fPlatform() : core::ShaderSource("shaders/fPlatform.glsl", ShaderType::Fragment) {

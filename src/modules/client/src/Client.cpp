@@ -216,6 +216,8 @@ namespace client {
 
             return true;
         }
+
+        return true;
     }
 
     // void Client::set_input_statsse(const bool* k_state) {
