@@ -32,7 +32,7 @@ struct AppContext {
     bool viewport_clicked = false;
     bool dock_built = false;
 
-    char ip_input[64] = "http://localhost:30000";
+    char ip_input[64] = "http://192.168.0.14:30000";
 
     enum class SessionFlowMode {
         None,
@@ -51,6 +51,7 @@ struct AppContext {
 
     char port_input[64] = "30001";
     char file_input[260] = "scene.json";
+    char savetofile_input[260] = "";
 
     bool host_started = false;
     bool guest_started = false;
@@ -251,87 +252,107 @@ static void draw_dockspace(AppContext& app) {
 
 static void draw_tools(AppContext& app) {
     ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoTitleBar);
-    ImGui::Text("Session");
-    ImGui::Separator();
 
-    if (ImGui::Button("Host Session", ImVec2(-1, 30))) {
-        app.flow_mode = AppContext::SessionFlowMode::Host;
-        app.host_scene_mode = AppContext::HostSceneMode::None;
-        app.status_text = "Hosting session";
-    }
-    if (ImGui::Button("Join Session", ImVec2(-1, 30))){
-        app.flow_mode = AppContext::SessionFlowMode::Join;
-        app.host_scene_mode = AppContext::HostSceneMode::None;
-        app.status_text = "Joining session";
-    }
+    if (!app.client.is_scene_ready()) {
+        ImGui::Text("Session");
+        ImGui::Separator();
 
-    ImGui::Separator();
-
-    // Host flow
-
-    if (app.flow_mode == AppContext::SessionFlowMode::Host) {
-        ImGui::Text("Host Session Setup");
-        ImGui::Spacing();
-
-        if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
-            app.host_scene_mode = AppContext::HostSceneMode::Blank;
-            app.status_text = "Blank scene selected";
+        if (ImGui::Button("Host Session", ImVec2(-1, 30))) {
+            app.flow_mode = AppContext::SessionFlowMode::Host;
+            app.host_scene_mode = AppContext::HostSceneMode::None;
+            app.status_text = "Hosting session";
+        }
+        if (ImGui::Button("Join Session", ImVec2(-1, 30))){
+            app.flow_mode = AppContext::SessionFlowMode::Join;
+            app.host_scene_mode = AppContext::HostSceneMode::None;
+            app.status_text = "Joining session";
         }
 
-        if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
-            app.host_scene_mode = AppContext::HostSceneMode::FromFile;
-            app.status_text = "Load-from-file selected";
-        }
+        ImGui::Separator();
 
-        ImGui::Spacing();
+        // Host flow
 
-        if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
-            ImGui::TextWrapped("A blank scene will be created when host flow is hooked up");
+        if (app.flow_mode == AppContext::SessionFlowMode::Host) {
+            ImGui::Text("Host Session Setup");
+            ImGui::Spacing();
 
-            if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                bool ok = app.client.start_host_blank(app.ip_input);
-                app.status_text = ok ? "Host session started (blank scene)" : "Failed to start host session";
+            if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
+                app.host_scene_mode = AppContext::HostSceneMode::Blank;
+                app.status_text = "Blank scene selected";
             }
 
-        }
-        else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
-            ImGui::Text("Scene file");
-            ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
-
-            if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                bool ok = app.client.start_host_file(
-                    std::string(app.ip_input),
-                    std::string(app.file_input)
-                    );
-                app.status_text = ok? std::string("Host session started from file: ") + app.file_input : "Failed to start host session from file";
+            if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
+                app.host_scene_mode = AppContext::HostSceneMode::FromFile;
+                app.status_text = "Load-from-file selected";
             }
 
+            ImGui::Spacing();
 
+            if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
+                ImGui::TextWrapped("A blank scene will be created when host flow is hooked up");
+
+                if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
+                    bool ok = app.client.start_host_blank(app.ip_input);
+                    app.status_text = ok ? "Host session started (blank scene)" : "Failed to start host session";
+                }
+
+            }
+            else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
+                ImGui::Text("Scene file");
+                ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
+
+                if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
+                    bool ok = app.client.start_host_file(
+                        std::string(app.ip_input),
+                        std::string(app.file_input)
+                        );
+                    app.status_text = ok? std::string("Host session started from file: ") + app.file_input : "Failed to start host session from file";
+                }
+
+
+            }
+        }
+
+        // Joining
+
+        else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
+            ImGui::Text("Join Session");
+            ImGui::Spacing();
+
+            ImGui::Text("Server IP");
+            ImGui::InputText("##ip", app.ip_input, sizeof(app.ip_input));
+
+            ImGui::Text("Port");
+            ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
+
+            if (ImGui::Button("Join", ImVec2(-1, 30))) {
+                app.client.setIsHost(false);
+                int port = std::atoi(app.port_input);
+                bool ok = app.client.start_guest(std::string(app.ip_input), port);
+                app.status_text = ok? std::string("Joining session at ") + app.ip_input + ":" + app.port_input : "Failed to start guest session";
+            }
+        }
+
+        ImGui::Separator();
+        ImGui::TextWrapped("Status: %s", app.status_text.c_str());
+    }
+    else if (app.client.is_scene_ready() && app.client.getIsHost()) {
+        ImGui::Text("Host Client");
+        ImGui::Separator();
+
+        ImGui::InputText("##save_file", app.savetofile_input, sizeof(app.savetofile_input));
+        if (ImGui::Button("Save and Quit", ImVec2(-1, 30))) {
+            if (app.client.save_and_quit(app.savetofile_input)) {
+                app.done = true;
+            }
+            else {
+                app.status_text = "Failed to save to file, client still open.";
+            }
         }
     }
-
-    // Joining
-
-    else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
-        ImGui::Text("Join Session");
-        ImGui::Spacing();
-
-        ImGui::Text("Server IP");
-        ImGui::InputText("##ip", app.ip_input, sizeof(app.ip_input));
-
-        ImGui::Text("Port");
-        ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
-
-        if (ImGui::Button("Join", ImVec2(-1, 30))) {
-            app.client.setIsHost(false);
-            int port = std::atoi(app.port_input);
-            bool ok = app.client.start_guest(std::string(app.ip_input), port);
-            app.status_text = ok? std::string("Joining session at ") + app.ip_input + ":" + app.port_input : "Failed to start guest session";
-        }
+    else if (app.client.is_scene_ready() && !(app.client.getIsHost())) {
+        ImGui::Text("Guest Client");
     }
-
-    ImGui::Separator();
-    ImGui::TextWrapped("Status: %s", app.status_text.c_str());
 
     ImGui::End();
 }
@@ -582,6 +603,9 @@ static void draw_bottom(AppContext& app) {
 }
 
 static void render(AppContext& app) {
+    if (app.client.isDone()) {
+        app.done = true;
+    }
     process_events(app);
 
     ImGui_ImplOpenGL3_NewFrame();
