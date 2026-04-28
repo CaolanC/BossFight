@@ -1,11 +1,62 @@
 {
     "objects": {
-        "32033ec4-648a-4aba-a4cf-e943651aaa35": {
-            "model_ref": "6a405970-fa0f-4861-8f9c-c3f5107b37a0",
-            "modelpath": "models/carl_johnson_cj/scene.gltf",
-            "objectID": "32033ec4-648a-4aba-a4cf-e943651aaa35",
+        "228dcec6-1d4a-48c5-a63d-dc025ff71610": {
+            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
+            "modelpath": "models/office_chair_gltf/scene.gltf",
+            "objectID": "228dcec6-1d4a-48c5-a63d-dc025ff71610",
             "position": [
                 0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "76cd388f-0192-4648-a333-b3429b9a730f": {
+            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
+            "modelpath": "models/office_chair_gltf/scene.gltf",
+            "objectID": "76cd388f-0192-4648-a333-b3429b9a730f",
+            "position": [
+                -10.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "8fcca642-1676-4e93-a36b-f8d863afcbde": {
+            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
+            "modelpath": "models/office_chair_gltf/scene.gltf",
+            "objectID": "8fcca642-1676-4e93-a36b-f8d863afcbde",
+            "position": [
+                5.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "ac9fa51d-00d8-4de8-9591-b186f532ad0e": {
+            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
+            "modelpath": "models/office_chair_gltf/scene.gltf",
+            "objectID": "ac9fa51d-00d8-4de8-9591-b186f532ad0e",
+            "position": [
+                10.0,
                 0.0,
                 0.0
             ],
