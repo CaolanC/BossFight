@@ -17,6 +17,10 @@ public:
     xg::Guid create();
 
     Session* getSession(const xg::Guid& sid);
+    Session* getSessionByPort(int port);
+    int find_free_port();
+
+    void setportID(int port, xg::Guid& sid);
 
 private:
     void start();
@@ -24,6 +28,7 @@ private:
 
     NetBus& bus;
     std::unordered_map<xg::Guid, std::unique_ptr<Session>> session_map;
+    std::unordered_map<int, xg::Guid> port_to_sessionID;
     std::jthread thread;
     bool running = true;
 };

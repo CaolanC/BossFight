@@ -27,6 +27,10 @@ public:
         ps.setPort(p);
     }
 
+    int getPort() {
+        return ps.getPort();
+    }
+
     bool wait_until_ready(std::chrono::milliseconds timeout) {
         return ps.wait_until_ready(timeout);
     }
@@ -109,8 +113,31 @@ public:
 
     }
 
+    void clearClients() {
+        std::lock_guard<std::mutex> lock(session_mutex);
+        connected_clients.clear();
+    }
+
+    void setActive(bool status) {
+        std::lock_guard<std::mutex> lock(session_mutex);
+        active = status;
+    }
+
+    bool isActive() {
+        std::lock_guard<std::mutex> lock(session_mutex);
+        return active;
+    }
+
+    void reset() {
+        std::lock_guard<std::mutex> lock(session_mutex);
+        connected_clients.clear();
+        session_snapshot = core::SceneSnapshot();
+        guest_joinable = false;
+    }
+
 private:
     xg::Guid id;
+    bool active = false;
     PerfectServer ps;
     mutable std::mutex session_mutex;
     std::unordered_map<WebSocketChannelPtr, ClientInfo> connected_clients;

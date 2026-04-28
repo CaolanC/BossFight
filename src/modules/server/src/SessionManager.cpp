@@ -36,6 +36,39 @@ namespace server
         return nullptr;
     }
 
+    Session* SessionManager::getSessionByPort(int port) {
+        auto it = port_to_sessionID.find(port);
+        if (it == port_to_sessionID.end()) {
+            return nullptr;
+        }
+
+        return getSession(it->second);
+    }
+
+    int SessionManager::find_free_port() {
+        for (int port = 30001; port <= 30010; ++port) {
+            bool used = false;
+
+            for (const auto& [id, session] : session_map) {
+                if (session->isActive() && session->getPort() == port) {
+                    used = true;
+                    break;
+                }
+            }
+
+            if (!used) {
+                return port;
+            }
+        }
+
+        return 0;
+    }
+
+    void SessionManager::setportID(int port, xg::Guid& sid) {
+        port_to_sessionID[port] = sid;
+    }
+
+
     void SessionManager::start() {
         thread = std::jthread([this]{run_async();});
     }
