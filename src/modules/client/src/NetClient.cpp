@@ -8,13 +8,14 @@
 namespace client
 {
 
-    bool NetClient::connect(int port) {
+    bool NetClient::connect(std::string& host, int port) {
 
         if (connected.load() || connecting.load()) {
             return false;
         }
 
-        std::string url = "ws://localhost:" + std::to_string(port);
+        // std::string url = "ws://localhost:" + std::to_string(port);
+        std::string url = "ws://" + host + ":" + std::to_string(port);
         connecting = true;
 
         ws.onopen = [this]() {

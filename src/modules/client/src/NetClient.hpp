@@ -11,7 +11,7 @@ namespace client {
     class NetClient {
 
     public:
-        bool connect(int port);
+        bool connect(std::string& host, int port);
         void disconnect();
         void send(std::string msg);
         bool pollMessage(std::string& out);
