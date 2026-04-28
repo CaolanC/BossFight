@@ -463,6 +463,14 @@ static void draw_right(AppContext& app) {
     ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
     ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
 
+    char name[128];
+    std::strncpy(name, app.selected_object.name.c_str(), 128);
+    name[sizeof(name) - 1] = '\0';
+
+    if (ImGui::InputText("Name", name, sizeof(name))) {
+        app.selected_object.name = name;
+    }
+
     float pos[3] = {
         app.selected_object.position.x,
         app.selected_object.position.y,

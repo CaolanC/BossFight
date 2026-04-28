@@ -244,6 +244,7 @@ public:
          pos.value = obj.position;
          rot = obj.rotation;
          scale.s = obj.scale;
+         name.value = obj.name;
 
          return true;
     }
