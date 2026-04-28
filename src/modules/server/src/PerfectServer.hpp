@@ -26,6 +26,7 @@ namespace server
         ~PerfectServer();
 
         void setPort(int p);
+        int getPort();
 
         void start();
         void stop();

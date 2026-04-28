@@ -22,7 +22,12 @@ namespace server
         port = p;
     }
 
-    // WS server goes here. ECS system goes
+    int PerfectServer::getPort() {
+        return port;
+    }
+
+    // WS server code adapted from libhv documentation (https://github.com/ithewei/libhv
+    // at WebSockets server)
 
     void PerfectServer::start() {
 
@@ -70,6 +75,25 @@ namespace server
                 session->setSnapshot(snapshot);
                 session->debugPrintSnapshot();
                 session->setJoinable(true);
+            }
+            else if (type == "session_close") {
+                auto recipients = session->getClientsExcept(channel);
+
+                std::string close_msg = shared::JSONHelper::make_session_closed_message();
+
+                for (const auto& recipient : recipients) {
+                    recipient->send(close_msg);
+                }
+
+                for (const auto& [client_channel, info] : session->getConnectedClients()) {
+                    client_channel->close();
+                }
+
+                session->clearClients();
+                stop();
+                session->setActive(false);
+
+                return;
             }
             else {
                 const nlohmann::json j = data.at("payload");
