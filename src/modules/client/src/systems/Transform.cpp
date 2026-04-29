@@ -1,4 +1,3 @@
-#include <format>
 #include <entt/entt.hpp>
 #include <iostream>
 #include <component/Core.hpp>

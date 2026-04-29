@@ -8,14 +8,16 @@
 namespace client
 {
 
+    // Some code taken from libhv documentation (see: WebSockets Client example on github repo)
+
     bool NetClient::connect(std::string& host, int port) {
 
         if (connected.load() || connecting.load()) {
             return false;
         }
 
-        // std::string url = "ws://localhost:" + std::to_string(port);
         std::string url = "ws://" + host + ":" + std::to_string(port);
+        std::cout << "[CLIENT] Attempting to connect to: " << url << "\n";
         connecting = true;
 
         ws.onopen = [this]() {
@@ -25,7 +27,6 @@ namespace client
         };
 
         ws.onmessage = [this](const std::string& msg) {
-            std::cout << "repeat msg from server";
             messages.enqueue(msg);
         };
 

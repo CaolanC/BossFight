@@ -33,7 +33,8 @@ struct AppContext {
     bool viewport_clicked = false;
     bool dock_built = false;
 
-    char ip_input[64] = "http://192.168.0.14:30000";
+    char guest_ip_input[64] = "http://<serverip>";
+    char host_ip_input[64] = "http://<serverip>";
 
     enum class SessionFlowMode {
         None,
@@ -81,8 +82,19 @@ static bool init(AppContext& app) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
+    // new
+
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    // SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    //
+
     app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
     app.gl_context = SDL_GL_CreateContext(app.window);
+
+    // SDL_GL_SetSwapInterval(1); // new
 
     SDL_GL_MakeCurrent(app.window, app.gl_context);
 
@@ -278,6 +290,8 @@ static void draw_tools(AppContext& app) {
             ImGui::Text("Host Session Setup");
             ImGui::Spacing();
 
+            ImGui::InputText("##host_ip_input", app.host_ip_input, sizeof(app.host_ip_input));
+
             if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
                 app.host_scene_mode = AppContext::HostSceneMode::Blank;
                 app.status_text = "Blank scene selected";
@@ -291,10 +305,10 @@ static void draw_tools(AppContext& app) {
             ImGui::Spacing();
 
             if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
-                ImGui::TextWrapped("A blank scene will be created when host flow is hooked up");
+                ImGui::TextWrapped("A blank scene will be created.");
 
                 if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                    bool ok = app.client.start_host_blank(app.ip_input);
+                    bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000");
                     app.status_text = ok ? "Host session started (blank scene)" : "Failed to start host session";
                 }
 
@@ -305,7 +319,7 @@ static void draw_tools(AppContext& app) {
 
                 if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
                     bool ok = app.client.start_host_file(
-                        std::string(app.ip_input),
+                        std::string(app.host_ip_input) + ":30000",
                         std::string(app.file_input)
                         );
                     app.status_text = ok? std::string("Host session started from file: ") + app.file_input : "Failed to start host session from file";
@@ -322,7 +336,7 @@ static void draw_tools(AppContext& app) {
             ImGui::Spacing();
 
             ImGui::Text("Server IP");
-            ImGui::InputText("##ip", app.ip_input, sizeof(app.ip_input));
+            ImGui::InputText("##ip", app.guest_ip_input, sizeof(app.guest_ip_input));
 
             ImGui::Text("Port");
             ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
@@ -330,8 +344,8 @@ static void draw_tools(AppContext& app) {
             if (ImGui::Button("Join", ImVec2(-1, 30))) {
                 app.client.setIsHost(false);
                 int port = std::atoi(app.port_input);
-                bool ok = app.client.start_guest(std::string(app.ip_input), port);
-                app.status_text = ok? std::string("Joining session at ") + app.ip_input + ":" + app.port_input : "Failed to start guest session";
+                bool ok = app.client.start_guest(std::string(app.guest_ip_input), port);
+                app.status_text = ok? std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input : "Failed to start guest session";
             }
         }
 
@@ -380,9 +394,13 @@ static void draw_viewport(AppContext& app) {
     }
 
     ImVec2 size = ImGui::GetContentRegionAvail();
+    ImGuiIO& io = ImGui::GetIO();
 
-    int w = (int)size.x;
-    int h = (int)size.y;
+    // int w = (int)size.x;
+    // int h = (int)size.y;
+
+    int w = (int)(size.x * io.DisplayFramebufferScale.x);
+    int h = (int)(size.y * io.DisplayFramebufferScale.y);
 
     if (w > 0 && h > 0) {
         app.client.update();
@@ -628,9 +646,13 @@ static void render(AppContext& app) {
 
     ImGui::Render();
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO(); // maybe delete this
 
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+    int display_w = 0;
+    int display_h = 0;
+    SDL_GetWindowSizeInPixels(app.window, &display_w, &display_h);
+
+    glViewport(0, 0, display_w, display_h);
     glClearColor(app.clear_color.x, app.clear_color.y, app.clear_color.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

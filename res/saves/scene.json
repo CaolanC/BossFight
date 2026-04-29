@@ -1,103 +1,13 @@
 {
     "objects": {
-        "228dcec6-1d4a-48c5-a63d-dc025ff71610": {
-            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
+        "e52bcfc1-d255-4b38-b85f-8ad265dac186": {
+            "model_ref": "db0a81c2-cf16-497a-9fc1-8e992c755131",
             "modelpath": "models/office_chair_gltf/scene.gltf",
-            "name": "Chair1",
-            "objectID": "228dcec6-1d4a-48c5-a63d-dc025ff71610",
-            "position": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "rotation": [
-                1.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "scale": 1.0
-        },
-        "4f39eb92-d377-4019-9751-d0ede5cb7afc": {
-            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
-            "modelpath": "models/office_chair_gltf/scene.gltf",
-            "name": "ObjectRenamed",
-            "objectID": "4f39eb92-d377-4019-9751-d0ede5cb7afc",
-            "position": [
-                7.0,
-                0.0,
-                0.0
-            ],
-            "rotation": [
-                1.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "scale": 1.0
-        },
-        "76cd388f-0192-4648-a333-b3429b9a730f": {
-            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
-            "modelpath": "models/office_chair_gltf/scene.gltf",
-            "name": "Chair2",
-            "objectID": "76cd388f-0192-4648-a333-b3429b9a730f",
-            "position": [
-                -10.0,
-                0.0,
-                0.0
-            ],
-            "rotation": [
-                1.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "scale": 1.0
-        },
-        "8fcca642-1676-4e93-a36b-f8d863afcbde": {
-            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
-            "modelpath": "models/office_chair_gltf/scene.gltf",
-            "name": "Chair3",
-            "objectID": "8fcca642-1676-4e93-a36b-f8d863afcbde",
+            "name": "chair2",
+            "objectID": "e52bcfc1-d255-4b38-b85f-8ad265dac186",
             "position": [
                 5.0,
                 0.0,
-                0.0
-            ],
-            "rotation": [
-                1.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "scale": 1.0
-        },
-        "9dd740b7-cd59-404f-88ff-497804a96bd0": {
-            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
-            "modelpath": "models/office_chair_gltf/scene.gltf",
-            "name": "Chair8",
-            "objectID": "9dd740b7-cd59-404f-88ff-497804a96bd0",
-            "position": [
-                4.0,
-                0.0,
-                0.0
-            ],
-            "rotation": [
-                1.0,
-                0.0,
-                0.0,
-                0.0
-            ],
-            "scale": 1.0
-        },
-        "ac9fa51d-00d8-4de8-9591-b186f532ad0e": {
-            "model_ref": "a4ebaf36-702c-4764-8433-926201ad90af",
-            "modelpath": "models/office_chair_gltf/scene.gltf",
-            "name": "Chair4",
-            "objectID": "ac9fa51d-00d8-4de8-9591-b186f532ad0e",
-            "position": [
-                10.0,
-                5.0,
                 0.0
             ],
             "rotation": [

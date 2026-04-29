@@ -40,7 +40,7 @@ add_subdirectory(thirdpartypoopers/crossguid)
 add_subdirectory(thirdpartypoopers/tinygltf)
 add_subdirectory(thirdpartypoopers/PolyVox)
 add_subdirectory(thirdpartypoopers/header_only)
-add_subdirectory(thirdpartypoopers/imgui)
+add_subdirectory(imguicmakeholder/imgui)
 
 add_subdirectory(src/modules/server)
 add_subdirectory(src/modules/shared)

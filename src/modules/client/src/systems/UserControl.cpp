@@ -21,11 +21,10 @@ namespace systems {
             const glm::vec3 right = glm::normalize(rot * glm::vec3(1,0,0));
             rot = glm::normalize(glm::angleAxis(pitch, right) * rot);
 
-            const float speed = 0.15f;
+            const float speed = 0.03f;
             const glm::vec3 fwd = glm::normalize(rot * glm::vec3(0,0,-1));
             const glm::vec3 strafe = glm::normalize(rot * glm::vec3(1,0,0));
 
-            // TODO: Normalize these values and set up an input actions maps,
             if (kb.down[SDL_SCANCODE_W]) pos.value += fwd * speed;
             if (kb.down[SDL_SCANCODE_S]) pos.value -= fwd * speed;
             if (kb.down[SDL_SCANCODE_A]) pos.value -= strafe * speed;

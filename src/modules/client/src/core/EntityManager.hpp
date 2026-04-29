@@ -44,7 +44,6 @@ namespace core {
         void update_transform() {
             auto view = reg.view<shared::component::transform, shared::component::position, shared::component::rotation>();
             for (auto [e, transform, position, rotation]: view.each()) {
-                std::cout << std::format("{}, {}, {}", position.value[0], position.value[1], position.value[2]) << '\n';
                 transform = glm::translate(glm::identity<glm::mat4>(), position.value) * glm::mat4_cast(rotation);
             }
         }

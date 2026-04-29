@@ -343,6 +343,7 @@ namespace client {
         HttpRequest req;
         req.method = HTTP_GET;
         req.url = ip + "/create_session";
+        std::cout << "[CLIENT] Making a create session request to: " << req.url << "\n";
         req.headers["Connection"] = "keep-alive";
         req.body = "This is a sync request.";
         req.timeout = 10;
