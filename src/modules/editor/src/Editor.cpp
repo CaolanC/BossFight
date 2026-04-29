@@ -94,7 +94,7 @@ static bool init(AppContext& app) {
     app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
     app.gl_context = SDL_GL_CreateContext(app.window);
 
-    // SDL_GL_SetSwapInterval(1); // new
+    //vSDL_GL_SetSwapInterval(1); // new
 
     SDL_GL_MakeCurrent(app.window, app.gl_context);
 
@@ -394,13 +394,13 @@ static void draw_viewport(AppContext& app) {
     }
 
     ImVec2 size = ImGui::GetContentRegionAvail();
-    ImGuiIO& io = ImGui::GetIO();
+    // ImGuiIO& io = ImGui::GetIO();
 
-    // int w = (int)size.x;
-    // int h = (int)size.y;
+    int w = (int)size.x;
+    int h = (int)size.y;
 
-    int w = (int)(size.x * io.DisplayFramebufferScale.x);
-    int h = (int)(size.y * io.DisplayFramebufferScale.y);
+    // int w = (int)(size.x * io.DisplayFramebufferScale.x);
+    // int h = (int)(size.y * io.DisplayFramebufferScale.y);
 
     if (w > 0 && h > 0) {
         app.client.update();
@@ -648,11 +648,14 @@ static void render(AppContext& app) {
 
     ImGuiIO& io = ImGui::GetIO(); // maybe delete this
 
-    int display_w = 0;
-    int display_h = 0;
-    SDL_GetWindowSizeInPixels(app.window, &display_w, &display_h);
+    // WSL test
 
-    glViewport(0, 0, display_w, display_h);
+    // int display_w = 0;
+    // int display_h = 0;
+    // SDL_GetWindowSizeInPixels(app.window, &display_w, &display_h);
+
+    // glViewport(0, 0, display_w, display_h);
+    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     glClearColor(app.clear_color.x, app.clear_color.y, app.clear_color.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

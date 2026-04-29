@@ -3,7 +3,6 @@
 #include <entt/entt.hpp>
 #include <component/Core.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include <format>
 
 #include "glm/gtx/quaternion.hpp"
 #include <SharedComponents.hpp>
