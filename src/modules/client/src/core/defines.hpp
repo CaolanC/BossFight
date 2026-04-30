@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <crossguid/guid.hpp>
+#include <glad/glad.h>
 
 #ifndef INIT_SCREEN_WIDTH
 #define INIT_SCREEN_WIDTH 1920
