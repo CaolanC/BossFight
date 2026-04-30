@@ -38,3 +38,6 @@
 [submodule "thirdpartypoopers/yocto-gl"]
 	path = thirdpartypoopers/yocto-gl
 	url = https://github.com/xelatihy/yocto-gl.git
+[submodule "thirdpartypoopers/googletest"]
+	path = thirdpartypoopers/googletest
+	url = https://github.com/google/googletest.git
