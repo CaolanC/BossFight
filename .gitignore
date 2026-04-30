@@ -6,4 +6,6 @@ bin/*
 
 libhv*.log
 
+src/tests/*.dll
+
 .idea
