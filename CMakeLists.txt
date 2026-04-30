@@ -28,6 +28,10 @@ find_package(OpenGL REQUIRED)
 
 set(SDL_TARGET SDL3::SDL3-static)
 
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+set(BUILD GMOCK OFF CACHE BOOL "" FORCE)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
 add_subdirectory(thirdpartypoopers/libhv)
 add_subdirectory(thirdpartypoopers/libsdl-org)
 add_subdirectory(thirdpartypoopers/cglm)
@@ -41,12 +45,16 @@ add_subdirectory(thirdpartypoopers/tinygltf)
 add_subdirectory(thirdpartypoopers/PolyVox)
 add_subdirectory(thirdpartypoopers/header_only)
 add_subdirectory(imguicmakeholder/imgui)
+add_subdirectory(thirdpartypoopers/googletest)
 
 add_subdirectory(src/modules/server)
 add_subdirectory(src/modules/shared)
 add_subdirectory(src/modules/client)
 add_subdirectory(src/modules/gui)
 add_subdirectory(src/modules/editor)
+
+enable_testing()
+add_subdirectory(src/tests)
 
 if(NOT TARGET ${SDL_TARGET})
     if(TARGET SDL3::SDL3)
@@ -84,6 +92,7 @@ target_compile_definitions(ClientLib PRIVATE SLJA_SAVES_DIR="${SAVES_DIR}")
 add_executable(GUI src/apps/gui/main.cpp)
 target_link_libraries(GUI PUBLIC GuiLib glad  EditorLib ClientLib)
 set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+
 
 if (WIN32)
     add_custom_command(TARGET Server POST_BUILD
