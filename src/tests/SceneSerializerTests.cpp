@@ -5,6 +5,8 @@
 #include <SceneSnapshot.hpp>
 #include <TestHelpers.hpp>
 
+// Tests scene serialization functions (from files, etc). More details in docs
+
 TEST(SceneSerializerTests, InvalidPathReturnsFalse) {
     core::SceneSnapshot snapshot;
 

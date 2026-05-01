@@ -29,3 +29,12 @@ static void add_input_context(entt::registry& r) {
     r.ctx().emplace<component::keyboard_state>();
     r.ctx().emplace<component::mouse_state>();
 }
+
+static entt::entity make_transform_entity(entt::registry& r, glm::vec3 pos, float scale) {
+    auto e = r.create();
+    r.emplace<shared::component::position>(e, pos);
+    r.emplace<shared::component::rotation>(e, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+    r.emplace<shared::component::transform>(e, glm::mat4(1.0f));
+    r.emplace<component::scale>(e, scale);
+    return e;
+}

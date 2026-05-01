@@ -6,6 +6,8 @@
 #include <TestHelpers.hpp>
 #include <nlohmann/json.hpp>
 
+// Tests main JSONHelper serialization functions. More details in docs
+
 TEST(JSONHelperTests, SerializeObjectPreservesFields) {
     auto obj = make_test_object();
 

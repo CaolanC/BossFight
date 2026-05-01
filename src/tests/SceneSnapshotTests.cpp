@@ -3,6 +3,8 @@
 #include <SceneSnapshot.hpp>
 #include <TestHelpers.hpp>
 
+// Tests scene snapshot functions and its map. More details in docs
+
 TEST(SceneSnapshotTests, NewSnapshotEmpty) {
     core::SceneSnapshot snapshot;
 

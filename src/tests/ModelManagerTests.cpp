@@ -4,6 +4,8 @@
 #include <rendering/Model.hpp>
 #include <crossguid/guid.hpp>
 
+// Tests modelmanager functions. More details in docs
+
 TEST(ModelManagerTests, AddModelWithGeneratedRefCanBeFound) {
     core::ModelManager manager;
     rendering::Model model;
@@ -33,7 +35,7 @@ TEST(ModelManagerTests, AddModelWithPathCanBeFoundByPath) {
     EXPECT_TRUE(manager.has_model_path("models/chair/scene.gltf"));
 }
 
-TEST(ModelManagerTests, GetModelRefFromPathReturnsProvidedRef) {
+TEST(ModelManagerTests, GetModelRefFromPathReturnsRef) {
     core::ModelManager manager;
     rendering::Model model;
     xg::Guid ref = xg::newGuid();

@@ -6,6 +6,8 @@
 
 #include <TestHelpers.hpp>
 
+// Tests some methods related to sessions in server. More details in docs
+
 TEST(SessionTests, SessionStartsInactive) {
     server::Session session;
 
@@ -24,6 +26,23 @@ TEST(SessionTests, SessionResetClearsData) {
     session.reset();
 
     EXPECT_FALSE(session.isGuestJoinable());
+    EXPECT_TRUE(session.getSnapshot().getmap().empty());
+}
+
+TEST(SessionTests, ResetClearsMultipleSnapshotObjects) {
+    server::Session session;
+
+    auto first = make_test_object();
+    auto second = make_test_object();
+    second.objectID = "obj-2";
+
+    session.addSnapshot(first);
+    session.addSnapshot(second);
+
+    ASSERT_EQ(session.getSnapshot().getmap().size(), 2);
+
+    session.reset();
+
     EXPECT_TRUE(session.getSnapshot().getmap().empty());
 }
 
