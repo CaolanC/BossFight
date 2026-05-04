@@ -286,6 +286,7 @@ public:
          return object_lookup.find(enttid) != object_lookup.end();
      }
 
+    // Looks up registry for one specific SerializedObject
     bool registry_lookup_to_obj(const std::string& enttid, core::SerializedObject& out) const {
          auto it = object_lookup.find(enttid);
          if (it == object_lookup.end()) {
@@ -312,6 +313,7 @@ public:
          return true;
      }
 
+    // Makes a vector of SerializedObjects from the EnTT registry for GUI to display
     std::vector<core::SerializedObject> get_object_info() const {
          std::vector<core::SerializedObject> out;
          out.reserve(object_lookup.size());
@@ -350,6 +352,7 @@ public:
          return out;
      }
 
+    // Gets a list of loaded models from model manager
     std::vector<core::LoadedModelInfo> get_loaded_models() const {
          const auto& model_manager = registry.ctx().get<component::model_manager>().manager;
          return model_manager.get_loaded_models();

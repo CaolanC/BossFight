@@ -2,7 +2,6 @@
 
 #include <string>
 #include <SDL3/SDL.h>
-#include <platform/Window.hpp>
 #include <core/MeshManager.hpp>
 #include <core/ModelManager.hpp>
 #include <core/Scene.hpp>
@@ -34,16 +33,12 @@ namespace client {
 
         bool is_scene_ready() const;
 
-        void run();
-        void enter_editor(int w, int h);
-        void enter_client(int w, int h);
         void process_network_messages();
         void handle_incoming_message(std::string& msg);
         void poll_deferred_updates();
         bool connect_client(std::string& host, int port);
         bool is_editor;
         int input_port;
-        bool start_main_loop(int w, int h);
         bool owns_window;
         std::string name;
         std::optional<Platform::Window> window;

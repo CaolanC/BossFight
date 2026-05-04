@@ -529,7 +529,7 @@ namespace client {
     }
 
     bool Client::checkAsset(const std::string& file_path) {
-        return utils::assets::asset_exists(file_path);
+        return utils::assets::model_file_exists(file_path);
     }
 
     bool Client::save_to_file(std::string& file_path) {

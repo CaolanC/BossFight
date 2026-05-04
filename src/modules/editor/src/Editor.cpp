@@ -356,6 +356,7 @@ static void draw_tools(AppContext& app) {
         ImGui::Text("Host Client");
         ImGui::Separator();
 
+        ImGui::Text("Enter save file name below:");
         ImGui::InputText("##save_file", app.savetofile_input, sizeof(app.savetofile_input));
         if (ImGui::Button("Save and Quit", ImVec2(-1, 30))) {
             if (app.client.save_and_quit(app.savetofile_input)) {

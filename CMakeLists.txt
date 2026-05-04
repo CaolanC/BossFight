@@ -29,7 +29,7 @@ find_package(OpenGL REQUIRED)
 set(SDL_TARGET SDL3::SDL3-static)
 
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-set(BUILD GMOCK OFF CACHE BOOL "" FORCE)
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 add_subdirectory(thirdpartypoopers/libhv)
