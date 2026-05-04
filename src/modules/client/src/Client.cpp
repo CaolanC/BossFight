@@ -29,6 +29,8 @@ namespace client {
         // request_join(server_ip);
     }
 
+    // Gets the host from the URL (removes the http, any : and any /)
+
     static std::string extract_host_from_http_url(std::string& url) {
         std::string s = url;
 
@@ -85,6 +87,8 @@ namespace client {
         }
     }
 
+    // 3 functions for starting scene based on user input (host blank, host from file, join as guest)
+
     bool Client::start_host_blank(const std::string& server_ip2) {
         setIsHost(true);
 
@@ -118,6 +122,7 @@ namespace client {
         bool ok = scene.bootstrap_from_file(file_path);
         if (!ok) {
             scene_ready = false;
+            net_client.send(shared::JSONHelper::make_session_closed_message());
             return false;
         }
 
@@ -148,14 +153,6 @@ namespace client {
         return true;
     }
 
-    void Client::run() {
-        bool started = start_main_loop(0, 0);
-    }
-
-    void Client::InitSDL() {
-
-    }
-
     void Client::init_embedded() {
         if (bootstrapped) return;
 
@@ -163,74 +160,9 @@ namespace client {
         bootstrapped = true;
     }
 
-    bool Client::start_main_loop(int w, int h) {
-        init_embedded();
-        if (start(server_ip)) {
-            glViewport(0, 0, w, h);
-
-            bool quit = false;
-            SDL_Event event;
-
-            while (!quit) {
-                begin_input_frame();
-
-                while (SDL_PollEvent(&event)) {
-                    switch (event.type) {
-                        case SDL_EVENT_QUIT:
-                            quit = true;
-                            break;
-                    }
-
-                    process_input_event(event);
-                }
-
-                end_input_frame();
-
-                int draw_w = w;
-                int draw_h = h;
-
-                if (window) {
-                    SDL_GetWindowSizeInPixels(window->get_window(), &draw_w, &draw_h);
-                }
-
-                glViewport(0, 0, draw_w, draw_h);
-                glEnable(GL_DEPTH_TEST);
-                glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                std::string msg;
-                while (net_client.pollMessage(msg)) {
-                    handle_incoming_message(msg);
-                }
-
-                update();
-
-                entt::registry& r = scene.getRegistry();
-                systems::Render(r, draw_w, draw_h);
-
-                if (window) {
-                    window->swap();
-                }
-
-            }
-
-            return true;
-        }
-
-        return true;
-    }
-
-    // void Client::set_input_statsse(const bool* k_state) {
-    //     entt::registry& r = scene.getRegistry();
-    //
-    //     auto& kb = r.ctx().get<component::keyboard_state>();
-    //     kb.k_state = k_state;
-    //
-    //     auto& ms  = r.ctx().get<component::mouse_state>();
-    // }
+    // Updates scene registry
 
     void Client::update() {
-        // init_embedded();
 
         entt::registry& r = scene.getRegistry();
 
@@ -242,6 +174,8 @@ namespace client {
         systems::Debug(r);
     }
 
+    // Processes all incoming WebSockets messages
+
     void Client::process_network_messages() {
         std::string msg;
 
@@ -249,6 +183,8 @@ namespace client {
             handle_incoming_message(msg);
         }
     }
+
+    // Handles said message above, different behaviour for each message type
 
     void Client::handle_incoming_message(std::string& msg) {
         nlohmann::json message = nlohmann::json::parse(msg);
@@ -264,7 +200,6 @@ namespace client {
             if (!is_host) {
                 std::cout << "Snapshot received. Preparing to initialize...\n";
                 nlohmann::json message_payload = message.at("payload");
-                // std::cout << message_payload.dump() << "\n";
                 core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
 
                 core::SceneSnapshot snapshot_no_defers;
@@ -274,6 +209,7 @@ namespace client {
                         snapshot_no_defers.insert(key, obj);
                     }
                     else {
+                        // If the asset does not exist locally, send it to the deferred updates list
                         deferred_updates[obj.objectID] = obj;
                         std::cout << "Deferred snapshot object. Missing asset: " << obj.model_path << "\n";
                     }
@@ -287,6 +223,7 @@ namespace client {
             disconnect_and_quit();
         }
         else {
+            // Update message handling
             nlohmann::json message_payload = message.at("payload");
             core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
             if (type == "update_add") {
@@ -316,6 +253,7 @@ namespace client {
         }
     }
 
+    // Polls the deferred update list, increments through a pointer (it).
     void Client::poll_deferred_updates() {
         for (auto it = deferred_updates.begin(); it != deferred_updates.end(); ) {
             core::SerializedObject obj = it->second;
@@ -337,7 +275,7 @@ namespace client {
         }
     }
 
-
+    // Basic HTTP request for session creation
     bool Client::request_create_session(std::string const& ip, int& ws_port) {
         hv::HttpClient cli;
         HttpRequest req;
@@ -434,6 +372,7 @@ namespace client {
         ms.dy = 0.0f;
     }
 
+    // Processes user input
     void Client::process_input_event(const SDL_Event& event) {
         entt::registry& r = scene.getRegistry();
         auto& kb = r.ctx().get<component::keyboard_state>();
@@ -486,6 +425,8 @@ namespace client {
     InputMode Client::get_input_mode() const {
         return input_mode;
     }
+
+
 
     bool Client::connect_client(std::string& host, int port) {
         for (int i = 0; i < 20; ++i) {

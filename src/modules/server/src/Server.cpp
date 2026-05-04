@@ -63,7 +63,7 @@ namespace server
                             existing->setActive(true);
                             existing->startServer();
                             sid = existing->get_id();
-                            session_manager.setportID(nextport, sid);
+                            session_manager.setportID(port, sid);
 
                             ready = existing->wait_until_ready(std::chrono::milliseconds(3000));
                             reply.type=CreateSessionReply;
@@ -84,17 +84,13 @@ namespace server
                             ready = sessiontemp->wait_until_ready(std::chrono::milliseconds(3000));
                             reply.type=CreateSessionReply;
                             reply.session_id = sid;
-                            reply.ws_port = nextport;
+                            reply.ws_port = port;
                             reply.ok = ready;
                             nextport += 1;
                         }
 
                         break;
                     }
-
-                    // case LoadSessionScene: {
-                    //     if ()
-                    // }
 
                     default: {
                             reply.type=DefaultReply;

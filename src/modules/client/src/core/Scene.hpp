@@ -9,7 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <entt/entt.hpp>
 
-#include "EntityManager.hpp"
+// #include "EntityManager.hpp"
 #include <component/Core.hpp>
 #include "spawn/Spawn.hpp"
 #include "systems/Render.hpp"

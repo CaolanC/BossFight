@@ -4,6 +4,8 @@
 #include <entt/entt.hpp>
 #include <component/Core.hpp>
 #include <SharedComponents.hpp>
+#include <hv/HttpClient.h>
+#include <chrono>
 
 static core::SerializedObject make_test_object(){
     core::SerializedObject obj;
@@ -37,4 +39,29 @@ static entt::entity make_transform_entity(entt::registry& r, glm::vec3 pos, floa
     r.emplace<shared::component::transform>(e, glm::mat4(1.0f));
     r.emplace<component::scale>(e, scale);
     return e;
+}
+
+using namespace std::chrono_literals;
+
+static bool http_get(const std::string& url, HttpResponse& response) {
+    hv::HttpClient client;
+
+    HttpRequest request;
+    request.method = HTTP_GET;
+    request.url = url;
+    request.timeout = 5;
+
+    return client.send(&request, &response) == 0;
+}
+
+static bool wait_for_http_ok(const std::string& url, HttpResponse& response) {
+    for (int i = 0; i < 20; ++i) {
+        if (http_get(url, response) && response.status_code == 200) {
+            return true;
+        }
+
+        std::this_thread::sleep_for(100ms);
+    }
+
+    return false;
 }

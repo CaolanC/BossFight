@@ -5,7 +5,7 @@ file(GLOB_RECURSE GUI_SOURCES CONFIGURE_DEPENDS
 
 add_library(GuiLib ${GUI_SOURCES}
         src/Empty.cpp
-        src/Empty.hpp)
+)
 target_include_directories(GuiLib
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/src"

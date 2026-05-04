@@ -8,6 +8,7 @@ add_executable(UnitTests
         SpawnTests.cpp
         UserControlTests.cpp
         TransformSystemTests.cpp
+        IntegrationTests.cpp
 )
 
 target_link_libraries(UnitTests PRIVATE GTest::gtest_main SharedLib ClientLib ServerLib)

@@ -30,7 +30,7 @@ namespace rendering {
         }
 
         if (!ret) {
-            printf("Need to look in the repo for this message lol.\n.");
+            printf("Error loading model.\n.");
         }
         auto s = model.scenes.at(model.defaultScene);
         return load_scene(s, model, p);

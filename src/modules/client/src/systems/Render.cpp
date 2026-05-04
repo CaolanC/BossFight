@@ -12,7 +12,7 @@
 namespace systems {
     void Render(entt::registry& reg, int viewport_width, int viewport_height) {
         // GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-        // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient); // TODO: Add an ambient lighting shader if we haven't adready.
+        // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
         auto& model_manager = reg.ctx().get<component::model_manager>().manager;
         auto& material_mgr  = reg.ctx().get<component::material_manager>().manager;
 
