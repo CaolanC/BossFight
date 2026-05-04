@@ -44,78 +44,7 @@ namespace server
         };
 
         ws.onmessage = [this](const WebSocketChannelPtr& channel, const std::string& msg) {
-            nlohmann::json data = nlohmann::json::parse(msg);
-            std::string type = data.at("type").get<std::string>();
-
-            std::cout << data << "\n";
-
-            if (type == "handshake"){
-
-                std::string role = data.at("payload").at("role").get<std::string>();
-                std::string ci = data.at("payload").at("client_id").get<std::string>();
-                xg::Guid client_id(ci);
-                std::cout << client_id << "\n";
-
-                ClientInfo client_info = ClientInfo();
-                client_info.client_id = client_id;
-                client_info.role = role;
-                session->addClient(channel, client_info);
-
-                if (role == "host") {
-                    channel->send(shared::JSONHelper::make_handshake_ack());
-                }
-                else {
-                    std::cout << "Guest handshake, send snapshot\n";
-                    channel->send(shared::JSONHelper::make_snapshot_message(session->getSnapshot()));
-                }
-            }
-            else if (type == "snapshot") {
-                const nlohmann::json j = data.at("payload");
-                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
-                session->setSnapshot(snapshot);
-                session->debugPrintSnapshot();
-                session->setJoinable(true);
-            }
-            else if (type == "session_close") {
-                auto recipients = session->getClientsExcept(channel);
-
-                std::string close_msg = shared::JSONHelper::make_session_closed_message();
-
-                for (const auto& recipient : recipients) {
-                    recipient->send(close_msg);
-                }
-
-                for (const auto& [client_channel, info] : session->getConnectedClients()) {
-                    client_channel->close();
-                }
-
-                session->clearClients();
-                stop();
-                session->setActive(false);
-
-                return;
-            }
-            else {
-                const nlohmann::json j = data.at("payload");
-                core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(j.dump());
-                if (type == "update_add") {
-                    std::cout << "Adding object...\n";
-                    session->addSnapshot(obj);
-                }
-                else if (type == "update_edit") {
-                    std::cout << "Editing object...\n";
-                    session->editSnapshot(obj);
-                }
-                else if (type == "update_delete") {
-                    std::cout << "Deleting object...\n";
-                    session->deleteFromSnapshot(obj);
-                }
-
-                auto recipients = session->getClientsExcept(channel);
-                for (const auto& recipient : recipients) {
-                    recipient->send(msg);
-                }
-            }
+            handle_message(channel, msg);
         };
 
         ws.onclose = [this](const WebSocketChannelPtr& channel) {
@@ -130,6 +59,92 @@ namespace server
             async_ws_run(st);
         });
 
+    }
+
+    void PerfectServer::handle_message(const WebSocketChannelPtr& channel, const std::string& msg) {
+        nlohmann::json data = nlohmann::json::parse(msg);
+        std::string type = data.at("type").get<std::string>();
+
+        if (type == "handshake"){
+            handle_handshake(channel, data);
+        }
+        else if (type == "snapshot") {
+            handle_snapshot(data);
+        }
+        else if (type == "session_close") {
+            handle_session_close(channel);
+        }
+        else {
+            handle_update(channel, type, data, msg);
+        }
+    }
+
+    void PerfectServer::handle_handshake(const WebSocketChannelPtr& channel, const nlohmann::json& data) {
+        std::string role = data.at("payload").at("role").get<std::string>();
+        std::string ci = data.at("payload").at("client_id").get<std::string>();
+        xg::Guid client_id(ci);
+        std::cout << client_id << "\n";
+
+        ClientInfo client_info = ClientInfo();
+        client_info.client_id = client_id;
+        client_info.role = role;
+        session->addClient(channel, client_info);
+
+        if (role == "host") {
+            channel->send(shared::JSONHelper::make_handshake_ack());
+        }
+        else {
+            std::cout << "Guest handshake, send snapshot\n";
+            channel->send(shared::JSONHelper::make_snapshot_message(session->getSnapshot()));
+        }
+    }
+
+    void PerfectServer::handle_snapshot(const nlohmann::json& data) {
+        const nlohmann::json j = data.at("payload");
+        core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
+        session->setSnapshot(snapshot);
+        session->debugPrintSnapshot();
+        session->setJoinable(true);
+    }
+
+    void PerfectServer::handle_session_close(const WebSocketChannelPtr& channel) {
+        auto recipients = session->getClientsExcept(channel);
+
+        std::string close_msg = shared::JSONHelper::make_session_closed_message();
+
+        for (const auto& recipient : recipients) {
+            recipient->send(close_msg);
+        }
+
+        for (const auto& [client_channel, info] : session->getConnectedClients()) {
+            client_channel->close();
+        }
+
+        session->clearClients();
+        stop();
+        session->setActive(false);
+    }
+
+    void PerfectServer::handle_update(const WebSocketChannelPtr& channel, const std::string& type, const nlohmann::json& data, const std::string& raw_msg) {
+        const nlohmann::json j = data.at("payload");
+        core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(j.dump());
+        if (type == "update_add") {
+            std::cout << "Adding object...\n";
+            session->addSnapshot(obj);
+        }
+        else if (type == "update_edit") {
+            std::cout << "Editing object...\n";
+            session->editSnapshot(obj);
+        }
+        else if (type == "update_delete") {
+            std::cout << "Deleting object...\n";
+            session->deleteFromSnapshot(obj);
+        }
+
+        auto recipients = session->getClientsExcept(channel);
+        for (const auto& recipient : recipients) {
+            recipient->send(raw_msg);
+        }
     }
 
     void PerfectServer::stop() {

@@ -35,6 +35,12 @@ namespace server
 
         void set_session(Session* s);
 
+        void handle_message(const WebSocketChannelPtr& channel, const std::string& msg);
+        void handle_handshake(const WebSocketChannelPtr& channel, const nlohmann::json& data);
+        void handle_snapshot(const nlohmann::json& data);
+        void handle_session_close(const WebSocketChannelPtr& channel);
+        void handle_update(const WebSocketChannelPtr& channel, const std::string& type, const nlohmann::json& data, const std::string& raw_msg);
+
     private:
 
         entt::registry r;
