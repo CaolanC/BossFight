@@ -80,12 +80,6 @@ add_executable(Server src/apps/server/main.cpp)
 set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 target_link_libraries(Server PRIVATE ServerLib SharedLib concurrentqueue EnTT::EnTT hv crossguid glm::glm)
 target_compile_definitions(Server PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-
-add_executable(Client src/apps/client/main.cpp)
-
-set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-target_link_libraries(Client PUBLIC imgui ClientLib ${CLIENT_SHARED_LIBS})
-target_compile_definitions(Client PRIVATE SLJA_WINDOW_TITLE="Soulja")
 target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
 target_compile_definitions(ClientLib PRIVATE SLJA_SAVES_DIR="${SAVES_DIR}")
 
@@ -105,11 +99,5 @@ if (WIN32)
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_SOURCE_DIR}/bin/libhv.dll"
             $<TARGET_FILE_DIR:GUI>
-    )
-    add_custom_command(TARGET Client POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:Client>
-            $<TARGET_FILE_DIR:Client>
-            COMMAND_EXPAND_LISTS
     )
 endif()
