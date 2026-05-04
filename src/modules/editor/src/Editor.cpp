@@ -1,4 +1,5 @@
 #include <EditorApp.hpp>
+#include <EditorPanels.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>

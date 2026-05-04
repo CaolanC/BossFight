@@ -2,7 +2,8 @@
 
 #include <imgui.h>
 #include "imgui_impl_sdl3.h"
-
+#include <string>
+#include <crossguid/guid.hpp>
 #include <SDL3/SDL.h>
 #include <Client.hpp>
 #include <SerializedObject.hpp>
