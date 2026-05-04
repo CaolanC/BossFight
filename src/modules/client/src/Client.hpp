@@ -21,15 +21,12 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip, bool is_editor, int input_port = 0, InputMode input_mode = InputMode::Client);
-        bool start(std::string server_ip2);
-        Client(std::string name, std::string server_ip, InputMode input_mode = InputMode::Client);
-        void set_input_state(const bool* k_state);
-        static void InitSDL();
+        Client(std::string name, bool is_editor, int input_port = 0, InputMode input_mode = InputMode::Client);
+        bool start(std::string server_ip);
 
-        bool start_host_blank(const std::string& server_ip2);
-        bool start_host_file(const std::string& server_ip2, const std::string& file_path);
-        bool start_guest(const std::string& server_ip2, int port);
+        bool start_host_blank(const std::string& server_ip);
+        bool start_host_file(const std::string& server_ip, const std::string& file_path);
+        bool start_guest(const std::string& server_ip, int port);
 
         bool is_scene_ready() const;
 
@@ -54,7 +51,6 @@ namespace client {
         void init_embedded();
 
         InputMode input_mode;
-        std::string server_ip;
         unsigned int framebuffer = 0;
         unsigned int color_texture = 0;
         unsigned int depth_rbo = 0;
@@ -93,7 +89,6 @@ namespace client {
     private:
         NetClient net_client;
         xg::Guid client_id;
-        //void request_join(std::string const& ip = "http://127.0.0.1:30000/join");
         bool is_host = false;
         bool scene_ready = false;
         bool timeToShutdown = false;

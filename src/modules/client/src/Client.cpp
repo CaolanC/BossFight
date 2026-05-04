@@ -13,16 +13,14 @@
 
 namespace client {
 
-    Client::Client(std::string name, std::string server_ip, bool is_editor, int input_port, InputMode input_mode)
+    Client::Client(std::string name, bool is_editor, int input_port, InputMode input_mode)
         :   name(name),
             input_mode(input_mode),
             is_editor(is_editor),
             input_port(input_port),
-            scene(mesh_manager, model_manager),
-            server_ip(server_ip)
+            scene(mesh_manager, model_manager)
     {
         client_id = xg::newGuid();
-        // request_join(server_ip);
     }
 
     // Gets the host from the URL (removes the http, any : and any /)
@@ -52,11 +50,11 @@ namespace client {
         return s;
     }
 
-    bool Client::start(std::string server_ip2) {
-        std::string ws_host = extract_host_from_http_url(server_ip2);
+    bool Client::start(std::string server_ip) {
+        std::string ws_host = extract_host_from_http_url(server_ip);
         if (is_host){
             int ws_port = 0;
-            if (request_create_session(server_ip2, ws_port)) {
+            if (request_create_session(server_ip, ws_port)) {
                 std::cout << "Created session on " << ws_port << "\n";
                 if (connect_client(ws_host, ws_port)) {
                     std::cout << "Connected to client\n";
@@ -85,10 +83,10 @@ namespace client {
 
     // 3 functions for starting scene based on user input (host blank, host from file, join as guest)
 
-    bool Client::start_host_blank(const std::string& server_ip2) {
+    bool Client::start_host_blank(const std::string& server_ip) {
         setIsHost(true);
 
-        if (!(start(server_ip2))){
+        if (!(start(server_ip))){
             scene_ready = false;
             return false;
         }
@@ -102,7 +100,7 @@ namespace client {
         return true;
     }
 
-    bool Client::start_host_file(const std::string& server_ip2, const std::string& file_path) {
+    bool Client::start_host_file(const std::string& server_ip, const std::string& file_path) {
         setIsHost(true);
 
         if (!(utils::assets::filepath_exists(file_path))) {
@@ -110,7 +108,7 @@ namespace client {
             return false;
         }
 
-        if (!(start(server_ip2))){
+        if (!(start(server_ip))){
             scene_ready = false;
             return false;
         }
@@ -130,12 +128,12 @@ namespace client {
         return true;
     }
 
-    bool Client::start_guest(const std::string &server_ip2, int port) {
+    bool Client::start_guest(const std::string &server_ip, int port) {
         net_client.disconnect();
         setIsHost(false);
         setInputPort(port);
 
-        if(!(start(server_ip2))) {
+        if(!(start(server_ip))) {
             scene_ready = false;
             return false;
         }
