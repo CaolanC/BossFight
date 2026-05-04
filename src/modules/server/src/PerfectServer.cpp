@@ -61,6 +61,7 @@ namespace server
 
     }
 
+    // Message handling for WebSockets
     void PerfectServer::handle_message(const WebSocketChannelPtr& channel, const std::string& msg) {
         nlohmann::json data = nlohmann::json::parse(msg);
         std::string type = data.at("type").get<std::string>();
@@ -79,6 +80,7 @@ namespace server
         }
     }
 
+    // Handles handshakes, if host is the client role send handshake_ack if guest send snapshot
     void PerfectServer::handle_handshake(const WebSocketChannelPtr& channel, const nlohmann::json& data) {
         std::string role = data.at("payload").at("role").get<std::string>();
         std::string ci = data.at("payload").at("client_id").get<std::string>();
@@ -99,6 +101,7 @@ namespace server
         }
     }
 
+    // Handles snapshot messages, updates authoritative session snapshot
     void PerfectServer::handle_snapshot(const nlohmann::json& data) {
         const nlohmann::json j = data.at("payload");
         core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(j.dump());
@@ -107,6 +110,8 @@ namespace server
         session->setJoinable(true);
     }
 
+    // Handles session close message, sends message to every client then closes server and sets
+    // session to inactive.
     void PerfectServer::handle_session_close(const WebSocketChannelPtr& channel) {
         auto recipients = session->getClientsExcept(channel);
 
@@ -125,6 +130,9 @@ namespace server
         session->setActive(false);
     }
 
+    // Handles update messages, based on type. Either adds, edits, or deletes objects to/in the
+    // session authoritative snapshot. Then, sends the same update msg to every client except the
+    // one that sent the original message.
     void PerfectServer::handle_update(const WebSocketChannelPtr& channel, const std::string& type, const nlohmann::json& data, const std::string& raw_msg) {
         const nlohmann::json j = data.at("payload");
         core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(j.dump());

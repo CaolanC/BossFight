@@ -7,6 +7,7 @@ using json = nlohmann::json;
 
 namespace core {
 
+    // Saves snapshot to file.
     bool SceneSerializer::save(const SceneSnapshot& snapshot, const std::string& path) {
         json j = shared::JSONHelper::serialize_snapshot(snapshot);
 
@@ -23,6 +24,7 @@ namespace core {
         return true;
     }
 
+    // Loads a snapshot from file.
     bool SceneSerializer::load_from_file(const std::string& path, SceneSnapshot& out_snapshot) {
         std::ifstream file(path);
 

@@ -2,6 +2,7 @@
 #include <SerializedObject.hpp>
 
 namespace core{
+    // Scene snapshot. Holds info about SerializedObjects in scene.
     SceneSnapshot::SceneSnapshot() {
     }
 
@@ -21,6 +22,7 @@ namespace core{
         return &it->second;
     }
 
+    // Getter functions
     std::unordered_map<std::string, SerializedObject> SceneSnapshot::getmap() {
         return object_map;
     }
@@ -29,6 +31,7 @@ namespace core{
         return object_map;
     }
 
+    // Debug print function
     void SceneSnapshot::debug_print() {
         for (const auto& [key, obj] : object_map) {
             std::cout << "Object ID: " << obj.objectID << "\n";

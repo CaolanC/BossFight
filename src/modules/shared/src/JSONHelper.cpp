@@ -2,6 +2,11 @@
 
 namespace shared {
 
+    // JSONHelper stores a lot of functions that handle deserialization and serialization.
+
+    //
+    // The following functions are responsible for making specific message types.
+    //
     std::string JSONHelper::make_handshake(xg::Guid client_id, bool is_host) {
         nlohmann::json message;
         message["type"] = "handshake";
@@ -42,7 +47,9 @@ namespace shared {
         return message.dump();
     }
 
-
+    //
+    // The following functions handle serialization + deserialization.
+    //
     nlohmann::json JSONHelper::serialize_snapshot(const core::SceneSnapshot& snapshot) {
         nlohmann::json j = nlohmann::json::object();
         j["objects"] = nlohmann::json::object();
