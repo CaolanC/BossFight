@@ -21,9 +21,9 @@ namespace client {
     {
     public:
 
-        Client(std::string name, std::string server_ip, bool is_editor, bool owns_window, int input_port = 0, InputMode input_mode = InputMode::Client);
+        Client(std::string name, std::string server_ip, bool is_editor, int input_port = 0, InputMode input_mode = InputMode::Client);
         bool start(std::string server_ip2);
-        Client(std::string name, std::string server_ip, bool owns_window, InputMode input_mode = InputMode::Client);
+        Client(std::string name, std::string server_ip, InputMode input_mode = InputMode::Client);
         void set_input_state(const bool* k_state);
         static void InitSDL();
 
@@ -39,9 +39,7 @@ namespace client {
         bool connect_client(std::string& host, int port);
         bool is_editor;
         int input_port;
-        bool owns_window;
         std::string name;
-        std::optional<Platform::Window> window;
         core::MeshManager mesh_manager = core::MeshManager();
         core::ModelManager model_manager = core::ModelManager();
         core::Scene scene;

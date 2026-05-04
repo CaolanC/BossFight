@@ -22,7 +22,6 @@ struct AppContext {
         "Perfect Client.",
         "http://127.0.0.1:30000",
         true,
-        false,
         0,
         client::InputMode::Editor
     };

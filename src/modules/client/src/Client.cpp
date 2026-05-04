@@ -13,9 +13,8 @@
 
 namespace client {
 
-    Client::Client(std::string name, std::string server_ip, bool is_editor, bool owns_window, int input_port, InputMode input_mode)
+    Client::Client(std::string name, std::string server_ip, bool is_editor, int input_port, InputMode input_mode)
         :   name(name),
-            owns_window(owns_window),
             input_mode(input_mode),
             is_editor(is_editor),
             input_port(input_port),
@@ -23,9 +22,6 @@ namespace client {
             server_ip(server_ip)
     {
         client_id = xg::newGuid();
-        if (owns_window) {
-            window.emplace(name.c_str(), 1920, 1080);
-        }
         // request_join(server_ip);
     }
 
