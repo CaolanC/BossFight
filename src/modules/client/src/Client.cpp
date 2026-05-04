@@ -185,69 +185,92 @@ namespace client {
         std::string type = message.at("type").get<std::string>();
 
         if (type == "handshake_ack") {
-            if (is_host) {
-                std::cout << "Handshake acknowledged. Sending snapshot.\n";
-                net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
-            }
+            handle_handshake_ack();
         }
         else if (type == "snapshot") {
-            if (!is_host) {
-                std::cout << "Snapshot received. Preparing to initialize...\n";
-                nlohmann::json message_payload = message.at("payload");
-                core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
-
-                core::SceneSnapshot snapshot_no_defers;
-
-                for (const auto& [key, obj] : snapshot.getmap()) {
-                    if (checkAsset(obj.model_path)) {
-                        snapshot_no_defers.insert(key, obj);
-                    }
-                    else {
-                        // If the asset does not exist locally, send it to the deferred updates list
-                        deferred_updates[obj.objectID] = obj;
-                        std::cout << "Deferred snapshot object. Missing asset: " << obj.model_path << "\n";
-                    }
-                }
-                scene.guest_init(snapshot_no_defers);
-                scene_ready = true;
-            }
+            handle_snapshot_message(message);
         }
         else if (type == "session_close") {
-            std::cout << "Session closed by host\n";
-            disconnect_and_quit();
+            handle_session_close_message();
         }
         else {
-            // Update message handling
+            handle_update_message(type, message);
+        }
+    }
+
+    // Handshake acknowledgment handling. Host client sends snapshot to server
+    void Client::handle_handshake_ack() {
+        if (is_host) {
+            std::cout << "Handshake acknowledged. Sending snapshot.\n";
+            net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
+        }
+    }
+
+    // Snapshot message handling. Guest takes in snapshot and sets it to scene - if doesn't have
+    // local assets, send to deferred snapshot
+    void Client::handle_snapshot_message(const nlohmann::json& message) {
+        if (!is_host) {
+            std::cout << "Snapshot received. Preparing to initialize...\n";
             nlohmann::json message_payload = message.at("payload");
-            core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
-            if (type == "update_add") {
-                if (!(checkAsset(obj.model_path))) {
+            core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
+
+            core::SceneSnapshot snapshot_no_defers;
+
+            for (const auto& [key, obj] : snapshot.getmap()) {
+                if (checkAsset(obj.model_path)) {
+                    snapshot_no_defers.insert(key, obj);
+                }
+                else {
+                    // If the asset does not exist locally, send it to the deferred updates list
                     deferred_updates[obj.objectID] = obj;
-                    std::cout << "Deferred add. Missing asset: " << obj.model_path << "\n";
-                    return;
+                    std::cout << "Deferred snapshot object. Missing asset: " << obj.model_path << "\n";
                 }
-                bool ok = scene.add_obj(obj);
             }
-            else if (type == "update_edit") {
-                if (deferred_updates.contains(obj.objectID)) {
-                    deferred_updates[obj.objectID] = obj;
-                    std::cout << "Updated deferred object: " << obj.objectID << "\n";
-                    return;
-                }
-                bool ok = scene.edit_obj(obj);
+            scene.guest_init(snapshot_no_defers);
+            scene_ready = true;
+        }
+    }
+
+    // Session close handling. Disconnect and quit
+    void Client::handle_session_close_message() {
+        std::cout << "Session closed by host\n";
+        disconnect_and_quit();
+    }
+
+    // Update message handling. Different for each type.
+    // ADD UPDATE: Add object to scene. Send to deferred updates if asset doesn't exist locally.
+    // EDIT UPDATE: Edit object in local EnTT registry, if asset doesn't exist overwrite deferred update.
+    // DELETE UPDATE: Delete object from local EnTT registry. Delete from deferred update if local assets don't exist.
+    void Client::handle_update_message(const std::string& type, const nlohmann::json& message) {
+        nlohmann::json message_payload = message.at("payload");
+        core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
+        if (type == "update_add") {
+            if (!(checkAsset(obj.model_path))) {
+                deferred_updates[obj.objectID] = obj;
+                std::cout << "Deferred add. Missing asset: " << obj.model_path << "\n";
+                return;
             }
-            else if (type == "update_delete") {
-                if (deferred_updates.contains(obj.objectID)) {
-                    deferred_updates.erase(obj.objectID);
-                }
-                if (scene.check_registry(obj.objectID)) {
-                    bool ok = scene.delete_obj(obj);
-                }
+            bool ok = scene.add_obj(obj);
+        }
+        else if (type == "update_edit") {
+            if (deferred_updates.contains(obj.objectID)) {
+                deferred_updates[obj.objectID] = obj;
+                std::cout << "Updated deferred object: " << obj.objectID << "\n";
+                return;
+            }
+            bool ok = scene.edit_obj(obj);
+        }
+        else if (type == "update_delete") {
+            if (deferred_updates.contains(obj.objectID)) {
+                deferred_updates.erase(obj.objectID);
+            }
+            if (scene.check_registry(obj.objectID)) {
+                bool ok = scene.delete_obj(obj);
             }
         }
     }
 
-    // Polls the deferred update list, increments through a pointer (it).
+    // Polls the deferred update map, increments through a pointer (it).
     void Client::poll_deferred_updates() {
         for (auto it = deferred_updates.begin(); it != deferred_updates.end(); ) {
             core::SerializedObject obj = it->second;
@@ -420,8 +443,7 @@ namespace client {
         return input_mode;
     }
 
-
-
+    // Connects to WebSocket port
     bool Client::connect_client(std::string& host, int port) {
         for (int i = 0; i < 20; ++i) {
             if (net_client.is_connected()) {
@@ -438,30 +460,37 @@ namespace client {
         return net_client.is_connected();
     }
 
+    // Set host status.
     void Client::setIsHost(bool status) {
         is_host = status;
     }
 
+    // Get host status.
     bool Client::getIsHost() const {
         return is_host;
     }
 
+    // Is the scene ready?
     bool Client::is_scene_ready() const {
         return scene_ready;
     }
 
+    // Set the input port.
     void Client::setInputPort(int port) {
         input_port = port;
     }
 
+    // Gets object list from scene.
     std::vector<core::SerializedObject> Client::get_scene_objects() const {
         return scene.get_object_info();
     }
 
+    // Gets a specific object from the scene's registry.
     bool Client::get_scene_object(const std::string& object_id, core::SerializedObject& out) const {
         return scene.registry_lookup_to_obj(object_id, out);
     }
 
+    // Applies local edit if called from the GUI. Sends relevant message.
     bool Client::apply_gui_edit(core::SerializedObject &obj) {
         bool ok = scene.edit_obj(obj);
 
@@ -472,6 +501,7 @@ namespace client {
         return ok;
     }
 
+    // Applies local deletion if called from the GUI. Sends relevant message.
     bool Client::apply_gui_delete(core::SerializedObject &obj) {
         bool ok = scene.delete_obj(obj);
 
@@ -482,11 +512,12 @@ namespace client {
         return ok;
     }
 
-
+    // Get the loaded model list from the scene.
     std::vector<core::LoadedModelInfo> Client::get_loaded_models() const {
         return scene.get_loaded_models();
     }
 
+    // Adds an object from the loaded model list. Auto sets name to "Object" if none is supplied.
     bool Client::add_object_from_loaded_model(const core::LoadedModelInfo& model_info, std::string name) {
         if (name.empty()) {
             name = "Object";
@@ -509,6 +540,7 @@ namespace client {
         return ok;
     }
 
+    // Imports model. If asset doesn't exist, don't go through.
     bool Client::importLocalModel(const std::string& file_path) {
         if (!(checkAsset(file_path))) {
             return false;
@@ -522,15 +554,18 @@ namespace client {
         return ok;
     }
 
+    // Asset checking function. Calls model_file_exists in util::assets. Placed here so GUI can access.
     bool Client::checkAsset(const std::string& file_path) {
         return utils::assets::model_file_exists(file_path);
     }
 
+    // Save (write) to a file.
     bool Client::save_to_file(std::string& file_path) {
         core::SceneSnapshot save_snapshot = scene.build_snapshot();
         return core::SceneSerializer::save(save_snapshot, utils::assets::get_filepath(file_path));
     }
 
+    // Save and quit the application. Send session_close message to WebSockets.
     bool Client::save_and_quit(const std::string& file_path) {
         if (!is_host) {
             return false;
@@ -547,12 +582,14 @@ namespace client {
         return true;
     }
 
+    // Disconnect and quit the application (or set the bool that decides it).
     void Client::disconnect_and_quit() {
         net_client.disconnect();
 
         timeToShutdown = true;
     }
 
+    // Return boolean that says the client is ready to shut down.
     bool Client::isDone() {
         return timeToShutdown;
     }

@@ -8,11 +8,9 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <entt/entt.hpp>
-
-// #include "EntityManager.hpp"
 #include <component/Core.hpp>
-#include "spawn/Spawn.hpp"
-#include "systems/Render.hpp"
+#include <spawn/Spawn.hpp>
+#include <systems/Render.hpp>
 #include <core/MeshManager.hpp>
 #include <core/sh_src.hpp>
 #include <SceneSnapshot.hpp>
@@ -28,12 +26,12 @@
 #include <tuple>
 #include <generator/GridPlane.hpp>
 
-#include "systems/Init.hpp"
+#include <systems/Init.hpp>
 #include <core/ModelManager.hpp>
 #include <systems/MeshLoading.hpp>
 #include <rendering/Model.hpp>
 
-#include "systems/Debug.hpp"
+#include <systems/Debug.hpp>
 
 namespace core
 {
@@ -46,9 +44,6 @@ public:
             mesh_manager(manager),
             model_manager(model_manager)
      {
-        // spawn_default_camera();
-        // spawn_triangle();
-         // spawn_from_generator(generator::GridPlane);
     }
 
     void bootstrap() {
@@ -85,56 +80,8 @@ public:
          }
      }
 
-    entt::registry& getRegistry() {
-         return registry;
-     }
-
     entt::entity spawn_default_camera() {
          return spawn(spawn::freecam);
-    }
-
-    void spawn_from_generator(std::function<std::tuple<std::vector<float>, std::vector<unsigned int>>()>const& generator) {
-
-         auto [vertices, indices] = generator(); // 2Tuple
-         core::MeshSerialiser mesh_serialiser(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-         core::Mesh mesh(vertices, indices, mesh_serialiser);
-
-         core::MeshManager& m_manager = registry.ctx().get<component::mesh_manager>().manager;
-         xg::Guid triangle_mesh_ref = m_manager.createIndexedMeshFromVertices(vertices, indices, mesh_serialiser);
-
-         std::vector<core::ShaderSource> shader_sources = {
-             core::sh_src::v3D(),
-             core::sh_src::fSolid()
-         };
-         ShaderProgramHandle triangle_program_ref = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
-
-         spawn::raw(std::ref(registry), triangle_mesh_ref, triangle_program_ref);
-     }
-
-    void spawn_triangle() {
-
-         std::vector<float> vertices = {
-             0.0f, 0.5f, 0.0f,
-            -0.5f, 0.0f, 0.0f,
-             0.0f, 0.0f, 0.0f
-         };
-         std::vector<unsigned int> indices = {
-             0, 1, 2
-         };
-
-         core::MeshSerialiser mesh_serialiser(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-         core::Mesh mesh(vertices, indices, mesh_serialiser);
-         core::MeshManager& mm = registry.ctx().get<component::mesh_manager>().manager;
-         xg::Guid triangle_mesh_ref = mm.createIndexedMeshFromVertices(vertices, indices, mesh_serialiser);
-
-         std::vector<core::ShaderSource> shader_sources = {
-             core::sh_src::v3D(),
-             core::sh_src::fSolid()
-         };
-         ShaderProgramHandle triangle_program_ref = registry.ctx().get<component::material_manager>().manager.from_source_vec(shader_sources);
-
-         spawn::triangle(std::ref(registry), triangle_mesh_ref, triangle_program_ref);
-
     }
 
     entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function) {
@@ -146,18 +93,7 @@ public:
          pos.value = position;
     }
 
-    void update() {
-
-         auto r = std::ref(registry);
-         // systems::GatherUserInput(r);
-         systems::UserControl(r);
-         systems::Transform(r);
-         // systems::NewRender(r, true, FBO);
-         systems::Debug(r);
-    }
-
     // Snapshot builder (mainly for writing to file use)
-
     const SceneSnapshot build_snapshot() {
          SceneSnapshot snapshot;
 
@@ -203,13 +139,13 @@ public:
     // Functions called from client's netclient msg handler (a.k.a helpers for websockets)
 
     // Initialize guest client (clients that join)
-
+    // We do not need local checks for guest initialization as any assets not locally found are put
+    // into the scene's deferred update list
     void guest_init(SceneSnapshot& snapshot) {
-         bool guest_initialized = systems::Init_from_snapshot(registry, snapshot, object_lookup);
+         systems::Init_from_snapshot(registry, snapshot, object_lookup);
     }
 
     // Add object to scene
-
     bool add_obj(SerializedObject& obj) {
          auto& model_m = registry.ctx().get<component::model_manager>().manager;
          std::vector<core::ShaderSource> shader_sources = {
@@ -234,8 +170,7 @@ public:
          return true;
      }
 
-    // Edit object
-
+    // Edit object in scene registry
     bool edit_obj(SerializedObject& obj) {
          auto e = registry_lookup(obj.objectID);
          auto& pos = registry.get<shared::component::position>(e);
@@ -250,8 +185,7 @@ public:
          return true;
     }
 
-    // Delete object
-
+    // Delete object from scene registry (also delete it frok the registry lookup)
     bool delete_obj(SerializedObject& obj) {
          auto e = registry_lookup(obj.objectID);
          object_lookup.erase(obj.objectID);
@@ -261,7 +195,6 @@ public:
     }
 
     // Local, used to load models from filepath
-
     bool load_model_from_gui(const std::string& file_path) {
          auto& model_m = registry.ctx().get<component::model_manager>().manager;
 
@@ -276,6 +209,10 @@ public:
      }
 
     // ENTT registry lookup methods
+
+    entt::registry& getRegistry() {
+         return registry;
+     }
 
     entt::entity registry_lookup(const std::string& enttid) {
          return object_lookup.at(enttid);

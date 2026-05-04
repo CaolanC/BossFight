@@ -32,8 +32,13 @@ namespace client {
 
         void process_network_messages();
         void handle_incoming_message(std::string& msg);
+        void handle_handshake_ack();
+        void handle_snapshot_message(const nlohmann::json& message);
+        void handle_session_close_message();
+        void handle_update_message(const std::string& type, const nlohmann::json& message);
         void poll_deferred_updates();
         bool connect_client(std::string& host, int port);
+
         bool is_editor;
         int input_port;
         std::string name;
