@@ -26,19 +26,8 @@ static bool init(AppContext& app) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-    // new
-
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    // SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    //
-
     app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
     app.gl_context = SDL_GL_CreateContext(app.window);
-
-    //vSDL_GL_SetSwapInterval(1); // new
 
     SDL_GL_MakeCurrent(app.window, app.gl_context);
 
@@ -143,14 +132,6 @@ static void shutdown(AppContext& app) {
     lock_dock_node(left);
     lock_dock_node(center);
 
-    // hide_dock_tab_bar(dockspace_id);
-    // hide_dock_tab_bar(right);
-    // hide_dock_tab_bar(main_left);
-    // hide_dock_tab_bar(bottom);
-    // hide_dock_tab_bar(top_left);
-    // hide_dock_tab_bar(left);
-    // hide_dock_tab_bar(center);
-
     app.dock_built = true;
 }
 
@@ -226,15 +207,7 @@ static void render(AppContext& app, EditorPanels& panels) {
 
     ImGui::Render();
 
-    ImGuiIO& io = ImGui::GetIO(); // maybe delete this
-
-    // WSL test
-
-    // int display_w = 0;
-    // int display_h = 0;
-    // SDL_GetWindowSizeInPixels(app.window, &display_w, &display_h);
-
-    // glViewport(0, 0, display_w, display_h);
+    ImGuiIO& io = ImGui::GetIO();
     glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
     glClearColor(app.clear_color.x, app.clear_color.y, app.clear_color.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

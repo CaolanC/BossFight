@@ -19,6 +19,8 @@ namespace gui {
 
     // Draws the "tools" panel in the GUI.
     // Is in control of hosting, joining and saving + quitting the application.
+    // Uses enums inside EditorApp to tell the state of the client, presents different buttons
+    // depending on the state
 
     void EditorPanels::draw_tools(AppContext& app) {
         ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoTitleBar);
@@ -64,8 +66,14 @@ namespace gui {
                     ImGui::TextWrapped("A blank scene will be created.");
 
                     if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                        bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000");
-                        app.status_text = ok ? "Host session started (blank scene)" : "Failed to start host session";
+                        bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
+                        if (ok) {
+                            app.status_text = "Host session started (blank scene)";
+                            app.session_info = std::string(app.host_ip_input);
+                        }
+                        else {
+                            app.status_text = "Host session started failed";
+                        }
                     }
 
                 }
@@ -74,11 +82,14 @@ namespace gui {
                     ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
 
                     if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                        bool ok = app.client.start_host_file(
-                            std::string(app.host_ip_input) + ":30000",
-                            std::string(app.file_input)
-                            );
-                        app.status_text = ok? std::string("Host session started from file: ") + app.file_input : "Failed to start host session from file";
+                        bool ok = app.client.start_host_file(std::string(app.host_ip_input) + ":30000", std::string(app.file_input), app.session_port);
+                        if (ok) {
+                            app.status_text = std::string("Host session started from file: ") + app.file_input;
+                            app.session_info = std::string(app.host_ip_input);
+                        }
+                        else {
+                            app.status_text = "Failed to start host session";
+                        }
                     }
 
 
@@ -101,13 +112,22 @@ namespace gui {
                     app.client.setIsHost(false);
                     int port = std::atoi(app.port_input);
                     bool ok = app.client.start_guest(std::string(app.guest_ip_input), port);
-                    app.status_text = ok? std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input : "Failed to start guest session";
+                    if (ok) {
+                        app.status_text = std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input;
+                        app.session_info = std::string(app.guest_ip_input);
+                        app.session_port = port;
+                    }
+                    else {
+                        app.status_text = "Failed to join session.";
+                    }
                 }
             }
 
-            ImGui::Separator();
-            ImGui::TextWrapped("Status: %s", app.status_text.c_str());
         }
+
+        // Once succeed, get rid of buttons and show if client is a host or guest respectively.
+        // Also, display save and quit for host
+
         else if (app.client.is_scene_ready() && app.client.getIsHost()) {
             ImGui::Text("Host Client");
             ImGui::Separator();
@@ -126,6 +146,15 @@ namespace gui {
         else if (app.client.is_scene_ready() && !(app.client.getIsHost())) {
             ImGui::Text("Guest Client");
         }
+
+        // Small info tab
+
+        ImGui::Separator();
+        ImGui::Text("Info");
+        ImGui::Separator();
+        ImGui::TextWrapped("Status: %s", app.status_text.c_str());
+        ImGui::TextWrapped("Session IP: %s", app.session_info.c_str());
+        ImGui::TextWrapped("Session Port: %d", app.session_port);
 
         ImGui::End();
     }
@@ -153,13 +182,9 @@ namespace gui {
         }
 
         ImVec2 size = ImGui::GetContentRegionAvail();
-        // ImGuiIO& io = ImGui::GetIO();
 
         int w = (int)size.x;
         int h = (int)size.y;
-
-        // int w = (int)(size.x * io.DisplayFramebufferScale.x);
-        // int h = (int)(size.y * io.DisplayFramebufferScale.y);
 
         if (w > 0 && h > 0) {
             app.client.update();
@@ -187,20 +212,6 @@ namespace gui {
         ImGui::Text("Scene Objects");
         ImGui::Separator();
 
-        // const char* flow = "None";
-        // if (app.flow_mode == AppContext::SessionFlowMode::Host) flow = "Host";
-        // else if (app.flow_mode == AppContext::SessionFlowMode::Join) flow = "Join";
-        //
-        // const char* host_scene = "None";
-        // if (app.host_scene_mode == AppContext::HostSceneMode::Blank) host_scene = "Blank";
-        // else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) host_scene = "FromFile";
-        //
-        // ImGui::Text("Flow Mode: %s", flow);
-        // ImGui::Text("Host Scene Mode: %s", host_scene);
-        // ImGui::TextWrapped("Server IP: %s", app.ip_input);
-        // ImGui::TextWrapped("Port: %s", app.port_input);
-        // ImGui::TextWrapped("Scene File: %s", app.file_input);
-
         if (!app.client.is_scene_ready()) {
             ImGui::TextWrapped("No active scene.");
             ImGui::End();
@@ -223,6 +234,10 @@ namespace gui {
         }
 
         ImGui::EndChild();
+
+        // Logic for editor tab below. Shows name, position, rotation and scale fields.
+        // Rotation is symbolized by pitch, yaw and roll.
+        // Pitch = up and down, yaw = left and right, roll = front and back
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -257,19 +272,12 @@ namespace gui {
             app.selected_object.position.z
         };
 
-        // float rot[4] = {
-        //     app.selected_object.rotation.x,
-        //     app.selected_object.rotation.y,
-        //     app.selected_object.rotation.z,
-        //     app.selected_object.rotation.w
-        // };
-
         glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(app.selected_object.rotation));
 
         float rot[3] = {
-            euler_deg.x, // pitch
-            euler_deg.y, // yaw
-            euler_deg.z  // roll
+            euler_deg.x,
+            euler_deg.y,
+            euler_deg.z
         };
 
         float scale = app.selected_object.scale;
@@ -279,7 +287,6 @@ namespace gui {
 
         bool changed = false;
         changed |= ImGui::DragFloat3("Position", pos, 0.05f);
-        // changed |= ImGui::DragFloat4("Rotation (quat)", rot, 0.05f);
         ImGui::Text("Rotation (Pitch/Yaw/Roll)");
         changed |= ImGui::DragFloat3("Rotation", rot, 1.0f);
         changed |= ImGui::DragFloat("Scale", &scale, 0.05f, 0.01f, 100.0f);
@@ -293,7 +300,12 @@ namespace gui {
 
         if (ImGui::Button("Apply Edit", ImVec2(-1, 30))) {
             bool ok = app.client.apply_gui_edit(app.selected_object);
-            app.status_text = ok ? "Object edited successfully" : "Failed to edit object";
+            if (ok) {
+                app.status_text = "Object edited successfully";
+            }
+            else {
+                app.status_text = "Failed to edit object";
+            }
 
             if (ok) {
                 core::SerializedObject latest;
@@ -305,7 +317,12 @@ namespace gui {
 
         if (ImGui::Button("Delete Object", ImVec2(-1, 30))) {
             bool ok = app.client.apply_gui_delete(app.selected_object);
-            app.status_text = ok ? "Object deleted successfully" : "Failed to delete object";
+            if (ok) {
+                app.status_text = "Object deleted successfully";
+            }
+            else {
+                app.status_text = "Failed to delete object";
+            }
 
             if (ok) {
                 app.selected_object = core::SerializedObject();
@@ -366,9 +383,12 @@ namespace gui {
                                 info.model_path = app.selected_model_path;
 
                                 bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
-                                app.status_text = ok
-                                    ? "Object added from selected model"
-                                    : "Failed to add object from selected model";
+                                if (ok) {
+                                    app.status_text = "Object added from selected model";
+                                }
+                                else {
+                                    app.status_text = "Failed to add object from selected model";
+                                }
                             }
                         }
                     }
@@ -389,12 +409,13 @@ namespace gui {
 
                         bool ok = app.client.importLocalModel(path);
 
-                        app.status_text = ok
-                            ? std::string("Imported model: ") + path
-                            : std::string("Failed to import model. Are you missing an asset, or did you use an invalid path? (Valid format: models/name/scene.gltf)");
+                        if (ok) {
+                            app.status_text = "Imported model: " + path;
+                        }
+                        else {
+                            app.status_text = "Failed to import model. Are you missing an asset, or did you use an invalid path? (Valid format: models/name/scene.gltf)";
+                        }
                     }
-
-                    ImGui::TextWrapped("Status: %s", app.status_text.c_str());
 
                 }
                 ImGui::EndTabItem();

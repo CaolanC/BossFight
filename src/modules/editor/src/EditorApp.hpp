@@ -16,7 +16,6 @@ namespace gui {
         client::Client client{
             "Perfect Client.",
             true,
-            0,
             client::InputMode::Editor
         };
 
@@ -53,6 +52,8 @@ namespace gui {
 
         bool launch_requested = false;
         std::string status_text = "Idle";
+        std::string session_info = "No active session.";
+        int session_port = 0;
 
         std::string selected_object_id;
         core::SerializedObject selected_object{};
