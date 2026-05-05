@@ -12,6 +12,9 @@
 #include <LoadedModelInfo.hpp>
 #include <EditorPanels.hpp>
 
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/constants.hpp>
+
 namespace gui {
 
     // Draws the "tools" panel in the GUI.
@@ -254,11 +257,19 @@ namespace gui {
             app.selected_object.position.z
         };
 
-        float rot[4] = {
-            app.selected_object.rotation.x,
-            app.selected_object.rotation.y,
-            app.selected_object.rotation.z,
-            app.selected_object.rotation.w
+        // float rot[4] = {
+        //     app.selected_object.rotation.x,
+        //     app.selected_object.rotation.y,
+        //     app.selected_object.rotation.z,
+        //     app.selected_object.rotation.w
+        // };
+
+        glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(app.selected_object.rotation));
+
+        float rot[3] = {
+            euler_deg.x, // pitch
+            euler_deg.y, // yaw
+            euler_deg.z  // roll
         };
 
         float scale = app.selected_object.scale;
@@ -268,12 +279,15 @@ namespace gui {
 
         bool changed = false;
         changed |= ImGui::DragFloat3("Position", pos, 0.05f);
-        changed |= ImGui::DragFloat4("Rotation (quat)", rot, 0.05f);
+        // changed |= ImGui::DragFloat4("Rotation (quat)", rot, 0.05f);
+        ImGui::Text("Rotation (Pitch/Yaw/Roll)");
+        changed |= ImGui::DragFloat3("Rotation", rot, 1.0f);
         changed |= ImGui::DragFloat("Scale", &scale, 0.05f, 0.01f, 100.0f);
 
         if (changed) {
             app.selected_object.position = glm::vec3(pos[0], pos[1], pos[2]);
-            app.selected_object.rotation = glm::quat(rot[3], rot[0], rot[1], rot[2]);
+            glm::vec3 euler_rad = glm::radians(glm::vec3(rot[0], rot[1], rot[2]));
+            app.selected_object.rotation = glm::quat(euler_rad);
             app.selected_object.scale = scale;
         }
 
@@ -377,10 +391,25 @@ namespace gui {
 
                         app.status_text = ok
                             ? std::string("Imported model: ") + path
-                            : std::string("Failed to import model. Missing asset: ") + path;
+                            : std::string("Failed to import model. Are you missing an asset, or did you use an invalid path? (Valid format: models/name/scene.gltf)");
                     }
 
+                    ImGui::TextWrapped("Status: %s", app.status_text.c_str());
+
                 }
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Help")) {
+                ImGui::Text("Controls");
+                ImGui::Separator();
+                ImGui::BulletText("Click inside the viewport to control the camera.");
+                ImGui::BulletText("W/A/S/D: move camera.");
+                ImGui::BulletText("Mouse movement: look around.");
+                ImGui::BulletText("Press escape to return control to the editor.");
+                ImGui::BulletText("Imported models must use paths relative to res/assets.");
+                ImGui::BulletText("Example: models/office_chair_gltf/scene.gltf");
+                ImGui::BulletText("For loading a save file, must include .json.");
+                ImGui::BulletText("For saving a file, just enter in name. Program will add .json extension");
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
