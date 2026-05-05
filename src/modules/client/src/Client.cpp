@@ -13,11 +13,10 @@
 
 namespace client {
 
-    Client::Client(std::string name, bool is_editor, int input_port, InputMode input_mode)
+    Client::Client(std::string name, bool is_editor, InputMode input_mode)
         :   name(name),
             input_mode(input_mode),
             is_editor(is_editor),
-            input_port(input_port),
             scene(mesh_manager, model_manager)
     {
         client_id = xg::newGuid();
@@ -50,10 +49,10 @@ namespace client {
         return s;
     }
 
-    bool Client::start(std::string server_ip) {
+    bool Client::start(std::string server_ip, int& ws_port) {
         std::string ws_host = extract_host_from_http_url(server_ip);
         if (is_host){
-            int ws_port = 0;
+            // int ws_port = 0;
             if (request_create_session(server_ip, ws_port)) {
                 std::cout << "Created session on " << ws_port << "\n";
                 if (connect_client(ws_host, ws_port)) {
@@ -70,12 +69,12 @@ namespace client {
             }
         }
         else {
-            if (connect_client(ws_host, input_port)) {
-                std::cout << "Connected to client on port " << input_port << "\n";
+            if (connect_client(ws_host, ws_port)) {
+                std::cout << "Connected to client on port " << ws_port << "\n";
                 return true;
             }
             else {
-                std::cout << "Failed to connect to client on port " << input_port << "\n";
+                std::cout << "Failed to connect to client on port " << ws_port << "\n";
                 return false;
             }
         }
@@ -83,10 +82,10 @@ namespace client {
 
     // 3 functions for starting scene based on user input (host blank, host from file, join as guest)
 
-    bool Client::start_host_blank(const std::string& server_ip) {
+    bool Client::start_host_blank(const std::string& server_ip, int& ws_port) {
         setIsHost(true);
 
-        if (!(start(server_ip))){
+        if (!(start(server_ip, ws_port))){
             scene_ready = false;
             return false;
         }
@@ -100,7 +99,7 @@ namespace client {
         return true;
     }
 
-    bool Client::start_host_file(const std::string& server_ip, const std::string& file_path) {
+    bool Client::start_host_file(const std::string& server_ip, const std::string& file_path, int& ws_port) {
         setIsHost(true);
 
         if (!(utils::assets::filepath_exists(file_path))) {
@@ -108,7 +107,7 @@ namespace client {
             return false;
         }
 
-        if (!(start(server_ip))){
+        if (!(start(server_ip, ws_port))){
             scene_ready = false;
             return false;
         }
@@ -131,9 +130,8 @@ namespace client {
     bool Client::start_guest(const std::string &server_ip, int port) {
         net_client.disconnect();
         setIsHost(false);
-        setInputPort(port);
 
-        if(!(start(server_ip))) {
+        if(!(start(server_ip, port))) {
             scene_ready = false;
             return false;
         }
@@ -475,11 +473,6 @@ namespace client {
         return scene_ready;
     }
 
-    // Set the input port.
-    void Client::setInputPort(int port) {
-        input_port = port;
-    }
-
     // Gets object list from scene.
     std::vector<core::SerializedObject> Client::get_scene_objects() const {
         return scene.get_object_info();
@@ -571,7 +564,15 @@ namespace client {
             return false;
         }
 
-        std::string jsonfile = file_path + ".json";
+        std::string jsonfile;
+
+        if (file_path.empty()) {
+            jsonfile = file_path + ".json";
+        }
+        else {
+            jsonfile = "blank.json";
+        }
+
         bool ok = save_to_file(jsonfile);
 
         if (!ok) {

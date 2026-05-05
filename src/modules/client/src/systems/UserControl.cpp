@@ -3,9 +3,18 @@
 #include <iostream>
 #include <systems/UserControl.hpp>
 #include <SharedComponents.hpp>
+#include <chrono>
+#include <algorithm>
 
 namespace systems {
     void UserControl(entt::registry& r) {
+        static auto last_time = std::chrono::high_resolution_clock::now();
+        auto now = std::chrono::high_resolution_clock::now();
+        float dt = std::chrono::duration<float>(now - last_time).count();
+        last_time = now;
+
+        dt = std::min(dt, 0.05f);
+
         const auto& kb = r.ctx().get<component::keyboard_state>();
         const auto& ms = r.ctx().get<component::mouse_state>();
 
@@ -15,13 +24,15 @@ namespace systems {
         const float yaw   = glm::radians(sens * -ms.dx);
         const float pitch = glm::radians(sens * -ms.dy);
 
+
+
         for (auto [e, pos, rot] : view.each()) {
             rot = glm::normalize(glm::angleAxis(yaw, glm::vec3(0,1,0)) * rot);
 
             const glm::vec3 right = glm::normalize(rot * glm::vec3(1,0,0));
             rot = glm::normalize(glm::angleAxis(pitch, right) * rot);
 
-            const float speed = 0.03f;
+            const float speed = 6.0f * dt;
             const glm::vec3 fwd = glm::normalize(rot * glm::vec3(0,0,-1));
             const glm::vec3 strafe = glm::normalize(rot * glm::vec3(1,0,0));
 

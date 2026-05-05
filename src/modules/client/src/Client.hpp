@@ -21,11 +21,11 @@ namespace client {
     {
     public:
 
-        Client(std::string name, bool is_editor, int input_port = 0, InputMode input_mode = InputMode::Client);
-        bool start(std::string server_ip);
+        Client(std::string name, bool is_editor, InputMode input_mode = InputMode::Client);
+        bool start(std::string server_ip, int& ws_port);
 
-        bool start_host_blank(const std::string& server_ip);
-        bool start_host_file(const std::string& server_ip, const std::string& file_path);
+        bool start_host_blank(const std::string& server_ip, int& ws_port);
+        bool start_host_file(const std::string& server_ip, const std::string& file_path, int& ws_port);
         bool start_guest(const std::string& server_ip, int port);
 
         bool is_scene_ready() const;
@@ -40,16 +40,12 @@ namespace client {
         bool connect_client(std::string& host, int port);
 
         bool is_editor;
-        int input_port;
         std::string name;
         core::MeshManager mesh_manager = core::MeshManager();
         core::ModelManager model_manager = core::ModelManager();
         core::Scene scene;
 
         bool request_create_session(std::string const& ip, int& ws_port);
-        //bool request_join(std::string const& ip, int input_port);
-        //xg::Guid get_client_id();
-        //core::Scene scene = core::Scene(mesh_manager, model_manager);
         void ensure_framebuffer(int w, int h);
         void render_to_texture(int w, int h);
         unsigned int get_render_texture() const;
@@ -78,7 +74,6 @@ namespace client {
         void setIsHost(bool status);
         bool getIsHost() const;
 
-        void setInputPort(int port);
         std::vector<core::LoadedModelInfo> get_loaded_models() const;
         bool add_object_from_loaded_model(const core::LoadedModelInfo& model_info, std::string name);
 
