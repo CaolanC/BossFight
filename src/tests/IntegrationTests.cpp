@@ -176,9 +176,8 @@ TEST(IntegrationTests, ClientMakesSessionRequest) {
 
     client::Client client(
         "Test Client",
-        "http://127.0.0.1:32001",
         true,
-        false
+        0
     );
 
     int ws_port = 0;
