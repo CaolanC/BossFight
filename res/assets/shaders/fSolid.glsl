@@ -20,7 +20,7 @@ void main()
     // sample albedo from texture
     vec3 albedo = texture(uTex, uv).rgb;
 
-    float ambientStrength = 0.2;
+    float ambientStrength = 1.0;
     vec3 lightColor = vec3(1.0);
 
     vec3 N = normalize(vNorm);

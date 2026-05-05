@@ -1,0 +1,22 @@
+{
+    "objects": {
+        "004086ad-2819-404d-b516-53a9359a53f1": {
+            "model_ref": "697b4cb0-2e28-46aa-83ce-1acb17351ba4",
+            "modelpath": "models/office_chair_gltf/scene.gltf",
+            "name": "test",
+            "objectID": "004086ad-2819-404d-b516-53a9359a53f1",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        }
+    }
+}
