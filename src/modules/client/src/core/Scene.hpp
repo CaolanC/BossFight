@@ -46,6 +46,10 @@ public:
      {
     }
 
+    // Bootstrap functions - spawn global EnTT registry context
+    // These store things such as model manager and keyboard/mouse state
+    // If bootstrapping from file, also initialize file into scene
+    // Also, spawn the base platform in scene for both
     void bootstrap() {
          int no_keys;
          const bool* k_state = SDL_GetKeyboardState(&no_keys);
@@ -159,8 +163,17 @@ public:
                  obj.model_ref = model_m.get_model_ref_from_path(obj.model_path);
              }
              else {
-                 rendering::Model m = systems::LoadModel(registry, obj.model_path);
-                 model_m.add_model(m, obj.model_path, obj.model_ref);
+                 // Put loading models in a try -> catch error in an attempt to catch failed model loads
+                 // This is unrealistic to happen and is more of a just in case measure
+                 // Even more unrealistic in add_obj because it usually suggests that the model was added
+                 // successfully on another client - but this is just to prevent crashes.
+                 try {
+                     rendering::Model m = systems::LoadModel(registry, obj.model_path);
+                     model_m.add_model(m, obj.model_path, obj.model_ref);
+                 } catch (const std::exception& e) {
+                     std::cout << "Failed to load model: " << e.what() << "\n";
+                     return false;
+                 }
              }
          }
 
@@ -202,10 +215,16 @@ public:
              return true;
          }
 
-         rendering::Model m = systems::LoadModel(registry, file_path);
-         model_m.add_model(m, file_path);
-
-         return true;
+         // Put loading models in a try -> catch error in an attempt to catch failed model loads
+         // This is unrealistic to happen and is more of a just in case measure
+         try {
+             rendering::Model m = systems::LoadModel(registry, file_path);
+             model_m.add_model(m, file_path);
+             return true;
+         } catch (const std::exception& e) {
+             std::cout << "Failed to load model: " << e.what() << "\n";
+             return false;
+         }
      }
 
     // ENTT registry lookup methods
