@@ -28,11 +28,12 @@ namespace utils::gl {
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_matrix));
         };
     };
+
     void set_campos(glm::vec3 cam_pos, unsigned int program) {
         glUseProgram(program);
         unsigned int cam_loc = glGetUniformLocation(program, "uCamPos");
         if (cam_loc == -1) {
-            SDL_Log("WARN: uCamPos not found");
+            // SDL_Log("WARN: uCamPos not found");
             return;
         };
         glUniform3fv(cam_loc, 1, glm::value_ptr(cam_pos));
