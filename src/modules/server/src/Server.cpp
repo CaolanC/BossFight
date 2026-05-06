@@ -86,7 +86,6 @@ namespace server
                             reply.session_id = sid;
                             reply.ws_port = port;
                             reply.ok = ready;
-                            nextport += 1;
                         }
 
                         break;

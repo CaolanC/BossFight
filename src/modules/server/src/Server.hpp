@@ -27,7 +27,6 @@ private:
     entt::registry registry;
     NetIO io;
     int port;
-    int nextport = 30001;
     std::jthread thr_bus;   
     SessionManager session_manager;
     xg::Guid testtemp;

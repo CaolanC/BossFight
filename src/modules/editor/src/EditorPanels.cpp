@@ -161,6 +161,7 @@ namespace gui {
 
 
     // Draws the "viewport" of the GUI. It's what lets you see the actual client in the center.
+    // Also handles client updates.
     void EditorPanels::draw_viewport(AppContext& app) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
