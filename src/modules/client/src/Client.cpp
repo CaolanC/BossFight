@@ -81,6 +81,8 @@ namespace client {
     }
 
     // 3 functions for starting scene based on user input (host blank, host from file, join as guest)
+    // Each set respective host status, call the start function above, and initialize after
+    // Then send a handshake message to server
 
     bool Client::start_host_blank(const std::string& server_ip, int& ws_port) {
         setIsHost(true);
