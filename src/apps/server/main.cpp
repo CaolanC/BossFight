@@ -16,32 +16,14 @@ using namespace std::chrono_literals;
 int start_server() {
     server::Server server(30000);
     server.start();
-    const duration tick = nanoseconds(16'666'667); // Number of nanoseconds in 1/60th of a second
-    const duration physics_tick = nanoseconds(0); // Need to find a good physics tick
-    time_point last = steady_clock::now();
 
-    bool running = true;
+    // No need for physics ticks anymore - won't be using them. Just make thread sleep#
+    // so CPU resources don't get super used up
+    while(true) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    duration accumulator = nanoseconds(0);
-
-    int tick_count = 0;
-    while(running) {
-        time_point now = steady_clock::now();
-        auto frame = now - last;
-        last = now;
-        accumulator += frame; // Accumulates 
-
-        int updates = 0;
-        const int max_updates = 5;
-        while(accumulator >= tick && updates < max_updates) {
-            updates++;
-            accumulator -= tick;
-            //std::cout << "Tick: " << tick_count  << "\n";
-            tick_count++;
-        }
     };
 
-    std::this_thread::sleep_for(tick - accumulator);
 
     return 0;
 }
