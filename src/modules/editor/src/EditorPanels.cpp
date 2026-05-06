@@ -188,16 +188,16 @@ namespace gui {
         int h = (int)size.y;
 
         if (w > 0 && h > 0) {
+            if (app.client.get_input_mode() == client::InputMode::Client) {
+                ImGuiIO& io = ImGui::GetIO();
+                app.client.add_mouse_delta(io.MouseDelta.x, io.MouseDelta.y);
+            }
             app.client.update();
             app.client.render_to_texture(w, h);
 
             GLuint tex = app.client.get_render_texture();
 
             ImGui::Image((ImTextureID)(intptr_t)tex, size, ImVec2(0,1), ImVec2(1,0));
-            if (app.client.get_input_mode() == client::InputMode::Client) {
-                ImGuiIO& io = ImGui::GetIO();
-                app.client.add_mouse_delta(io.MouseDelta.x, io.MouseDelta.y);
-            }
 
         }
 
