@@ -1,0 +1,11 @@
+Model Information:
+* title:	Computer Monitor/Display
+* source:	https://sketchfab.com/3d-models/computer-monitordisplay-dcfe098fa78c42a893afde18d642dc7a
+* author:	Exzyte3D (https://sketchfab.com/Exzyte3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Computer Monitor/Display" (https://sketchfab.com/3d-models/computer-monitordisplay-dcfe098fa78c42a893afde18d642dc7a) by Exzyte3D (https://sketchfab.com/Exzyte3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

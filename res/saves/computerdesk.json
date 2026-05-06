@@ -1,0 +1,76 @@
+{
+    "objects": {
+        "08fdda00-1426-4b45-8e9c-4a9db3ca6a95": {
+            "model_ref": "8b52c231-9899-443c-a9c1-ba433a2a22cd",
+            "modelpath": "models/checkered_tile_floor/scene.gltf",
+            "name": "Floor tiles",
+            "objectID": "08fdda00-1426-4b45-8e9c-4a9db3ca6a95",
+            "position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 0.10000000149011612
+        },
+        "72da45ad-cf48-4a6e-ba8f-858d15c3f629": {
+            "model_ref": "db0a81c2-cf16-497a-9fc1-8e992c755131",
+            "modelpath": "models/office_chair_gltf/scene.gltf",
+            "name": "newchair",
+            "objectID": "72da45ad-cf48-4a6e-ba8f-858d15c3f629",
+            "position": [
+                0.0,
+                0.0,
+                -2.0
+            ],
+            "rotation": [
+                0.7072288393974304,
+                0.0,
+                -0.7069846987724304,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "74215f2e-372b-4d52-b209-22e055d75f35": {
+            "model_ref": "e93561ae-f420-4340-b650-05d43772bbd6",
+            "modelpath": "models/computer_desk/scene.gltf",
+            "name": "Computer desk",
+            "objectID": "74215f2e-372b-4d52-b209-22e055d75f35",
+            "position": [
+                0.0,
+                2.0,
+                -4.0
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 1.0
+        },
+        "763acbd7-5e40-44fd-b3bc-f799123ac19a": {
+            "model_ref": "6f341e57-05b9-4571-a878-e48a77d203b3",
+            "modelpath": "models/computer_monitordisplay/scene.gltf",
+            "name": "Monitor",
+            "objectID": "763acbd7-5e40-44fd-b3bc-f799123ac19a",
+            "position": [
+                0.0,
+                3.25,
+                -3.5
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": 0.75
+        }
+    }
+}
