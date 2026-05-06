@@ -151,6 +151,8 @@ static void process_events(AppContext& app) {
             e.key.scancode == SDL_SCANCODE_ESCAPE) {
             app.client.set_input_mode(client::InputMode::Editor);
             SDL_SetWindowRelativeMouseMode(app.window, false);
+            SDL_CaptureMouse(false);
+            SDL_SetWindowRelativeMouseMode(app.window, false);
         }
 
         if (app.client.is_scene_ready() && app.client.get_input_mode() == client::InputMode::Client) {

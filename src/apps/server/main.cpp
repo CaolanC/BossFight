@@ -21,8 +21,7 @@ int start_server() {
     // so CPU resources don't get super used up
     while(true) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-    };
+    }
 
 
     return 0;
