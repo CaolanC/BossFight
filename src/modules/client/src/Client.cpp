@@ -569,10 +569,10 @@ namespace client {
         std::string jsonfile;
 
         if (file_path.empty()) {
-            jsonfile = file_path + ".json";
+            jsonfile = "blank.json";
         }
         else {
-            jsonfile = "blank.json";
+            jsonfile = file_path + ".json";
         }
 
         bool ok = save_to_file(jsonfile);
