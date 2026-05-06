@@ -408,12 +408,22 @@ namespace client {
                 }
                 break;
 
-            case SDL_EVENT_MOUSE_MOTION:
+            case SDL_EVENT_MOUSE_MOTION: {
+                float rel_x = event.motion.xrel;
+                float rel_y = event.motion.yrel;
+
+                // Fallback for Linux/VirtualBox
+                if (rel_x == 0.0f && rel_y == 0.0f) {
+                    rel_x = event.motion.x - ms.x;
+                    rel_y = event.motion.y - ms.y;
+                }
+
                 ms.x = event.motion.x;
                 ms.y = event.motion.y;
-                ms.dx += event.motion.xrel;
-                ms.dy += event.motion.yrel;
+                ms.dx += rel_x;
+                ms.dy += rel_y;
                 break;
+            }
 
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 if (event.button.button < ms.down.size()) {
