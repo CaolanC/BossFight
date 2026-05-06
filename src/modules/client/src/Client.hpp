@@ -86,6 +86,8 @@ namespace client {
 
         bool isDone();
 
+        void add_mouse_delta(float dx, float dy);
+
     private:
         NetClient net_client;
         xg::Guid client_id;
