@@ -18,7 +18,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
-// Multiple component integration tests
+// Multiple component integration tests. More info in testing docs
 
 TEST(IntegrationTests, SpawnEntityGoesThroughECS) {
     entt::registry r;
@@ -126,7 +126,7 @@ TEST(IntegrationTests, SceneLoadFailsAssetMissing) {
     std::filesystem::remove(path);
 }
 
-// Networking-related integration tests
+// Networking-related integration tests. More info in testing docs
 
 TEST(IntegrationTests, SessionManagerMapsSessionToPort) {
     server::NetBus bus;
@@ -176,8 +176,7 @@ TEST(IntegrationTests, ClientMakesSessionRequest) {
 
     client::Client client(
         "Test Client",
-        true,
-        0
+        true
     );
 
     int ws_port = 0;
