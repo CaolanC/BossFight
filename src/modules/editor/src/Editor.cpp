@@ -6,6 +6,8 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
 #include <cstring>
+#include <iostream>
+#include <cstdlib>
 
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
@@ -21,7 +23,10 @@ static const char* get_glsl_version() {
 }
 
 static bool init(AppContext& app) {
-    if (!SDL_Init(SDL_INIT_VIDEO)) return false;
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+	    std::cerr << "[FATAL ERROR] SDL_init: " << SDL_GetError() << '\n'; 
+	    return false;
+    }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
