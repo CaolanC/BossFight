@@ -188,10 +188,6 @@ namespace gui {
         int h = (int)size.y;
 
         if (w > 0 && h > 0) {
-            if (app.client.get_input_mode() == client::InputMode::Client) {
-                ImGuiIO& io = ImGui::GetIO();
-                app.client.add_mouse_delta(io.MouseDelta.x, io.MouseDelta.y);
-            }
             app.client.update();
             app.client.render_to_texture(w, h);
 

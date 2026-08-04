@@ -607,16 +607,4 @@ namespace client {
         return timeToShutdown;
     }
 
-    void Client::add_mouse_delta(float dx, float dy) {
-        if (!scene_ready) {
-            return;
-        }
-
-        entt::registry& r = scene.getRegistry();
-        auto& ms = r.ctx().get<component::mouse_state>();
-
-        ms.dx += dx;
-        ms.dy += dy;
-    }
-
 }
