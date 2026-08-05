@@ -1,8 +1,5 @@
 # Perfect.
 
-BY: Ethan Doyle (22497082)
-Caolan William Cochrane (22490802)
-
 Supervisor: Dr. Mark Humphrys
 
 Perfect is, at its core, a real-time multi-user collaborative 3D scene editor, and as a primary use case, being developed for interior designers.
