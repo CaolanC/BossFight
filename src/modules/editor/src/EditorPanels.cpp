@@ -222,6 +222,10 @@ namespace gui {
             auto id = app.client.active_registry.create();
         }
 
+        if (ImGui::Button("Load Test Model")) {
+            app.client.add_test_model();
+        }
+
         // Use auto& or const auto& to prevent copying the storage object
         const auto& view = app.client.active_registry.storage<entt::entity>();
 

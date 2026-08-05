@@ -20,7 +20,7 @@ namespace rendering {
         tinygltf::Model model;
         std::string err, warn;
         const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, utils::assets::get_asset(p));
-
+        std::cout << "get to 1\n";
         if (!warn.empty()) {
             printf("WARN: %s\n", warn.c_str());
         }
@@ -33,6 +33,7 @@ namespace rendering {
             printf("Error loading model.\n.");
         }
         auto s = model.scenes.at(model.defaultScene);
+        std::cout << "get to 2\n";
         return load_scene(s, model, p);
     }
 
@@ -50,13 +51,13 @@ namespace rendering {
             // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
             m.root_nodes.push_back(load_node(model, model.nodes[n], p));
         }
-
+        std::cout << "get to 3\n";                       
         return m;
     }
 
     Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, std::string const& p) { // We're just going to harcode the transform for now before things inherit it
         Node my_node;
-
+        std::cout << "get to 4\n";
         if (node.matrix.size() == 16) {
             my_node.local_transform = glm::make_mat4(node.matrix.data());;
             my_node.has_local_transform = true;
