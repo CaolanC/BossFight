@@ -9,6 +9,7 @@
 #include <Client.hpp>
 #include <JSONHelper.hpp>
 #include <entt/entt.hpp>
+#include <spawn/Spawn.hpp>
 
 #include "hv/json.hpp"
 
@@ -23,6 +24,15 @@ namespace client {
         client_id = xg::newGuid();
         mesh_manager = mesh_manager;
         model_manager = model_manager;
+        scene_registry_migration_temorary_bootstrap(); 
+    }
+
+    void Client::scene_registry_migration_temorary_bootstrap() {
+        active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
+    }
+
+    entt::entity Client::spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function) {
+         return spawn_function(std::ref(active_registry));
     }
 
     int Client::create_new_entity() {
@@ -379,8 +389,8 @@ namespace client {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         entt::registry& r = scene.getRegistry();
-        systems::Render(r, w, h);
-
+        //systems::Render(r, w, h);
+        renderer.render(active_registry, w, h, model_manager, material_manager);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 

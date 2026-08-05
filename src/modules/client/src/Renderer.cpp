@@ -10,17 +10,17 @@
 #include <SharedComponents.hpp>
 #include <Renderer.hpp>
 
+#include <iostream>
+
 
 namespace client {
 	Renderer::Renderer() {
 		
 	}
 
-    void Renderer::render(entt::registry& reg, int viewport_width, int viewport_height) {
+    void Renderer::render(entt::registry& reg, int viewport_width, int viewport_height, core::ModelManager model_manager, core::ShaderProgramManager material_mgr) {
         // GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
         // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
-        auto& model_manager = reg.ctx().get<component::model_manager>().manager;
-        auto& material_mgr  = reg.ctx().get<component::material_manager>().manager;
 
         float aspect = 1.0f;
         if (viewport_height > 0) {
@@ -33,7 +33,8 @@ namespace client {
             0.1f,
             1000.0f
         );
-            auto& curr_cam = reg.ctx().get<component::current_camera>();
+        // std::cout << "We expect to crash here\n";
+        auto& curr_cam = reg.ctx().get<component::current_camera>(); // This doesn't exist in our default registry, we can hardcode it for now maybe
         glm::mat4 view_matrix = glm::inverse(
             reg.get<shared::component::transform>(curr_cam.e)
         );

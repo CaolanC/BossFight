@@ -10,6 +10,7 @@
 #include <NetClient.hpp>
 #include <nlohmann/json.hpp>
 #include <entt/entt.hpp>
+#include <Renderer.hpp>
 
 namespace client {
 
@@ -46,6 +47,11 @@ namespace client {
         std::string name;
         core::MeshManager mesh_manager = core::MeshManager();
         core::ModelManager model_manager = core::ModelManager();
+        core::ShaderProgramManager material_manager = core::ShaderProgramManager();
+        client::Renderer renderer = client::Renderer();
+        void scene_registry_migration_temorary_bootstrap();
+        entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function);
+
         core::Scene scene;
 
         bool request_create_session(std::string const& ip, int& ws_port);

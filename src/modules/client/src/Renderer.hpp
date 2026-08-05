@@ -1,6 +1,7 @@
 namespace client {
 	class Renderer {
-		Renderer();
-		void render(entt::registry& reg, int viewport_width, int viewport_height);
+		public:
+			Renderer();
+			void render(entt::registry& reg, int viewport_width, int viewport_height, core::ModelManager model_manager, core::ShaderProgramManager material_mgr);
 	};
 }
