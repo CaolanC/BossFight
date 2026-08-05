@@ -8,6 +8,7 @@
 #include <hv/HttpClient.h>
 #include <Client.hpp>
 #include <JSONHelper.hpp>
+#include <entt/entt.hpp>
 
 #include "hv/json.hpp"
 
@@ -20,10 +21,12 @@ namespace client {
             scene(mesh_manager, model_manager)
     {
         client_id = xg::newGuid();
+        mesh_manager = mesh_manager;
+        model_manager = model_manager;
     }
 
-    bool start_new() {
-	
+    int Client::create_new_entity() {
+        return 0;
     }
 
     // Gets the host from the URL (removes the http, any : and any /)

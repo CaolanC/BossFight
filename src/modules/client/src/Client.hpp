@@ -9,6 +9,7 @@
 
 #include <NetClient.hpp>
 #include <nlohmann/json.hpp>
+#include <entt/entt.hpp>
 
 namespace client {
 
@@ -22,6 +23,7 @@ namespace client {
     public:
 
         Client(std::string name, bool is_editor, InputMode input_mode = InputMode::Client);
+	int create_new_entity();
         bool start(std::string server_ip, int& ws_port);
 
         bool start_host_blank(const std::string& server_ip, int& ws_port);
@@ -39,6 +41,7 @@ namespace client {
         void poll_deferred_updates();
         bool connect_client(std::string& host, int port);
 
+        entt::registry active_registry;
         bool is_editor;
         std::string name;
         core::MeshManager mesh_manager = core::MeshManager();

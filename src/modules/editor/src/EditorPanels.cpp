@@ -214,6 +214,21 @@ namespace gui {
     // Enables editing when an object is selected - position, rotation, scale, name, etc.
     void EditorPanels::draw_right(AppContext& app) {
         ImGui::Begin("RightPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
+
+        ImGui::Text("Entities");
+        ImGui::Separator();
+
+        if (ImGui::Button("Create Entity")) {
+            auto id = app.client.active_registry.create();
+        }
+
+        // Use auto& or const auto& to prevent copying the storage object
+        const auto& view = app.client.active_registry.storage<entt::entity>();
+
+        for (auto entity : view) {
+            ImGui::Text("%u", static_cast<uint32_t>(entt::to_integral(entity)));
+        }
+
         ImGui::Text("Scene Objects");
         ImGui::Separator();
 
