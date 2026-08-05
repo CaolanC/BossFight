@@ -22,6 +22,10 @@ namespace client {
         client_id = xg::newGuid();
     }
 
+    bool start_new() {
+	
+    }
+
     // Gets the host from the URL (removes the http, any : and any /)
 
     static std::string extract_host_from_http_url(std::string& url) {
@@ -87,16 +91,16 @@ namespace client {
     bool Client::start_host_blank(const std::string& server_ip, int& ws_port) {
         setIsHost(true);
 
-        if (!(start(server_ip, ws_port))){
-            scene_ready = false;
-            return false;
-        }
+        //if (!(start(server_ip, ws_port))){
+        //    scene_ready = false;
+        //    return false;
+        //}
 
         scene.bootstrap();
         scene.set_camera_position(glm::vec3(0, 3, 3));
         scene_ready = true;
 
-        net_client.send(shared::JSONHelper::make_handshake(client_id, true));
+        //net_client.send(shared::JSONHelper::make_handshake(client_id, true));
 
         return true;
     }

@@ -168,6 +168,7 @@ namespace gui {
 
         app.client.process_network_messages();
 
+        bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
         if (!app.client.is_scene_ready()) {
             ImGui::Dummy(ImVec2(0.0f, 40.0f));
             ImGui::TextWrapped("No active scene yet.");
