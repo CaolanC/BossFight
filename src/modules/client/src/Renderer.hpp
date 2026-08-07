@@ -1,3 +1,5 @@
+#pragma once
+
 namespace client {
 	class Renderer {
 		public:

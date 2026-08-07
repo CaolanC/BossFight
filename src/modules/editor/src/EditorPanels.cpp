@@ -220,6 +220,7 @@ namespace gui {
 
         if (ImGui::Button("Create Entity")) {
             auto id = app.client.active_registry.create();
+            //app.client.active_registry.emplace<components::entity_name>(id, "Entity");
         }
 
         if (ImGui::Button("Load Test Model")) {
@@ -228,37 +229,31 @@ namespace gui {
 
         // Use auto& or const auto& to prevent copying the storage object
         const auto& view = app.client.active_registry.storage<entt::entity>();
-
-        for (auto entity : view) {
-            ImGui::Text("%u", static_cast<uint32_t>(entt::to_integral(entity)));
-        }
-
-        ImGui::Text("Scene Objects");
-        ImGui::Separator();
-
-        if (!app.client.is_scene_ready()) {
-            ImGui::TextWrapped("No active scene.");
-            ImGui::End();
-            return;
-        }
-
-        auto objects = app.client.get_scene_objects();
-
-        ImGui::BeginChild("object_list", ImVec2(0, 220), true);
-
-        for (const auto& obj : objects) {
-            bool selected = (app.selected_object_id == obj.objectID);
-            std::string display_name = obj.name.empty() ? "Object" : obj.name;
-            std::string label = display_name + "##" + obj.objectID;
-
-            if (ImGui::Selectable(label.c_str(), selected)) {
-                app.selected_object_id = obj.objectID;
-                app.selected_object = obj;
+        if(ImGui::BeginChild("Entity List", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+            int i = 0;
+            for (auto entity : view) {
+                i++;
+                ImGui::PushID(i);
+                if (ImGui::TreeNode("Entity")) {
+                
+                    // Content inside this block renders ONLY when expanded
+                    ImGui::Indent(); // Optional: indent child components further
+                    
+                    if (ImGui::Button("Add Component")) {
+                        ImGui::Text("Button pressed.");
+                    }
+                    
+                    ImGui::Unindent();
+                    
+                    // Crucial: Every successful TreeNode call MUST end with TreePop()
+                    ImGui::TreePop();
+                }
+                ImGui::PopID();
             }
+            ImGui::EndChild();
         }
 
-        ImGui::EndChild();
-
+    
         // Logic for editor tab below. Shows name, position, rotation and scale fields.
         // Rotation is symbolized by pitch, yaw and roll.
         // Pitch = up and down, yaw = left and right, roll = front and back
@@ -370,7 +365,7 @@ namespace gui {
                 }
                 else {
 
-                    auto loaded_models = app.client.get_loaded_models();
+                    auto loaded_models = app.client.model_manager.get_loaded_models();
 
                     if (loaded_models.empty()) {
                         ImGui::TextWrapped("No loaded models.");

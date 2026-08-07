@@ -8,6 +8,8 @@
 #include <array>
 #include <SDL3/SDL.h>
 
+#include <string>
+
 namespace component
 {
 
@@ -15,6 +17,10 @@ namespace component
 
     struct camera {
 
+    };
+
+    struct entity_name {
+        std::string name;
     };
 
     struct free_movement_camera {
