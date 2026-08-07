@@ -44,84 +44,84 @@ namespace gui {
 
             // Host flow
 
-            if (app.flow_mode == AppContext::SessionFlowMode::Host) {
-                ImGui::Text("Host Session Setup");
-                ImGui::Spacing();
+            // if (app.flow_mode == AppContext::SessionFlowMode::Host) {
+            //     ImGui::Text("Host Session Setup");
+            //     ImGui::Spacing();
 
-                ImGui::InputText("##host_ip_input", app.host_ip_input, sizeof(app.host_ip_input));
+            //     ImGui::InputText("##host_ip_input", app.host_ip_input, sizeof(app.host_ip_input));
 
-                if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
-                    app.host_scene_mode = AppContext::HostSceneMode::Blank;
-                    app.status_text = "Blank scene selected";
-                }
+            //     if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
+            //         app.host_scene_mode = AppContext::HostSceneMode::Blank;
+            //         app.status_text = "Blank scene selected";
+            //     }
 
-                if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
-                    app.host_scene_mode = AppContext::HostSceneMode::FromFile;
-                    app.status_text = "Load-from-file selected";
-                }
+            //     if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
+            //         app.host_scene_mode = AppContext::HostSceneMode::FromFile;
+            //         app.status_text = "Load-from-file selected";
+            //     }
 
-                ImGui::Spacing();
+            //     ImGui::Spacing();
 
-                if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
-                    ImGui::TextWrapped("A blank scene will be created.");
+            //     if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
+            //         ImGui::TextWrapped("A blank scene will be created.");
 
-                    if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                        bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
-                        if (ok) {
-                            app.status_text = "Host session started (blank scene)";
-                            app.session_info = std::string(app.host_ip_input);
-                        }
-                        else {
-                            app.status_text = "Host session started failed";
-                        }
-                    }
+            //         if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
+            //             bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
+            //             if (ok) {
+            //                 app.status_text = "Host session started (blank scene)";
+            //                 app.session_info = std::string(app.host_ip_input);
+            //             }
+            //             else {
+            //                 app.status_text = "Host session started failed";
+            //             }
+            //         }
 
-                }
-                else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
-                    ImGui::Text("Scene file");
-                    ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
+            //     }
+            //     else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
+            //         ImGui::Text("Scene file");
+            //         ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
 
-                    if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-                        bool ok = app.client.start_host_file(std::string(app.host_ip_input) + ":30000", std::string(app.file_input), app.session_port);
-                        if (ok) {
-                            app.status_text = std::string("Host session started from file: ") + app.file_input;
-                            app.session_info = std::string(app.host_ip_input);
-                        }
-                        else {
-                            app.status_text = "Failed to start host session";
-                        }
-                    }
+            //         if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
+            //             bool ok = app.client.start_host_file(std::string(app.host_ip_input) + ":30000", std::string(app.file_input), app.session_port);
+            //             if (ok) {
+            //                 app.status_text = std::string("Host session started from file: ") + app.file_input;
+            //                 app.session_info = std::string(app.host_ip_input);
+            //             }
+            //             else {
+            //                 app.status_text = "Failed to start host session";
+            //             }
+            //         }
 
 
-                }
-            }
+            //     }
+            // }
 
             // Joining
 
-            else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
-                ImGui::Text("Join Session");
-                ImGui::Spacing();
+            // else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
+            //     ImGui::Text("Join Session");
+            //     ImGui::Spacing();
 
-                ImGui::Text("Server IP");
-                ImGui::InputText("##ip", app.guest_ip_input, sizeof(app.guest_ip_input));
+            //     ImGui::Text("Server IP");
+            //     ImGui::InputText("##ip", app.guest_ip_input, sizeof(app.guest_ip_input));
 
-                ImGui::Text("Port");
-                ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
+            //     ImGui::Text("Port");
+            //     ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
 
-                if (ImGui::Button("Join", ImVec2(-1, 30))) {
-                    app.client.setIsHost(false);
-                    int port = std::atoi(app.port_input);
-                    bool ok = app.client.start_guest(std::string(app.guest_ip_input), port);
-                    if (ok) {
-                        app.status_text = std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input;
-                        app.session_info = std::string(app.guest_ip_input);
-                        app.session_port = port;
-                    }
-                    else {
-                        app.status_text = "Failed to join session.";
-                    }
-                }
-            }
+            //     if (ImGui::Button("Join", ImVec2(-1, 30))) {
+            //         app.client.setIsHost(false);
+            //         int port = std::atoi(app.port_input);
+            //         bool ok = app.client.start_guest(std::string(app.guest_ip_input), port);
+            //         if (ok) {
+            //             app.status_text = std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input;
+            //             app.session_info = std::string(app.guest_ip_input);
+            //             app.session_port = port;
+            //         }
+            //         else {
+            //             app.status_text = "Failed to join session.";
+            //         }
+            //     }
+            // }
 
         }
 
@@ -129,19 +129,19 @@ namespace gui {
         // Also, display save and quit for host
 
         else if (app.client.is_scene_ready() && app.client.getIsHost()) {
-            ImGui::Text("Host Client");
-            ImGui::Separator();
+            // ImGui::Text("Host Client");
+            // ImGui::Separator();
 
-            ImGui::Text("Enter save file name below:");
-            ImGui::InputText("##save_file", app.savetofile_input, sizeof(app.savetofile_input));
-            if (ImGui::Button("Save and Quit", ImVec2(-1, 30))) {
-                if (app.client.save_and_quit(app.savetofile_input)) {
-                    app.done = true;
-                }
-                else {
-                    app.status_text = "Failed to save to file, client still open.";
-                }
-            }
+            // ImGui::Text("Enter save file name below:");
+            // ImGui::InputText("##save_file", app.savetofile_input, sizeof(app.savetofile_input));
+            // if (ImGui::Button("Save and Quit", ImVec2(-1, 30))) {
+            //     if (app.client.save_and_quit(app.savetofile_input)) {
+            //         app.done = true;
+            //     }
+            //     else {
+            //         app.status_text = "Failed to save to file, client still open.";
+            //     }
+            // }
         }
         else if (app.client.is_scene_ready() && !(app.client.getIsHost())) {
             ImGui::Text("Guest Client");
@@ -166,9 +166,9 @@ namespace gui {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-        app.client.process_network_messages();
+        // app.client.process_network_messages();
 
-        bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
+        // bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
         if (!app.client.is_scene_ready()) {
             ImGui::Dummy(ImVec2(0.0f, 40.0f));
             ImGui::TextWrapped("No active scene yet.");
@@ -227,31 +227,41 @@ namespace gui {
             app.client.add_test_model();
         }
 
-        // Use auto& or const auto& to prevent copying the storage object
-        const auto& view = app.client.active_registry.storage<entt::entity>();
-        if(ImGui::BeginChild("Entity List", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
-            int i = 0;
-            for (auto entity : view) {
-                i++;
-                ImGui::PushID(i);
-                if (ImGui::TreeNode("Entity")) {
-                
-                    // Content inside this block renders ONLY when expanded
-                    ImGui::Indent(); // Optional: indent child components further
-                    
-                    if (ImGui::Button("Add Component")) {
-                        ImGui::Text("Button pressed.");
-                    }
-                    
-                    ImGui::Unindent();
-                    
-                    // Crucial: Every successful TreeNode call MUST end with TreePop()
-                    ImGui::TreePop();
-                }
-                ImGui::PopID();
+    if (app.selected_entity.has_value()) {
+        ImGui::Text("Selected Entity: %u", static_cast<uint32_t>(app.selected_entity.value()));
+    }
+
+    const auto& view = app.client.active_registry.view<entt::entity>();
+
+    if (ImGui::BeginChild("Entity List", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
+        for (auto entity : view) {
+            // Build node flags
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow 
+                                    | ImGuiTreeNodeFlags_SpanAvailWidth
+                                    | ImGuiTreeNodeFlags_Leaf; // Use Leaf if entities don't have children
+
+            // Highlight if currently selected
+            if (app.selected_entity.has_value() && app.selected_entity.value() == entity) {
+                flags |= ImGuiTreeNodeFlags_Selected;
             }
-            ImGui::EndChild();
+
+            // Pass entity ID as a pointer to guarantee unique ID per entity
+            // TreeNodeEx returns true ONLY if the node is expanded
+            bool isOpen = ImGui::TreeNodeEx((void*)(uintptr_t)entity, flags, "Entity %u", static_cast<uint32_t>(entity));
+
+            // ALWAYS check for click right after rendering the node (outside the isOpen check!)
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+                app.selected_entity = entity;
+            }
+
+            // Only pop if TreeNodeEx returned true
+            if (isOpen) {
+                // Render child items or components here if applicable
+                ImGui::TreePop();
+            }
         }
+        ImGui::EndChild();
+    }
 
     
         // Logic for editor tab below. Shows name, position, rotation and scale fields.
@@ -263,16 +273,16 @@ namespace gui {
         ImGui::Text("Selected Object");
         ImGui::Spacing();
 
-        if (app.selected_object_id.empty()) {
-            ImGui::TextWrapped("Select an object from the list above.");
-            ImGui::End();
-            return;
-        }
+        // if (app.selected_entity.has_value()) {
+        //     ImGui::TextWrapped("Select an object from the list above.");
+        //     ImGui::End();
+        //     return;
+        // }
 
-        if (!(app.selected_object_id.empty()) && !(app.client.scene.check_registry(app.selected_object.objectID))) {
-            app.selected_object_id = "";
-            app.selected_object = core::SerializedObject();
-        }
+        // if (!(app.selected_object_id.empty()) && !(app.client.scene.check_registry(app.selected_object.objectID))) {
+        //     app.selected_object_id = "";
+        //     app.selected_object = core::SerializedObject();
+        // }
 
         ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
         ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
@@ -318,35 +328,35 @@ namespace gui {
         }
 
         if (ImGui::Button("Apply Edit", ImVec2(-1, 30))) {
-            bool ok = app.client.apply_gui_edit(app.selected_object);
-            if (ok) {
-                app.status_text = "Object edited successfully";
-            }
-            else {
-                app.status_text = "Failed to edit object";
-            }
+            // bool ok = app.client.apply_gui_edit(app.selected_object);
+            // if (ok) {
+            //     app.status_text = "Object edited successfully";
+            // }
+            // else {
+            //     app.status_text = "Failed to edit object";
+            // }
 
-            if (ok) {
-                core::SerializedObject latest;
-                if (app.client.get_scene_object(app.selected_object_id, latest)) {
-                    app.selected_object = latest;
-                }
-            }
+            // if (ok) {
+            //     core::SerializedObject latest;
+            //     if (app.client.get_scene_object(app.selected_object_id, latest)) {
+            //         app.selected_object = latest;
+            //     }
+            // }
         }
 
         if (ImGui::Button("Delete Object", ImVec2(-1, 30))) {
-            bool ok = app.client.apply_gui_delete(app.selected_object);
-            if (ok) {
-                app.status_text = "Object deleted successfully";
-            }
-            else {
-                app.status_text = "Failed to delete object";
-            }
+            // bool ok = app.client.apply_gui_delete(app.selected_object);
+            // if (ok) {
+            //     app.status_text = "Object deleted successfully";
+            // }
+            // else {
+            //     app.status_text = "Failed to delete object";
+            // }
 
-            if (ok) {
-                app.selected_object = core::SerializedObject();
-                app.selected_object_id = "";
-            }
+            // if (ok) {
+            //     app.selected_object = core::SerializedObject();
+            //     app.selected_object_id = "";
+            // }
         }
 
         ImGui::End();
@@ -401,13 +411,13 @@ namespace gui {
                                 info.model_ref = app.selected_model_ref;
                                 info.model_path = app.selected_model_path;
 
-                                bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
-                                if (ok) {
-                                    app.status_text = "Object added from selected model";
-                                }
-                                else {
-                                    app.status_text = "Failed to add object from selected model";
-                                }
+                                // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
+                                // if (ok) {
+                                //     app.status_text = "Object added from selected model";
+                                // }
+                                // else {
+                                //     app.status_text = "Failed to add object from selected model";
+                                // }
                             }
                         }
                     }
@@ -426,14 +436,14 @@ namespace gui {
                     if (ImGui::Button("Import Model", ImVec2(-1, 30))) {
                         std::string path = app.import_model_path;
 
-                        bool ok = app.client.importLocalModel(path);
+                        // bool ok = app.client.importLocalModel(path);
 
-                        if (ok) {
-                            app.status_text = "Imported model: " + path;
-                        }
-                        else {
-                            app.status_text = "Failed to import model. Are you missing an asset, or did you use an invalid path? (Valid format: models/name/scene.gltf)";
-                        }
+                        // if (ok) {
+                        //     app.status_text = "Imported model: " + path;
+                        // }
+                        // else {
+                        //     app.status_text = "Failed to import model. Are you missing an asset, or did you use an invalid path? (Valid format: models/name/scene.gltf)";
+                        // }
                     }
 
                 }

@@ -50,13 +50,13 @@ namespace component
 
     struct user_control {};
 
-    struct mesh_manager {
-        core::MeshManager manager;
-    };
+    // struct mesh_manager {
+    //     core::MeshManager manager;
+    // };
 
-    struct material_manager {
-        core::ShaderProgramManager manager;
-    };
+    // struct material_manager {
+    //     core::ShaderProgramManager manager;
+    // };
 
     struct current_camera {
         entt::entity e;

@@ -8,6 +8,9 @@
 #include <Client.hpp>
 #include <SerializedObject.hpp>
 
+#include <optional>
+#include <entt/entt.hpp>
+
 namespace gui {
     struct AppContext {
         SDL_Window* window = nullptr;
@@ -20,6 +23,8 @@ namespace gui {
         };
 
         ImVec4 clear_color = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+
+        std::optional<entt::entity> selected_entity;
 
         bool done = false;
         bool viewport_clicked = false;
