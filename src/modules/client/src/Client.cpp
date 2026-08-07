@@ -10,6 +10,7 @@
 #include <JSONHelper.hpp>
 #include <entt/entt.hpp>
 #include <spawn/Spawn.hpp>
+#include <crossguid/guid.hpp>
 
 #include "hv/json.hpp"
 
@@ -31,8 +32,8 @@ namespace client {
         active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
     }
 
-    void Client::add_test_model() {
-        model_manager.add_model(model_loader.load_model("models/sink/scene.gltf"));
+    xg::Guid Client::add_test_model() {
+        return model_manager.add_model(model_loader.load_model("models/sink/scene.gltf"));
     }
 
     entt::entity Client::spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function) {

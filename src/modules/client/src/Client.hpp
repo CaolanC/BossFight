@@ -12,6 +12,7 @@
 #include <entt/entt.hpp>
 #include <Renderer.hpp>
 #include <rendering/ModelLoader.hpp>
+#include <crossguid/guid.hpp>
 
 namespace client {
 
@@ -52,7 +53,7 @@ namespace client {
         rendering::ModelLoader model_loader = rendering::ModelLoader();
         client::Renderer renderer = client::Renderer();
         void scene_registry_migration_temorary_bootstrap();
-        void add_test_model();
+        xg::Guid add_test_model();
         entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function);
 
         core::Scene scene;

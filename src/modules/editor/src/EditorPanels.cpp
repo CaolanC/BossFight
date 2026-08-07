@@ -169,19 +169,19 @@ namespace gui {
         // app.client.process_network_messages();
 
         // bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
-        if (!app.client.is_scene_ready()) {
-            ImGui::Dummy(ImVec2(0.0f, 40.0f));
-            ImGui::TextWrapped("No active scene yet.");
-            ImGui::Spacing();
-            ImGui::TextWrapped("Choose one of the options in the Tools panel:");
-            ImGui::BulletText("Host Session -> New Scene");
-            ImGui::BulletText("Host Session -> Load From File");
-            ImGui::BulletText("Join Session -> enter port and join");
+        // if (!app.client.is_scene_ready()) {
+        //     ImGui::Dummy(ImVec2(0.0f, 40.0f));
+        //     ImGui::TextWrapped("No active scene yet.");
+        //     ImGui::Spacing();
+        //     ImGui::TextWrapped("Choose one of the options in the Tools panel:");
+        //     ImGui::BulletText("Host Session -> New Scene");
+        //     ImGui::BulletText("Host Session -> Load From File");
+        //     ImGui::BulletText("Join Session -> enter port and join");
 
-            ImGui::End();
-            ImGui::PopStyleVar();
-            return;
-        }
+        //     ImGui::End();
+        //     ImGui::PopStyleVar();
+        //     return;
+        //}
 
         ImVec2 size = ImGui::GetContentRegionAvail();
 
@@ -224,7 +224,7 @@ namespace gui {
         }
 
         if (ImGui::Button("Load Test Model")) {
-            app.client.add_test_model();
+            std::cout << app.client.add_test_model() << '\n';
         }
 
     if (app.selected_entity.has_value()) {
@@ -370,58 +370,54 @@ namespace gui {
         if (ImGui::BeginTabBar("BottomTabs")) {
 
             if (ImGui::BeginTabItem("Loaded Models")) {
-                if (!app.client.is_scene_ready()) {
-                    ImGui::TextWrapped("No active scene.");
-                }
-                else {
 
-                    auto loaded_models = app.client.model_manager.get_loaded_models();
+                auto loaded_models = app.client.model_manager.get_loaded_models();
 
-                    if (loaded_models.empty()) {
-                        ImGui::TextWrapped("No loaded models.");
-                    } else {
-                        for (const auto& model : loaded_models) {
-                            std::string label = model.model_path.empty()
-                                ? model.model_ref.str()
-                                : model.model_path;
+                if (loaded_models.empty()) {
+                    ImGui::TextWrapped("No loaded models.");
+                } else {
+                    for (const auto& model : loaded_models) {
+                        std::string label = model.model_path.empty()
+                            ? model.model_ref.str()
+                            : model.model_path;
 
-                            bool selected = (app.selected_model_ref == model.model_ref);
+                        bool selected = (app.selected_model_ref == model.model_ref);
 
-                            if (ImGui::Selectable(label.c_str(), selected)) {
-                                app.selected_model_ref = model.model_ref;
-                                app.selected_model_path = model.model_path;
-                            }
+                        if (ImGui::Selectable(label.c_str(), selected)) {
+                            app.selected_model_ref = model.model_ref;
+                            app.selected_model_path = model.model_path;
                         }
+                    }
 
-                        ImGui::Spacing();
-                        ImGui::Separator();
+                    ImGui::Spacing();
+                    ImGui::Separator();
 
-                        if (app.selected_model_ref.isValid()) {
-                            ImGui::TextWrapped(
-                                "Selected model: %s",
-                                app.selected_model_path.empty()
-                                    ? app.selected_model_ref.str().c_str()
-                                    : app.selected_model_path.c_str()
-                            );
+                    if (app.selected_model_ref.isValid()) {
+                        ImGui::TextWrapped(
+                            "Selected model: %s",
+                            app.selected_model_path.empty()
+                                ? app.selected_model_ref.str().c_str()
+                                : app.selected_model_path.c_str()
+                        );
 
-                            ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
+                        ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
 
-                            if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
-                                core::LoadedModelInfo info;
-                                info.model_ref = app.selected_model_ref;
-                                info.model_path = app.selected_model_path;
+                        if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
+                            core::LoadedModelInfo info;
+                            info.model_ref = app.selected_model_ref;
+                            info.model_path = app.selected_model_path;
 
-                                // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
-                                // if (ok) {
-                                //     app.status_text = "Object added from selected model";
-                                // }
-                                // else {
-                                //     app.status_text = "Failed to add object from selected model";
-                                // }
-                            }
+                            // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
+                            // if (ok) {
+                            //     app.status_text = "Object added from selected model";
+                            // }
+                            // else {
+                            //     app.status_text = "Failed to add object from selected model";
+                            // }
                         }
                     }
                 }
+                
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Import Models")) {
