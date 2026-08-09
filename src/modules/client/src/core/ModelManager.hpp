@@ -60,7 +60,7 @@ namespace core {
             for (const auto& [ref, model] : model_map) {
                 LoadedModelInfo info;
                 info.model_ref = ref;
-                info.model_path = "placeholder";
+                info.model_path = model.path;
                 out.push_back(info);
                 // auto it = model_to_path.find(ref);
                 // if (it != model_to_path.end()) {

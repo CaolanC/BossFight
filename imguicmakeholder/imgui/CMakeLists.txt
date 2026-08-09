@@ -1,5 +1,6 @@
 add_library(imgui STATIC
         ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui/imgui.cpp
+        ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui/imgui_demo.cpp
         ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui/imgui_draw.cpp
         ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui/imgui_tables.cpp
         ${CMAKE_SOURCE_DIR}/thirdpartypoopers/imgui/imgui_widgets.cpp

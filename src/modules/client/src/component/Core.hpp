@@ -87,7 +87,7 @@ namespace component
     };
 
     struct scale {
-        float s;
+        float s = 1.0f;
     };
 
     struct debug_spin {

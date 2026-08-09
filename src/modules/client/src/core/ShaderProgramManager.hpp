@@ -35,6 +35,10 @@ namespace core
 
             void from_source(core::ShaderSource source) {
 
+                if (glCreateShader == nullptr) {
+                    std::cerr << "CRITICAL: glCreateShader pointer is NULL! Context not initialized on this thread." << std::endl;
+                }
+
                 shader = glCreateShader(source.type);
                 char shader_source[2048];
                 std::string s = utils::assets::get_asset(source.path);
@@ -60,8 +64,9 @@ namespace core
         void get_shader_source(const char* path, char* shader_buffer, size_t shader_buffer_length) {
             FILE* stream = fopen(path, "r");
             if (stream == NULL) {
-                printf("ooops\n");
-                // TODO LOLLLLLL
+                fprintf(stderr, "[ERROR] Could not open file: %s\n", path);
+                fflush(stderr); // Forces the terminal to display the message right away
+                return;
             }
 
             size_t bytes = fread(shader_buffer, 1, shader_buffer_length - 1, stream);
@@ -71,12 +76,39 @@ namespace core
         }
     };
 
+    struct LoadedMatInfo {
+        xg::Guid ref;
+        unsigned int program;
+    };
+
     class ShaderProgramManager {
     public:
+
+    std::vector<LoadedMatInfo> get_loaded_materials() const {
+        std::vector<LoadedMatInfo> out;
+        out.reserve(program_map.size());
+
+        for (const auto& [ref, program] : program_map) {
+            LoadedMatInfo info;
+            info.ref= ref;
+            info.program = program;
+            out.push_back(info);
+            // auto it = model_to_path.find(ref);
+            // if (it != model_to_path.end()) {
+            //     info.model_path = it->second;
+            //     out.push_back(info);
+            // }
+
+        }
+
+        return out;
+    }
+
     ShaderProgramHandle from_source_vec(const std::vector<core::ShaderSource> shader_sources) {
         
         std::vector<core::Shader> shaders;
         for (auto shader_source : shader_sources) {
+            std::cout << "got to the shader loop\n";
             Shader shader;
             shader.from_source(shader_source);
 

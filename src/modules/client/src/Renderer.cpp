@@ -46,6 +46,7 @@ namespace client {
             const rendering::Model& model = model_manager.get_model(mod_ref.id);
 
             GLuint defaultProgram = material_mgr.get_program(mat_ref.id);
+            // std::cout << mat_ref.id << ' ' << mod_ref.id << '\n';
 
             glm::mat4 entity_model(1.0f);
             if (auto t = reg.try_get<shared::component::transform>(e)) {

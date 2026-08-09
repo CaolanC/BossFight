@@ -11,6 +11,7 @@
 #include <entt/entt.hpp>
 #include <spawn/Spawn.hpp>
 #include <crossguid/guid.hpp>
+#include <core/sh_src.hpp>
 
 #include "hv/json.hpp"
 
@@ -23,13 +24,20 @@ namespace client {
             // scene(mesh_manager, model_manager)
     {
         client_id = xg::newGuid();
-        mesh_manager = mesh_manager;
-        model_manager = model_manager;
-        scene_registry_migration_temorary_bootstrap(); 
+        // mesh_manager = mesh_manager;
+        // model_manager = model_manager; 
+        
     }
 
     void Client::scene_registry_migration_temorary_bootstrap() {
+        active_registry.ctx().emplace<component::keyboard_state>();
+        active_registry.ctx().emplace<component::mouse_state>();
         active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
+        std::vector<core::ShaderSource> shader_sources = {
+                core::sh_src::v3D(),
+                core::sh_src::fSolid()
+            };
+        material_manager.from_source_vec(shader_sources);
     }
 
     xg::Guid Client::add_test_model() {
@@ -172,7 +180,9 @@ namespace client {
     void Client::init_embedded() {
         if (bootstrapped) return;
 
-        scene_ready = false;
+        scene_registry_migration_temorary_bootstrap();
+
+        scene_ready = true;
         bootstrapped = true;
     }
 

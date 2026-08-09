@@ -14,6 +14,7 @@
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/glm.hpp>
 
 namespace gui {
 
@@ -23,6 +24,8 @@ namespace gui {
     // depending on the state
 
     void EditorPanels::draw_tools(AppContext& app) {
+
+
         ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoTitleBar);
 
         if (!app.client.is_scene_ready()) {
@@ -215,6 +218,9 @@ namespace gui {
     void EditorPanels::draw_right(AppContext& app) {
         ImGui::Begin("RightPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
 
+        if (ImGui::Button("Demo Window")) {
+            app.show_demo_window = !app.show_demo_window;
+        }
         ImGui::Text("Entities");
         ImGui::Separator();
 
@@ -231,36 +237,98 @@ namespace gui {
         ImGui::Text("Selected Entity: %u", static_cast<uint32_t>(app.selected_entity.value()));
     }
 
+    if (ImGui::BeginMenu("Components")) {
+        ImGui::MenuItem("Click me");
+        ImGui::MenuItem("No click me");
+        ImGui::EndMenu();
+    }
+
     const auto& view = app.client.active_registry.view<entt::entity>();
+
 
     if (ImGui::BeginChild("Entity List", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
         for (auto entity : view) {
             // Build node flags
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow 
                                     | ImGuiTreeNodeFlags_SpanAvailWidth
-                                    | ImGuiTreeNodeFlags_Leaf; // Use Leaf if entities don't have children
+                                    | ImGuiTreeNodeFlags_Leaf;
 
-            // Highlight if currently selected
             if (app.selected_entity.has_value() && app.selected_entity.value() == entity) {
                 flags |= ImGuiTreeNodeFlags_Selected;
             }
 
-            // Pass entity ID as a pointer to guarantee unique ID per entity
-            // TreeNodeEx returns true ONLY if the node is expanded
+            // Render Tree Node
             bool isOpen = ImGui::TreeNodeEx((void*)(uintptr_t)entity, flags, "Entity %u", static_cast<uint32_t>(entity));
 
-            // ALWAYS check for click right after rendering the node (outside the isOpen check!)
+            // Selection logic on left-click
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                 app.selected_entity = entity;
             }
 
-            // Only pop if TreeNodeEx returned true
+            // -------------------------------------------------------------
+            // RIGHT-CLICK CONTEXT MENU
+            // -------------------------------------------------------------
+            if (ImGui::BeginPopupContextItem()) {
+                // Automatically select the right-clicked entity if it wasn't selected
+                app.selected_entity = entity;
+
+                ImGui::Text("Entity Operations");
+                ImGui::Separator();
+
+                // 1. Add Component Sub-menu
+                if (ImGui::BeginMenu("Add Component")) {
+                    if (ImGui::MenuItem("Transform")) {
+                        // Example EnTT emplace:
+                        app.client.active_registry.emplace_or_replace<shared::component::position>(entity, glm::vec3(0, 0, 0));
+                        app.client.active_registry.emplace_or_replace<shared::component::rotation>(entity, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+                        app.client.active_registry.emplace_or_replace<component::scale>(entity);
+                        app.client.active_registry.emplace_or_replace<shared::component::transform>(entity);
+                    }
+                    if (ImGui::MenuItem("Model")) {
+                        app.client.active_registry.emplace_or_replace<component::model_ref>(entity, app.selected_model_ref);
+                    }
+                    if (ImGui::MenuItem("Material")) {
+                        app.client.active_registry.emplace_or_replace<component::mat_ref>(entity, app.selected_material_ref);
+                    }
+                    if (ImGui::MenuItem("Light")) {
+                        // app.client.active_registry.emplace_or_replace<components::Light>(entity);
+                    }
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+
+                // 2. Duplicate Entity
+                if (ImGui::MenuItem("Duplicate Entity")) {
+                    // Handle entity duplication logic here
+                }
+
+                // 3. Delete Entity
+                if (ImGui::MenuItem("Delete Entity")) {
+                    app.client.active_registry.destroy(entity);
+                    if (app.selected_entity == entity) {
+                        app.selected_entity.reset();
+                    }
+                }
+
+                ImGui::EndPopup();
+            }
+
+            // Tree Pop if open
             if (isOpen) {
-                // Render child items or components here if applicable
+                if (app.client.active_registry.all_of<shared::component::transform>(entity)) {
+                    ImGui::TreeNodeEx("Comp_Transform", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Transform");
+                }
+                if (app.client.active_registry.all_of<component::model_ref>(entity)) {
+                    ImGui::TreeNodeEx("Comp_Model", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Model");
+                }
+                if (app.client.active_registry.all_of<component::mat_ref>(entity)) {
+                    ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
+                }
                 ImGui::TreePop();
             }
         }
-        ImGui::EndChild();
+    ImGui::EndChild();
     }
 
     
@@ -377,9 +445,7 @@ namespace gui {
                     ImGui::TextWrapped("No loaded models.");
                 } else {
                     for (const auto& model : loaded_models) {
-                        std::string label = model.model_path.empty()
-                            ? model.model_ref.str()
-                            : model.model_path;
+                        std::string label = model.model_path;
 
                         bool selected = (app.selected_model_ref == model.model_ref);
 
@@ -420,29 +486,51 @@ namespace gui {
                 
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("Import Models")) {
-                if (!app.client.is_scene_ready()) {
-                    ImGui::TextWrapped("No active scene.");
-                }
-                else {
-                    ImGui::Text("Import Model");
-                    ImGui::TextWrapped("Path relative to assets folder:");
-                    ImGui::InputText("##import_model_path", app.import_model_path, sizeof(app.import_model_path));
+            if (ImGui::BeginTabItem("Loaded Materials")) {
+                auto loaded_materials = app.client.material_manager.get_loaded_materials();
 
-                    if (ImGui::Button("Import Model", ImVec2(-1, 30))) {
-                        std::string path = app.import_model_path;
+                if (loaded_materials.empty()) {
+                    ImGui::TextWrapped("No loaded models.");
+                } else {
+                    for (const auto& material : loaded_materials) {
+                        std::string label = material.ref;
 
-                        // bool ok = app.client.importLocalModel(path);
+                        bool selected = (app.selected_material_ref == material.ref);
 
-                        // if (ok) {
-                        //     app.status_text = "Imported model: " + path;
-                        // }
-                        // else {
-                        //     app.status_text = "Failed to import model. Are you missing an asset, or did you use an invalid path? (Valid format: models/name/scene.gltf)";
-                        // }
+                        if (ImGui::Selectable(label.c_str(), selected)) {
+                            app.selected_material_ref = material.ref;
+                        }
                     }
 
+                    ImGui::Spacing();
+                    ImGui::Separator();
+
+                    if (app.selected_model_ref.isValid()) {
+                        ImGui::TextWrapped(
+                            "Selected model: %s",
+                            app.selected_model_path.empty()
+                                ? app.selected_model_ref.str().c_str()
+                                : app.selected_model_path.c_str()
+                        );
+
+                        ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
+
+                        if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
+                            core::LoadedModelInfo info;
+                            info.model_ref = app.selected_model_ref;
+                            info.model_path = app.selected_model_path;
+
+                            // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
+                            // if (ok) {
+                            //     app.status_text = "Object added from selected model";
+                            // }
+                            // else {
+                            //     app.status_text = "Failed to add object from selected model";
+                            // }
+                        }
+                    }
                 }
+                
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Help")) {

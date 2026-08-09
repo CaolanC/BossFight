@@ -47,6 +47,7 @@ namespace rendering {
 
     Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model, std::string const& p) {
         Model m;
+        m.path = p;
         for (auto const& n: scene.nodes) {
             // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
             m.root_nodes.push_back(load_node(model, model.nodes[n], p));
