@@ -290,8 +290,8 @@ namespace gui {
                     if (ImGui::MenuItem("Material")) {
                         app.client.active_registry.emplace_or_replace<component::mat_ref>(entity, app.selected_material_ref);
                     }
-                    if (ImGui::MenuItem("Light")) {
-                        // app.client.active_registry.emplace_or_replace<components::Light>(entity);
+                    if (ImGui::MenuItem("Debug Spin")) {
+                        app.client.active_registry.emplace_or_replace<component::debug_spin>(entity);
                     }
                     ImGui::EndMenu();
                 }
@@ -324,6 +324,9 @@ namespace gui {
                 }
                 if (app.client.active_registry.all_of<component::mat_ref>(entity)) {
                     ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
+                }
+                if (app.client.active_registry.all_of<component::debug_spin>(entity)) {
+                    ImGui::TreeNodeEx("Comp_DebugSpin", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Debug Spin");
                 }
                 ImGui::TreePop();
             }
