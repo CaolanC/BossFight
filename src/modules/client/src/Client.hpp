@@ -57,6 +57,7 @@ namespace client {
         entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function);
 
         core::Scene scene;
+        xg::Guid default_material;
 
         bool request_create_session(std::string const& ip, int& ws_port);
         void ensure_framebuffer(int w, int h);
