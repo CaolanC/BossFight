@@ -318,6 +318,32 @@ namespace gui {
             if (isOpen) {
                 if (app.client.active_registry.all_of<shared::component::transform>(entity)) {
                     ImGui::TreeNodeEx("Comp_Transform", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Transform");
+                    auto& pos = app.client.active_registry.get<shared::component::position>(entity);
+                    float v[3] = {pos.value[0], pos.value[1], pos.value[2]};
+                    ImGui::DragFloat3("Position", v, 0.05f);
+                    \
+                    auto& rot = app.client.active_registry.get<shared::component::rotation>(entity);
+
+                    glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(rot));
+
+                    float u_rot[3] = {
+                        euler_deg.x,
+                        euler_deg.y,
+                        euler_deg.z
+                    };
+
+                    ImGui::DragFloat3("Rotation", u_rot, 1.0f);
+
+                    auto& scale = app.client.active_registry.get<component::scale>(entity);
+                    float s = scale.s;
+                    ImGui::DragFloat("Scale", &s, 0.05f, 0.01f, 100.0f);
+
+
+                    pos.value = glm::vec3(v[0], v[1], v[2]);
+
+                    glm::vec3 euler_rad = glm::radians(glm::vec3(u_rot[0], u_rot[1], u_rot[2]));
+                    rot = glm::quat(euler_rad);
+                    scale.s = s;
                 }
                 if (app.client.active_registry.all_of<component::model_ref>(entity)) {
                     ImGui::TreeNodeEx("Comp_Model", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Model");
