@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <par_shapes.h>
 
+#include <rendering/ResourceManager.hpp>
+
 namespace rendering {
     ModelLoader::ModelLoader() {
 
