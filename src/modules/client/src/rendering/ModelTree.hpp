@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rendering/NewMesh.hpp>
+#include <glm/glm.hpp>
+#include <string>
 
 struct baseColorTexture {
     int index;
@@ -26,7 +28,7 @@ struct ModelTreeNode {
     glm::mat4 local_transform = {1.0f}; // It's local transform is at the origin, I think this works?
     
     std::vector<ModelTreeNode> children;
-    std::vector<SubMesh> meshes;
+    std::vector<CPUMesh> meshes;
     
     // Each node can reference a mesh, material, texture ?
     // Children
@@ -39,4 +41,4 @@ class ModelTree {
     ModelTree();
     private:
     ModelTreeNode root_node = ModelTreeNode();
-}
+};

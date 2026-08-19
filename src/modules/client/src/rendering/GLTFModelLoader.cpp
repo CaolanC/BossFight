@@ -1,28 +1,33 @@
-#include <rendering/NewModelLoader.hpp>
+#include <rendering/GLTFModelLoader.hpp>
 #include <rendering/ModelTree.hpp>
+#include <rendering/MaterialManager.hpp>
+#include <rendering/Model.hpp>
+#include <rendering/ModelLoader.hpp>
+#include <utils/gl/helpers.hpp>
 
 namespace rendering {
 
-NewModelLoader::NewModelLoader() {
+GLTFModelLoader::GLTFModelLoader(rendering::MaterialManager& material_manager)
+    : material_manager(material_manager) {
 
 }
 
-ModelTreeNode NewModelLoader::load_model(std::sting const& model_path) {
+ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
     tinygltf::Model model;
-    load_gltf_model(model_path, &model);
+    load_gltf_model(model_path, model);
 
     auto default_scene = model.scenes.at(model.defaultScene);
 
-    ModelTree model_tree;
-    for (auto const& root_node: default_scene.nodes) {
+    // ModelTree model_tree;
+    for (auto const root_node: default_scene.nodes) {
         ModelTreeNode mt_root_node;
-        load_node(&mt_root_node, &model, &root_node);
-        model_tree.add_root_node(mt_root_node);
+        load_node(mt_root_node, model, model.nodes[root_node]);
+        // model_tree.add_root_node(mt_root_node);
     }
 
 }
 
-void load_node(ModelTreeNode& mt_node, tinygltf::Model& model, tinygtlf::Node& node) {
+void GLTFModelLoader::load_node(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Node& node) {
 
     // First things first: For each node pair we want to load the mesh.
     load_node_local_transform(mt_node, node);
@@ -30,71 +35,73 @@ void load_node(ModelTreeNode& mt_node, tinygltf::Model& model, tinygtlf::Node& n
 
     for(auto const& child_node: node.children) {
         ModelTreeNode mt_child_node;
-        mt_child_node.parent = mt_node;
-        load_node(mt_child_node, model, child_node);
+        mt_child_node.parent = &mt_node;
+        load_node(mt_child_node, model, model.nodes[child_node]);
         mt_node.children.push_back(mt_child_node);
     }
 }
 
-void load_node_mesh(ModelTreeNode& mt_node, tinygltf::Model& model, tinygtlf::Node& node) {
+void GLTFModelLoader::load_node_mesh(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Node& node) {
     if (node.mesh != -1) {
         auto const& mesh = model.meshes[node.mesh];
-        for (auto const& gf_submesh: mesh.primitives) {
-            SubMesh submesh;
-            load_submesh(mt_node, model, gf_submesh, &submesh);
+        for (auto gf_submesh: mesh.primitives) {
+            CPUMesh submesh;
+            load_submesh(mt_node, model, gf_submesh, submesh);
             mt_node.meshes.push_back(submesh);
         }
     }
 }
 
-void load_submesh(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Primitive& primitive, SubMesh& submesh) {
-    submesh.drawMode = utils::gl::glModeFromPrimitive(primitive.mode);
+void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) {
+    submesh.draw_mode = utils::gl::glModeFromPrimitive(primitive.mode);
     
-    glGenVertexArrays(1, &submesh.vao);
-    glBindVertexArray(submesh.vao);
-    
+    load_positions(model, primitive, submesh);
     load_normals(model, primitive, submesh);
     load_texcoord(model, primitive, submesh);
-    load_positions(model, primitive, submesh);
     load_indices(model, primitive, submesh);
-    load_materials
-
+    // load_materials
+    // Next need to interleave the extra vbo
     glBindVertexArray(0);
 }
 
-void load_materials() {
-    std::unordered_map<int, MaterialHandle> index_material_cache;
+struct VBO_Slice {
+    size_t offset = 0;
+    std::vector<uint8_t> slice;
+};
+
+void GLTFModelLoader::load_materials(tinygltf::Primitive& primitive) {
+    //std::unordered_map<int, MaterialHandle> index_material_cache;
     // will probably have to move this out as different primtives can share the same material
     
-    if (primitive.material >= 0 &&
-    primitive.material < static_cast<int>(model.materials.size())) {
+    // if (primitive.material >= 0 &&
+    // primitive.material < static_cast<int>(model.materials.size())) {
 
-        const auto& material = model.materials[primitive.material];
-        const auto& baseTex = material.pbrMetallicRoughness.baseColorTexture;
+    //     const auto& material = model.materials[primitive.material];
+    //     const auto& baseTex = material.pbrMetallicRoughness.baseColorTexture;
 
-        // glTF convention: index == -1 means "no texture"
-        if (baseTex.index >= 0 &&
-            baseTex.index < static_cast<int>(model.textures.size())) {
+    //     // glTF convention: index == -1 means "no texture"
+    //     if (baseTex.index >= 0 &&
+    //         baseTex.index < static_cast<int>(model.textures.size())) {
 
-            const auto& texture = model.textures[baseTex.index];
-            if (texture.source >= 0 &&
-                texture.source < static_cast<int>(model.images.size())) {
+    //         const auto& texture = model.textures[baseTex.index];
+    //         if (texture.source >= 0 &&
+    //             texture.source < static_cast<int>(model.images.size())) {
 
-                const auto& image = model.images[texture.source];
-                if (!image.uri.empty()) {
-                    fs::path parent = p;
-                    parent = parent.parent_path();
-                    fs::path fullPath = fs::path(utils::assets::get_asset(
-                        (parent / image.uri).string()));
+    //             const auto& image = model.images[texture.source];
+    //             if (!image.uri.empty()) {
+    //                 fs::path parent = p;
+    //                 parent = parent.parent_path();
+    //                 fs::path fullPath = fs::path(utils::assets::get_asset(
+    //                     (parent / image.uri).string()));
 
-                    pr.texture = utils::Texture(fullPath.string().c_str());
-                }
-            }
-        }
-    }
+    //                 pr.texture = utils::Texture(fullPath.string().c_str());
+    //             }
+    //         }
+    //     }
+    // }
 }
 
-void load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMesh& submesh) {
+void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) {
     if (primitive.indices >= 0) {
         const auto& iacc  = model.accessors.at(primitive.indices);
         const auto& iview = model.bufferViews.at(iacc.bufferView);
@@ -102,19 +109,19 @@ void load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMes
 
         const unsigned char* idxData = ibuff.data.data() + iview.byteOffset + iacc.byteOffset;
 
-        glGenBuffers(1, &submesh.ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, submesh.ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                        utils::gl::bytesPerComponent(iacc.componentType) * iacc.count,
-                        idxData,
-                        GL_STATIC_DRAW);
+        // glGenBuffers(1, &submesh.ebo);
+        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, submesh.ebo);
+        // glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        //                 utils::gl::bytesPerComponent(iacc.componentType) * iacc.count,
+        //                 idxData,
+        //                 GL_STATIC_DRAW);
 
-        submesh.indexCount = static_cast<GLsizei>(iacc.count);
-        submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
+        // submesh.indexCount = static_cast<GLsizei>(iacc.count);
+        // submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
     } 
 }
 
-void load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMesh& submesh) {
+void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
     auto posIt = primitive.attributes.find("POSITION");
     if (posIt != primitive.attributes.end()) {
         const auto& acc  = model.accessors.at(posIt->second);
@@ -123,42 +130,24 @@ void load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, SubM
 
         const size_t no_components  = utils::gl::numComponentsInType(acc.type);
         const size_t component_size  = utils::gl::bytesPerComponent(acc.componentType);
-        const size_t stride = view.byteStride ? view.byteStride : comps * csize;
+        const size_t stride = view.byteStride ? view.byteStride : no_components * component_size;
 
         const uint8_t* data = reinterpret_cast<const uint8_t*> (
-            buff.data.data() + view.byteOffset + acc.byteOffset; // I think maybe this could be uint8_t ?
-        )
-        cpu_mesh.position_vbo.assign() = data;
-        cpu_mesh.layout.attributes.push_back(
-                AttributeType::POSITION,
-                0,
-                utils::gl::glTypeFromComponent(acc.componentType),
-                no_components,
-                false,
-                (void*() 0)
+            buff.data.data() + view.byteOffset + acc.byteOffset // I think maybe this could be uint8_t ?
         );
-
-
-        GLuint vbo;
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
-        submesh.vertexCount = static_cast<GLsizei>(acc.count);
-        glVertexAttribPointer(
-            0,
-            static_cast<GLint>(comps),
-            utils::gl::glTypeFromComponent(acc.componentType),
-            acc.normalized ? GL_TRUE : GL_FALSE,
-            static_cast<GLsizei>(stride),
-            reinterpret_cast<void*>(0)
-        );
-
-        submesh.vbos.push_back(vbo);
-        glEnableVertexAttribArray(0);
+        // cpu_mesh.position_vbo.assign() = data;
+        // cpu_mesh.layout.attributes.push_back(VertexAttribute(
+        //         AttributeType::POSITION,
+        //         0,
+        //         utils::gl::glTypeFromComponent(acc.componentType),
+        //         no_components,
+        //         false,
+        //         (void*() 0)
+        // ));
     }
 }
 
-void load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMesh& submesh) { // might want to add a string parameter for things like TEXCOORD_1 etc.
+void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) { // might want to add a string parameter for things like TEXCOORD_1 etc.
     auto texIt = primitive.attributes.find("TEXCOORD_0");
     if (texIt != primitive.attributes.end()) {
         const auto& acc  = model.accessors.at(texIt->second);
@@ -171,26 +160,26 @@ void load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMe
 
         const unsigned char* data = buff.data.data() + view.byteOffset + acc.byteOffset;
 
-        GLuint vbo;
-        glGenBuffers(1, vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
-        submesh.vertexCount = static_cast<GLsizei>(acc.count);
-        glVertexAttribPointer(
-            2,
-            static_cast<GLint>(comps),
-            utils::gl::glTypeFromComponent(acc.componentType),
-            acc.normalized ? GL_TRUE : GL_FALSE,
-            static_cast<GLsizei>(stride),
-            reinterpret_cast<void*>(0)
-        );
-        submesh.vbos.push_back(vbo);
+        // GLuint vbo;
+        // glGenBuffers(1, vbo);
+        // glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        // glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
+        // submesh.vertexCount = static_cast<GLsizei>(acc.count);
+        // glVertexAttribPointer(
+        //     2,
+        //     static_cast<GLint>(comps),
+        //     utils::gl::glTypeFromComponent(acc.componentType),
+        //     acc.normalized ? GL_TRUE : GL_FALSE,
+        //     static_cast<GLsizei>(stride),
+        //     reinterpret_cast<void*>(0)
+        // );
+        // submesh.vbos.push_back(vbo);
 
-        glEnableVertexAttribArray(2);
+        // glEnableVertexAttribArray(2);
     }
 }
 
-void load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMesh& submesh) {
+void GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
     auto normIt = primitive.attributes.find("NORMAL");
     if (normIt != primitive.attributes.end()) {
         const auto& acc  = model.accessors.at(normIt->second);
@@ -202,26 +191,33 @@ void load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, SubMes
         const size_t stride = view.byteStride ? view.byteStride : comps * csize;
         const size_t offset = view.byteOffset + acc.byteOffset;
 
-        const unsigned char* data = buff.data.data() + offset;
+        // const unsigned char* data = buff.data.data() + offset;
 
-        GLuint nbo = 0;
-        glGenBuffers(1, &nbo);
-        glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
+        const uint8_t* data = reinterpret_cast<const uint8_t*>(buff.data.data() + offset);
 
-        glVertexAttribPointer(
-            1,
-            static_cast<GLint>(comps),
-            utils::gl::glTypeFromComponent(acc.componentType), // likely GL_FLOAT
-            acc.normalized ? GL_TRUE : GL_FALSE,
-            static_cast<GLsizei>(stride),
-            reinterpret_cast<void*>(0)
-        );
-        glEnableVertexAttribArray(1);
+        // cpu_mesh.layout.attributes.push_back(VertexAttribute(
+        //         AttributeType::NORMAL,
+        //         1,
+        //         utils::gl::glTypeFromComponent(acc.componentType),
+        //         no_components,
+        //         false,
+        //         (void*() 0)
+        // ));
+
+        // return data;
+        // glVertexAttribPointer(
+        //     1,
+        //     static_cast<GLint>(comps),
+        //     utils::gl::glTypeFromComponent(acc.componentType), // likely GL_FLOAT
+        //     acc.normalized ? GL_TRUE : GL_FALSE,
+        //     static_cast<GLsizei>(stride),
+        //     reinterpret_cast<void*>(0)
+        // );
+        // glEnableVertexAttribArray(1);
     }
 }
 
-void load_node_local_transform(ModelTreeNode& mt_node, const tinygltf::Node& node) {
+void GLTFModelLoader::load_node_local_transform(ModelTreeNode& mt_node, const tinygltf::Node& node) {
     if (node.matrix.size() == 16) {
         mt_node.local_transform = glm::make_mat4(node.matrix.data());
     } else {
@@ -250,13 +246,12 @@ void load_node_local_transform(ModelTreeNode& mt_node, const tinygltf::Node& nod
             // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
             m.root_nodes.push_back(load_node(model, model.nodes[n], p));
         }
-        std::cout << "get to 3\n";                       
+                     
         return m;
     }
 
     Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, std::string const& p) { // We're just going to harcode the transform for now before things inherit it
         Node my_node;
-        std::cout << "get to 4\n";
         if (node.matrix.size() == 16) {
             my_node.local_transform = glm::make_mat4(node.matrix.data());;
             my_node.has_local_transform = true;
@@ -275,10 +270,10 @@ void load_node_local_transform(ModelTreeNode& mt_node, const tinygltf::Node& nod
         return my_node;
     }
 
-void load_gltf_model(std::string const& model_path, tinygltf::Model& model) {
+void GLTFModelLoader::load_gltf_model(std::string const& model_path, tinygltf::Model& model) {
     tinygltf::TinyGLTF loader;
     std::string err, warn;
-    const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, utils::assets::get_asset(p));
+    const bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, utils::assets::get_asset(model_path));
 
     if (!warn.empty()) {
         printf("WARN: %s\n", warn.c_str());

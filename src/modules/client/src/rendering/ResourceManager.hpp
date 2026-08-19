@@ -4,10 +4,14 @@
 namespace rendering {
 
     class ResourceManager {
+        public:
         ResourceManager();
-        uint32_t add_mesh();
-        uint32_t add_texture();
-        uint32_t add_material();
+        private:
+        
+        // uint32_t add_mesh();
+        // uint32_t add_texture();
+        // uint32_t add_material();
+        // Probably want something more like vector of ModelTree nodes representing meshes
     };
 
 }

@@ -9,6 +9,7 @@
 #include <systems/Render.hpp>
 #include <SharedComponents.hpp>
 #include <Renderer.hpp>
+#include <rendering/ResourceManager.hpp>
 
 #include <iostream>
 
@@ -18,10 +19,10 @@ namespace client {
 		
 	}
 
-    void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height, core::ResourceManager resource_manager) {
-            for (auto& [e, meshes, mat_ref, tr] : view.each()) {
-                // Need a map to track what CPUMesh's have been loaded onto the GPU. For now though, maybe just auto
-            }
+    void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height, rendering::ResourceManager resource_manager) {
+            // for (auto& [e, meshes, mat_ref, tr] : view.each()) {
+            //     // Need a map to track what CPUMesh's have been loaded onto the GPU. For now though, maybe just auto
+            // }
     }
 
     void Renderer::render(entt::registry& reg, int viewport_width, int viewport_height, core::ModelManager model_manager, core::ShaderProgramManager material_mgr) {

@@ -6,15 +6,15 @@ namespace rendering {
 
     }
 
-    uint32_t ResourceManager::add_mesh() {
-        return 0;
-    }
+    // uint32_t ResourceManager::add_mesh() {
+    //     return 0;
+    // }
 
-    uint32_t ResourceManager::add_material() {
-        return 0;
-    }
+    // uint32_t ResourceManager::add_material() {
+    //     return 0;
+    // }
 
-    uint32_t ResourceManager::add_texture() {
+    // uint32_t ResourceManager::add_texture() {
 
-    }
+    // }
 }

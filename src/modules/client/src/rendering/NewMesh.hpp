@@ -1,5 +1,10 @@
 #pragma once
 
+#include <cstdint>
+#include <cstddef>
+#include <glad/glad.h>
+#include <vector>
+
 enum class AttributeType {
     POSITION,
     NORMAL,
@@ -39,6 +44,7 @@ struct CPUMesh {
     std::vector<uint8_t> position_vbo;
     std::vector<uint8_t> interleaved_vbo;
     VertexLayout layout;
+    GLenum draw_mode;
 
 
     // Reference to material or similar.
