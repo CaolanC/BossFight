@@ -12,6 +12,8 @@
 #include <entt/entt.hpp>
 #include <Renderer.hpp>
 #include <rendering/ModelLoader.hpp>
+#include <rendering/ResourceManager.hpp>
+
 #include <crossguid/guid.hpp>
 
 namespace client {
@@ -50,6 +52,7 @@ namespace client {
         core::MeshManager mesh_manager = core::MeshManager();
         core::ModelManager model_manager = core::ModelManager();
         core::ShaderProgramManager material_manager = core::ShaderProgramManager();
+	rendering::ResourceManager resource_manager;
         rendering::ModelLoader model_loader = rendering::ModelLoader();
         client::Renderer renderer = client::Renderer();
         void scene_registry_migration_temorary_bootstrap();

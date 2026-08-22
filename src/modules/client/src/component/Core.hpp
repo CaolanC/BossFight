@@ -7,6 +7,7 @@
 #include <core/ModelManager.hpp>
 #include <array>
 #include <SDL3/SDL.h>
+#include <rendering/NewMesh.hpp>
 
 #include <string>
 
@@ -92,6 +93,14 @@ namespace component
 
     struct debug_spin {
         float speed = 1.0f;
+    };
+
+    struct mesh {
+        bool cpu_loaded;
+        bool gpu_loaded;
+        std::string mesh_path; // Optional innit.
+        CPUMesh* cpu_mesh;
+        //GPUMesh 
     };
 
 }

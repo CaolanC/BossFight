@@ -34,6 +34,7 @@ struct VertexLayout {
 };
 
 struct GPUMesh {
+    bool loaded = false;
     unsigned int vao;
     unsigned int position_vbo;
     unsigned int interleaved_vbo;
@@ -45,6 +46,7 @@ struct CPUMesh {
     std::vector<uint8_t> interleaved_vbo;
     VertexLayout layout;
     GLenum draw_mode;
+ 
 
 
     // Reference to material or similar.

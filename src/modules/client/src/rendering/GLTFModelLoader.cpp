@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <rendering/GLTFModelLoader.hpp>
 #include <rendering/ModelTree.hpp>
 #include <rendering/MaterialManager.hpp>
@@ -13,18 +15,20 @@ GLTFModelLoader::GLTFModelLoader(rendering::MaterialManager& material_manager)
 }
 
 ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
+    ModelTreeNode model_tree;
+    std::cout << model_path << '\n';
     tinygltf::Model model;
     load_gltf_model(model_path, model);
 
     auto default_scene = model.scenes.at(model.defaultScene);
 
-    // ModelTree model_tree;
     for (auto const root_node: default_scene.nodes) {
         ModelTreeNode mt_root_node;
         load_node(mt_root_node, model, model.nodes[root_node]);
-        // model_tree.add_root_node(mt_root_node);
+        model_tree.children.push_back(mt_root_node);
     }
-
+    
+    return model_tree;
 }
 
 void GLTFModelLoader::load_node(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Node& node) {
@@ -61,7 +65,7 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     load_indices(model, primitive, submesh);
     // load_materials
     // Next need to interleave the extra vbo
-    glBindVertexArray(0);
+    // glBindVertexArray(0);
 }
 
 struct VBO_Slice {
@@ -239,36 +243,36 @@ void GLTFModelLoader::load_node_local_transform(ModelTreeNode& mt_node, const ti
     }
 }
 
-    Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model, std::string const& p) {
-        Model m;
-        m.path = p;
-        for (auto const& n: scene.nodes) {
-            // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
-            m.root_nodes.push_back(load_node(model, model.nodes[n], p));
-        }
-                     
-        return m;
-    }
+//    Model ModelLoader::load_scene(tinygltf::Scene const& scene, tinygltf::Model const& model, std::string const& p) {
+//        Model m;
+//        m.path = p;
+//        for (auto const& n: scene.nodes) {
+//            // auto const& local_transform = glm::make_mat4(model.nodes[n].matrix.data());
+//            m.root_nodes.push_back(load_node(model, model.nodes[n], p));
+//        }
+//                     
+//        return m;
+//    }
 
-    Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, std::string const& p) { // We're just going to harcode the transform for now before things inherit it
-        Node my_node;
-        if (node.matrix.size() == 16) {
-            my_node.local_transform = glm::make_mat4(node.matrix.data());;
-            my_node.has_local_transform = true;
-        }
-
-        if (node.mesh != -1) {
-            auto const& mesh = model.meshes[node.mesh];
-            for (auto const& primitive: mesh.primitives) {
-                my_node.mesh.primitives.push_back(load_primitive(model, primitive, p));
-            }
-        }
-
-        for (auto const& n: node.children) {
-            my_node.children.push_back(load_node(model, model.nodes[n], p));
-        }
-        return my_node;
-    }
+//    Node ModelLoader::load_node(tinygltf::Model const& model, tinygltf::Node const& node, std::string const& p) { // We're just going to harcode the transform for now before things inherit it
+//        Node my_node;
+//        if (node.matrix.size() == 16) {
+//            my_node.local_transform = glm::make_mat4(node.matrix.data());;
+//            my_node.has_local_transform = true;
+//        }
+//
+//        if (node.mesh != -1) {
+//            auto const& mesh = model.meshes[node.mesh];
+//            for (auto const& primitive: mesh.primitives) {
+//                my_node.mesh.primitives.push_back(load_primitive(model, primitive, p));
+//            }
+//        }
+//
+//        for (auto const& n: node.children) {
+//            my_node.children.push_back(load_node(model, model.nodes[n], p));
+//        }
+//        return my_node;
+//    }
 
 void GLTFModelLoader::load_gltf_model(std::string const& model_path, tinygltf::Model& model) {
     tinygltf::TinyGLTF loader;

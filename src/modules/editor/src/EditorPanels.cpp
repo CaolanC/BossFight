@@ -233,6 +233,11 @@ namespace gui {
             std::cout << app.client.add_test_model() << '\n';
         }
 
+        if (ImGui::Button("Load GLTF ModelTree.")) {
+            app.client.resource_manager.load_model("models/sink/scene.gltf");
+        }
+
+
     if (app.selected_entity.has_value()) {
         ImGui::Text("Selected Entity: %u", static_cast<uint32_t>(app.selected_entity.value()));
     }

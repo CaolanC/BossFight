@@ -22,6 +22,10 @@ struct ModelTreeMaterial {
 
 };
 
+struct CPUMaterial {
+
+};
+
 struct ModelTreeNode {
     ModelTreeNode* parent = nullptr;
     std::string name;
@@ -29,6 +33,7 @@ struct ModelTreeNode {
     
     std::vector<ModelTreeNode> children;
     std::vector<CPUMesh> meshes;
+    CPUMaterial material;
     
     // Each node can reference a mesh, material, texture ?
     // Children
