@@ -22,15 +22,17 @@ void EntityFactory::from_model_tree(const ModelTreeNode& model_tree) {
         reg.emplace<shared::component::position>(pe, glm::vec3());
         reg.emplace<shared::component::transform>(pe, glm::mat4());
         //reg.emplace<shared::component::hierarchy>(pe);
-        for(const CPUMesh& mesh : tree_node.meshes) {
-            auto e = reg.create();
-            reg.emplace<shared::component::rotation>(e, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
-            reg.emplace<shared::component::position>(e, glm::vec3());
-            reg.emplace<shared::component::transform>(e, glm::mat4());
-            //reg.emplace<shared::component::hierarchy>(e, pe);
+       // for(const CPUMesh& mesh : tree_node.meshes) {
+       //     auto e = reg.create();
+       //     reg.emplace<shared::component::rotation>(e, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+       //     reg.emplace<shared::component::position>(e, glm::vec3());
+       //     reg.emplace<shared::component::transform>(e, glm::mat4());
+       //     //reg.emplace<shared::component::hierarchy>(e, pe);
 
-            // add child e to pe children
-        };
+       //     // reg.emplace MeshAssetHandle
+
+       //     // add child e to pe children
+       // };
     };
 };
 

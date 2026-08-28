@@ -8,6 +8,7 @@
 #include <array>
 #include <SDL3/SDL.h>
 #include <rendering/NewMesh.hpp>
+#include <rendering/MeshAsset.hpp>
 
 #include <string>
 
@@ -96,11 +97,8 @@ namespace component
     };
 
     struct mesh {
-        bool cpu_loaded;
-        bool gpu_loaded;
-        std::string mesh_path; // Optional innit.
-        CPUMesh* cpu_mesh;
-        //GPUMesh 
+        std::string mesh_path; // Optional innit
+	rendering::MeshAssetHandle mesh_handle;
     };
 
 }

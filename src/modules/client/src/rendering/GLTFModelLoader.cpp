@@ -7,10 +7,14 @@
 #include <rendering/ModelLoader.hpp>
 #include <utils/gl/helpers.hpp>
 
+#include <rendering/ResourceManager.hpp>
+
 namespace rendering {
 
-GLTFModelLoader::GLTFModelLoader(rendering::MaterialManager& material_manager)
-    : material_manager(material_manager) {
+GLTFModelLoader::GLTFModelLoader(ResourceManager& resource_manager)
+    :
+      resource_manager(resource_manager)
+{
 
 }
 
@@ -51,7 +55,7 @@ void GLTFModelLoader::load_node_mesh(ModelTreeNode& mt_node, tinygltf::Model& mo
         for (auto gf_submesh: mesh.primitives) {
             CPUMesh submesh;
             load_submesh(mt_node, model, gf_submesh, submesh);
-            mt_node.meshes.push_back(submesh);
+	    mt_node.mesh_handles.push_back(resource_manager.add_mesh_from_cpumesh(std::move(submesh)));
         }
     }
 }
@@ -125,29 +129,59 @@ void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& 
     } 
 }
 
+//void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
+//   auto posIt = primitive.attributes.find("POSITION");
+//   if (posIt != primitive.attributes.end()) {
+//   const auto& acc  = model.accessors.at(posIt->second);
+//   const auto& view = model.bufferViews.at(acc.bufferView);
+//   const auto& buff = model.buffers.at(view.buffer);
+//
+//   const size_t no_components  = utils::gl::numComponentsInType(acc.type);
+//   const size_t component_size  = utils::gl::bytesPerComponent(acc.componentType);
+//   const size_t stride = view.byteStride ? view.byteStride : no_components * component_size;
+//
+//   const uint8_t* data = reinterpret_cast<const uint8_t*> (
+//   buff.data.data() + view.byteOffset + acc.byteOffset // I think maybe this could be uint8_t ?
+//   );
+//   // cpu_mesh.position_vbo.assign() = data;
+//   // cpu_mesh.layout.attributes.push_back(VertexAttribute(
+//   //         AttributeType::POSITION,
+//   //         0,
+//   //         utils::gl::glTypeFromComponent(acc.componentType),
+//   //         no_components,
+//   //         false,
+//   //         (void*() 0)
+//   // ));
+//   }
+//}
+
 void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
     auto posIt = primitive.attributes.find("POSITION");
     if (posIt != primitive.attributes.end()) {
-        const auto& acc  = model.accessors.at(posIt->second);
-        const auto& view = model.bufferViews.at(acc.bufferView);
-        const auto& buff = model.buffers.at(view.buffer);
+        const auto& acc   = model.accessors.at(posIt->second);
+        const auto& view  = model.bufferViews.at(acc.bufferView);
+        const auto& buff  = model.buffers.at(view.buffer);
 
         const size_t no_components  = utils::gl::numComponentsInType(acc.type);
-        const size_t component_size  = utils::gl::bytesPerComponent(acc.componentType);
-        const size_t stride = view.byteStride ? view.byteStride : no_components * component_size;
+        const size_t component_size = utils::gl::bytesPerComponent(acc.componentType);
+        const size_t stride         = view.byteStride ? view.byteStride : (no_components * component_size);
 
-        const uint8_t* data = reinterpret_cast<const uint8_t*> (
-            buff.data.data() + view.byteOffset + acc.byteOffset // I think maybe this could be uint8_t ?
-        );
-        // cpu_mesh.position_vbo.assign() = data;
-        // cpu_mesh.layout.attributes.push_back(VertexAttribute(
-        //         AttributeType::POSITION,
-        //         0,
-        //         utils::gl::glTypeFromComponent(acc.componentType),
-        //         no_components,
-        //         false,
-        //         (void*() 0)
-        // ));
+        const uint8_t* data = buff.data.data() + view.byteOffset + acc.byteOffset;
+        const size_t data_size_bytes = acc.count * stride;
+
+        // 1. Copy the raw buffer into the CPU mesh struct
+        cpu_mesh.position_vbo.assign(data, data + data_size_bytes);
+
+        // 2. Track layout metadata needed to configure OpenGL attributes later
+        cpu_mesh.vertex_count = static_cast<uint32_t>(acc.count);
+        cpu_mesh.layout.attributes.push_back(VertexAttribute(
+            AttributeType::POSITION,
+            0, // Attribute index (location = 0)
+            utils::gl::glTypeFromComponent(acc.componentType),
+            no_components,
+            acc.normalized,
+            stride
+        ));
     }
 }
 

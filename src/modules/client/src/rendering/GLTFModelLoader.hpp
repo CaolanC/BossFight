@@ -2,14 +2,19 @@
 #include <rendering/ModelTree.hpp>
 #include <rendering/MaterialManager.hpp>
 #include <rendering/NewMesh.hpp>
+#include <rendering/ResourceManager.hpp>
 
 #include <tiny_gltf.h>
 
 namespace rendering {
 
+class ResourceManager;
+
 class GLTFModelLoader {
     public:
-    GLTFModelLoader(MaterialManager& material_manager); // We need a CPU side way to store textures/materials, so put some thought into this
+    GLTFModelLoader(ResourceManager& resource_manager);
+    // We need a CPU side way to store textures/materials, so put some thought into this
+    
     ModelTreeNode load_model(std::string const& model_path);
     tinygltf::Scene get_default_scene();
 
@@ -23,7 +28,7 @@ class GLTFModelLoader {
     void load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_materials(tinygltf::Primitive& primitive);
-    MaterialManager& material_manager;
+    ResourceManager& resource_manager;
 };
 
-}
+};
