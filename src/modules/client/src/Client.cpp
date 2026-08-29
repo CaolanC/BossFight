@@ -1,3 +1,4 @@
+#include <glad/glad.h>
 #include <string>
 #include <SDL3/SDL.h>
 #include <glm/glm.hpp>
@@ -12,7 +13,6 @@
 #include <spawn/Spawn.hpp>
 #include <crossguid/guid.hpp>
 #include <core/sh_src.hpp>
-
 #include "hv/json.hpp"
 
 namespace client {
@@ -30,10 +30,14 @@ namespace client {
     }
 
     void Client::scene_registry_migration_temorary_bootstrap() {
+	if (glCreateShader == nullptr) {
+        SDL_Log("ERROR: glCreateShader is still NULL inside bootstrap!");
+        return;
+    	}
         active_registry.ctx().emplace<component::keyboard_state>();
         active_registry.ctx().emplace<component::mouse_state>();
         active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
-        std::vector<core::ShaderSource> shader_sources = {
+        std::vector<rendering::ShaderSource> shader_sources = {
                 core::sh_src::v3D(),
                 core::sh_src::fSolid()
             };
@@ -189,6 +193,11 @@ namespace client {
     void Client::init_embedded() {
         if (bootstrapped) return;
 
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+            SDL_Log("Failed to initialize GLAD in init_embedded!");
+            return;
+    	}
+
         scene_registry_migration_temorary_bootstrap();
 
         scene_ready = true;
@@ -208,160 +217,6 @@ namespace client {
         systems::Transform(active_registry);
         systems::Debug(active_registry);
     }
-
-    // Processes all incoming WebSockets messages
-
-    // void Client::process_network_messages() {
-    //     std::string msg;
-
-    //     while (net_client.pollMessage(msg)) {
-    //         handle_incoming_message(msg);
-    //     }
-    // }
-
-    // Handles said message above, different behaviour for each message type
-
-    // void Client::handle_incoming_message(std::string& msg) {
-    //     nlohmann::json message = nlohmann::json::parse(msg);
-    //     std::string type = message.at("type").get<std::string>();
-
-    //     if (type == "handshake_ack") {
-    //         handle_handshake_ack();
-    //     }
-    //     else if (type == "snapshot") {
-    //         handle_snapshot_message(message);
-    //     }
-    //     else if (type == "session_close") {
-    //         handle_session_close_message();
-    //     }
-    //     else {
-    //         handle_update_message(type, message);
-    //     }
-    // }
-
-    // Handshake acknowledgment handling. Host client sends snapshot to server
-    // void Client::handle_handshake_ack() {
-    //     if (is_host) {
-    //         std::cout << "Handshake acknowledged. Sending snapshot.\n";
-    //         net_client.send(shared::JSONHelper::make_snapshot_message(scene.get_initial_snapshot()));
-    //     }
-    // }
-
-    // Snapshot message handling. Guest takes in snapshot and sets it to scene - if doesn't have
-    // local assets, send to deferred snapshot
-    // void Client::handle_snapshot_message(const nlohmann::json& message) {
-    //     if (!is_host) {
-    //         std::cout << "Snapshot received. Preparing to initialize...\n";
-    //         nlohmann::json message_payload = message.at("payload");
-    //         core::SceneSnapshot snapshot = shared::JSONHelper::deserialize_snapshot_string(message_payload.dump());
-
-    //         core::SceneSnapshot snapshot_no_defers;
-
-    //         for (const auto& [key, obj] : snapshot.getmap()) {
-    //             if (checkAsset(obj.model_path)) {
-    //                 snapshot_no_defers.insert(key, obj);
-    //             }
-    //             else {
-    //                 // If the asset does not exist locally, send it to the deferred updates list
-    //                 deferred_updates[obj.objectID] = obj;
-    //                 std::cout << "Deferred snapshot object. Missing asset: " << obj.model_path << "\n";
-    //             }
-    //         }
-    //         scene.guest_init(snapshot_no_defers);
-    //         scene_ready = true;
-    //     }
-    // }
-
-    // Session close handling. Disconnect and quit
-    // void Client::handle_session_close_message() {
-    //     std::cout << "Session closed by host\n";
-    //     disconnect_and_quit();
-    // }
-
-    // // Update message handling. Different for each type.
-    // // ADD UPDATE: Add object to scene. Send to deferred updates if asset doesn't exist locally.
-    // // EDIT UPDATE: Edit object in local EnTT registry, if asset doesn't exist overwrite deferred update.
-    // // DELETE UPDATE: Delete object from local EnTT registry. Delete from deferred update if local assets don't exist.
-    // void Client::handle_update_message(const std::string& type, const nlohmann::json& message) {
-    //     nlohmann::json message_payload = message.at("payload");
-    //     core::SerializedObject obj = shared::JSONHelper::deserialize_object_string(message_payload.dump());
-    //     if (type == "update_add") {
-    //         if (!(checkAsset(obj.model_path))) {
-    //             deferred_updates[obj.objectID] = obj;
-    //             std::cout << "Deferred add. Missing asset: " << obj.model_path << "\n";
-    //             return;
-    //         }
-    //         bool ok = scene.add_obj(obj);
-    //     }
-    //     else if (type == "update_edit") {
-    //         if (deferred_updates.contains(obj.objectID)) {
-    //             deferred_updates[obj.objectID] = obj;
-    //             std::cout << "Updated deferred object: " << obj.objectID << "\n";
-    //             return;
-    //         }
-    //         bool ok = scene.edit_obj(obj);
-    //     }
-    //     else if (type == "update_delete") {
-    //         if (deferred_updates.contains(obj.objectID)) {
-    //             deferred_updates.erase(obj.objectID);
-    //         }
-    //         if (scene.check_registry(obj.objectID)) {
-    //             bool ok = scene.delete_obj(obj);
-    //         }
-    //     }
-    // }
-
-    // Polls the deferred update map, increments through a pointer (it).
-    // void Client::poll_deferred_updates() {
-    //     for (auto it = deferred_updates.begin(); it != deferred_updates.end(); ) {
-    //         core::SerializedObject obj = it->second;
-
-    //         if (!(checkAsset(obj.model_path))) {
-    //             it++;
-    //             continue;
-    //         }
-
-    //         bool ok = scene.add_obj(obj);
-
-    //         if (ok) {
-    //             it = deferred_updates.erase(it);
-    //         }
-    //         else {
-    //             ++it;
-    //         }
-
-    //     }
-    // }
-
-    // Basic HTTP request for session creation
-    // bool Client::request_create_session(std::string const& ip, int& ws_port) {
-    //     hv::HttpClient cli;
-    //     HttpRequest req;
-    //     req.method = HTTP_GET;
-    //     req.url = ip + "/create_session";
-    //     std::cout << "[CLIENT] Making a create session request to: " << req.url << "\n";
-    //     req.headers["Connection"] = "keep-alive";
-    //     req.body = "This is a sync request.";
-    //     req.timeout = 10;
-    //     HttpResponse resp;
-    //     int ret = cli.send(&req, &resp);
-    //     if (ret != 0 || resp.status_code != 200) {
-    //         printf("request failed!\n");
-    //         return false;
-    //     } else {
-    //         printf("%d %s\r\n", resp.status_code, resp.status_message());
-    //         printf("%s %s\n", resp.body.c_str(), resp.headers["Connection"].c_str());
-
-    //         std::istringstream iss(resp.body);
-    //         std::string status, sid;
-
-    //         if (!(iss >> status >> sid >> ws_port)){
-    //             return false;
-    //         }
-
-    //         return status == "ok";
-    //     }
-    // };
 
     void Client::ensure_framebuffer(int w, int h) {
         if (framebuffer != 0 && framebuffer_width == w && framebuffer_height == h) {

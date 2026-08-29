@@ -8,74 +8,13 @@
 #include <string>
 #include <core/defines.hpp>
 #include <crossguid/guid.hpp>
+#include <core/sh_src.hpp>
+#include <rendering/ShaderSource.hpp>
 
 #include "utils/assets/helpers.hpp"
 
 namespace core
 {
-
-    class ShaderSource
-    {
-        public:
-        ShaderSource(std::string _path, ShaderType _type) {
-            path = _path;
-            type = _type;
-        }
-
-        std::string path;
-        ShaderType type;
-    };
-
-    class Shader
-    {
-        public:
-            Shader() {
-                
-            }
-
-            void from_source(core::ShaderSource source) {
-
-                if (glCreateShader == nullptr) {
-                    std::cerr << "CRITICAL: glCreateShader pointer is NULL! Context not initialized on this thread." << std::endl;
-                }
-
-                shader = glCreateShader(source.type);
-                char shader_source[2048];
-                std::string s = utils::assets::get_asset(source.path);
-                get_shader_source(s.c_str(), shader_source, sizeof(shader_source));
-                const char* shader_src = shader_source;
-                glShaderSource(shader, 1, &shader_src, NULL);
-                glCompileShader(shader);
-
-                GLint ok; char log[1024];
-                glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
-                if(!ok){ glGetShaderInfoLog(shader, sizeof(log), NULL, log); SDL_Log("VS: %s", log); }
-            }
-
-            unsigned int get_shader() {
-                return shader;
-            }
-
-        private:
-            std::vector<char> source;
-            unsigned int shader;
-            unsigned int program;
-
-        void get_shader_source(const char* path, char* shader_buffer, size_t shader_buffer_length) {
-            FILE* stream = fopen(path, "r");
-            if (stream == NULL) {
-                fprintf(stderr, "[ERROR] Could not open file: %s\n", path);
-                fflush(stderr); // Forces the terminal to display the message right away
-                return;
-            }
-
-            size_t bytes = fread(shader_buffer, 1, shader_buffer_length - 1, stream);
-            shader_buffer[bytes] = '\0';
-
-            fclose(stream);
-        }
-    };
-
     struct LoadedMatInfo {
         xg::Guid ref;
         unsigned int program;
@@ -83,6 +22,19 @@ namespace core
 
     class ShaderProgramManager {
     public:
+
+    ShaderProgramHandle default_material;
+
+    ShaderProgramManager() {};
+    
+    void init_default_material() {
+	std::vector<rendering::ShaderSource> shader_sources = {
+       	    core::sh_src::v3D(),
+            core::sh_src::fSolid()
+        };
+
+        default_material = from_source_vec(shader_sources);
+    }
 
     std::vector<LoadedMatInfo> get_loaded_materials() const {
         std::vector<LoadedMatInfo> out;
@@ -104,12 +56,12 @@ namespace core
         return out;
     }
 
-    ShaderProgramHandle from_source_vec(const std::vector<core::ShaderSource> shader_sources) {
+    ShaderProgramHandle from_source_vec(const std::vector<rendering::ShaderSource> shader_sources) {
         
-        std::vector<core::Shader> shaders;
+        std::vector<rendering::Shader> shaders;
         for (auto shader_source : shader_sources) {
             std::cout << "got to the shader loop\n";
-            Shader shader;
+	    rendering::Shader shader;
             shader.from_source(shader_source);
 
             shaders.push_back(shader);

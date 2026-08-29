@@ -5,9 +5,9 @@
 #include <rendering/MaterialManager.hpp>
 #include <rendering/Model.hpp>
 #include <rendering/ModelLoader.hpp>
+#include <rendering/ResourceManager.hpp>
 #include <utils/gl/helpers.hpp>
 
-#include <rendering/ResourceManager.hpp>
 
 namespace rendering {
 

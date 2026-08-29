@@ -10,8 +10,8 @@ namespace shared::component {
     };
 
     struct hierarchy {
-        entt::entity* parent = nullptr;
-        std::vector<entt::entity*> children;
+        entt::entity parent{entt::null};
+        std::vector<entt::entity> children;
     };
 
     using rotation = glm::quat;

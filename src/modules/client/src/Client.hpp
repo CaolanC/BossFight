@@ -13,8 +13,10 @@
 #include <Renderer.hpp>
 #include <rendering/ModelLoader.hpp>
 #include <rendering/ResourceManager.hpp>
+#include <rendering/EntityFactory.hpp>
 
 #include <crossguid/guid.hpp>
+#include <glad/glad.h>
 
 namespace client {
 
@@ -103,6 +105,7 @@ namespace client {
 
         bool isDone();
 
+	rendering::EntityFactory entity_factory;
     private:
         NetClient net_client;
         xg::Guid client_id;

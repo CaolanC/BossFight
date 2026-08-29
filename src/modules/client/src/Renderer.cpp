@@ -20,9 +20,25 @@ namespace client {
 	}
 
     void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height, rendering::ResourceManager resource_manager) {
-            // for (auto& [e, meshes, mat_ref, tr] : view.each()) {
-            //     // Need a map to track what CPUMesh's have been loaded onto the GPU. For now though, maybe just auto
-            // }
+	float aspect = 1.0f;
+	if (viewport_height > 0) {
+		aspect = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
+	};
+	
+	glm::mat4 projection = glm::perspective(
+	    glm::radians(60.0f),
+	    aspect,
+	    0.1f,
+	    1000.0f
+	);
+
+	auto& curr_cam = reg.ctx().get<component::current_camera>();
+	glm::mat4 view_matrix = glm::inverse(
+	    reg.get<shared::component::transform>(curr_cam.e)
+	);
+	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
+
+	auto view = reg.view<component::mesh, component::material, shared::component::transform>();
     }
 
     void Renderer::render(entt::registry& reg, int viewport_width, int viewport_height, core::ModelManager model_manager, core::ShaderProgramManager material_mgr) {
@@ -102,10 +118,6 @@ namespace client {
             for (const auto& root : model.root_nodes) {
                 drawNode(root, tr, defaultProgram);
             }
-            glUniform1i(glGetUniformLocation(defaultProgram, "uTex"), 0);
-
-            glBindVertexArray(0);
-            glUseProgram(0);
         }
     }
 

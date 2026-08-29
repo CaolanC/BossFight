@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <rendering/NewMesh.hpp>
 #include <rendering/MeshAsset.hpp>
+#include <rendering/MaterialAsset.hpp>
 
 #include <string>
 
@@ -99,6 +100,10 @@ namespace component
     struct mesh {
         std::string mesh_path; // Optional innit
 	rendering::MeshAssetHandle mesh_handle;
+    };
+
+    struct material {
+	rendering::MaterialAssetHandle material_handle;		
     };
 
 }

@@ -234,7 +234,8 @@ namespace gui {
         }
 
         if (ImGui::Button("Load GLTF ModelTree.")) {
-            app.client.resource_manager.load_model("models/sink/scene.gltf");
+            auto m_tree = app.client.resource_manager.load_model("models/sink/scene.gltf");
+	    app.client.entity_factory.from_model_tree(app.client.active_registry, m_tree);
         }
 
 
