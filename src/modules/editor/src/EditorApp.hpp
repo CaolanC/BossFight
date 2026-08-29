@@ -8,6 +8,9 @@
 #include <Client.hpp>
 #include <SerializedObject.hpp>
 
+#include <optional>
+#include <entt/entt.hpp>
+
 namespace gui {
     struct AppContext {
         SDL_Window* window = nullptr;
@@ -21,10 +24,12 @@ namespace gui {
 
         ImVec4 clear_color = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 
+        std::optional<entt::entity> selected_entity;
+
         bool done = false;
         bool viewport_clicked = false;
         bool dock_built = false;
-
+        bool show_demo_window = false;
         char guest_ip_input[64] = "http://<serverip>";
         char host_ip_input[64] = "http://<serverip>";
 
@@ -60,6 +65,8 @@ namespace gui {
 
         xg::Guid selected_model_ref{};
         std::string selected_model_path;
+
+        xg::Guid selected_material_ref{};
 
         char import_model_path[260] = "";
         char objectname[128] = "";

@@ -9,6 +9,14 @@
 
 #include <NetClient.hpp>
 #include <nlohmann/json.hpp>
+#include <entt/entt.hpp>
+#include <Renderer.hpp>
+#include <rendering/ModelLoader.hpp>
+#include <rendering/ResourceManager.hpp>
+#include <rendering/EntityFactory.hpp>
+
+#include <crossguid/guid.hpp>
+#include <glad/glad.h>
 
 namespace client {
 
@@ -22,6 +30,7 @@ namespace client {
     public:
 
         Client(std::string name, bool is_editor, InputMode input_mode = InputMode::Client);
+	int create_new_entity();
         bool start(std::string server_ip, int& ws_port);
 
         bool start_host_blank(const std::string& server_ip, int& ws_port);
@@ -39,11 +48,21 @@ namespace client {
         void poll_deferred_updates();
         bool connect_client(std::string& host, int port);
 
+        entt::registry active_registry;
         bool is_editor;
         std::string name;
         core::MeshManager mesh_manager = core::MeshManager();
         core::ModelManager model_manager = core::ModelManager();
+        core::ShaderProgramManager material_manager = core::ShaderProgramManager();
+	rendering::ResourceManager resource_manager;
+        rendering::ModelLoader model_loader = rendering::ModelLoader();
+        client::Renderer renderer = client::Renderer();
+        void scene_registry_migration_temorary_bootstrap();
+        xg::Guid add_test_model();
+        entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function);
+
         core::Scene scene;
+        xg::Guid default_material;
 
         bool request_create_session(std::string const& ip, int& ws_port);
         void ensure_framebuffer(int w, int h);
@@ -86,6 +105,7 @@ namespace client {
 
         bool isDone();
 
+	rendering::EntityFactory entity_factory;
     private:
         NetClient net_client;
         xg::Guid client_id;

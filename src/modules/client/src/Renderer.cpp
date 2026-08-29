@@ -1,0 +1,124 @@
+#include <entt/entt.hpp>
+#include <core/MeshManager.hpp>
+#include <core/Mesh.hpp>
+#include "component/MeshRef.hpp"
+#include <component/MatRef.hpp>
+#include <core/ShaderProgramManager.hpp>
+#include <component/Core.hpp>
+#include <utils/gl/helpers.hpp>
+#include <systems/Render.hpp>
+#include <SharedComponents.hpp>
+#include <Renderer.hpp>
+#include <rendering/ResourceManager.hpp>
+
+#include <iostream>
+
+
+namespace client {
+	Renderer::Renderer() {
+		
+	}
+
+    void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height, rendering::ResourceManager resource_manager) {
+	float aspect = 1.0f;
+	if (viewport_height > 0) {
+		aspect = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
+	};
+	
+	glm::mat4 projection = glm::perspective(
+	    glm::radians(60.0f),
+	    aspect,
+	    0.1f,
+	    1000.0f
+	);
+
+	auto& curr_cam = reg.ctx().get<component::current_camera>();
+	glm::mat4 view_matrix = glm::inverse(
+	    reg.get<shared::component::transform>(curr_cam.e)
+	);
+	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
+
+	auto view = reg.view<component::mesh, component::material, shared::component::transform>();
+    }
+
+    void Renderer::render(entt::registry& reg, int viewport_width, int viewport_height, core::ModelManager model_manager, core::ShaderProgramManager material_mgr) {
+        // GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+        // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
+
+        float aspect = 1.0f;
+        if (viewport_height > 0) {
+            aspect = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
+        }
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(60.0f),
+            aspect,
+            0.1f,
+            1000.0f
+        );
+        // std::cout << "We expect to crash here\n";
+        auto& curr_cam = reg.ctx().get<component::current_camera>(); // This doesn't exist in our default registry, we can hardcode it for now maybe
+        glm::mat4 view_matrix = glm::inverse(
+            reg.get<shared::component::transform>(curr_cam.e)
+        );
+        glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
+
+        auto view = reg.view<component::model_ref, component::mat_ref, shared::component::transform>();
+
+        for (auto [e, mod_ref, mat_ref, tr] : view.each()) {
+            const rendering::Model& model = model_manager.get_model(mod_ref.id);
+
+            GLuint defaultProgram = material_mgr.get_program(mat_ref.id);
+            // std::cout << mat_ref.id << ' ' << mod_ref.id << '\n';
+
+            glm::mat4 entity_model(1.0f);
+            if (auto t = reg.try_get<shared::component::transform>(e)) {
+                entity_model = *t;
+            }
+
+            auto bindProgramAndSetGlobals = [&](GLuint program) {
+                glUseProgram(program);
+                utils::gl::set_view_mat(view_matrix, program);
+                utils::gl::set_projection_mat(projection, program);
+                // utils::gl::set_model_mat(tr, program);
+                utils::gl::set_campos(camera_position, program);
+            };
+
+            std::function<void(const rendering::Node&, const glm::mat4&, GLuint)> drawNode;
+            drawNode = [&](const rendering::Node& node, const glm::mat4& parentModel, GLuint program) {
+                glm::mat4 model_mat = parentModel;
+                if (node.has_local_transform) {
+                    model_mat = parentModel * node.local_transform;
+                }
+                for (const auto& prim : node.mesh.primitives) {
+                    GLuint programToUse = program;
+                    bindProgramAndSetGlobals(programToUse);
+
+                    glBindVertexArray(prim.vao);
+                    utils::gl::set_model_mat(model_mat, program);
+                    unsigned int view_loc = glGetUniformLocation(program, "uDistance");
+                    // unsigned int cam_pos = glGetUniformLocation(program, "uCamPos");
+                    // glUniform3fv(cam_pos, 3, glm::value_ptr(camera_position));
+                    glActiveTexture(GL_TEXTURE0 + 0);
+                    glBindTexture(GL_TEXTURE_2D,                     prim.texture.ID);
+                    if (prim.indexCount > 0) {
+                        glDrawElements(prim.mode, prim.indexCount, prim.indexType, nullptr);
+                    } else {
+                        // TODO: store vertexCount in GpuPrimitive for non-indexed draws
+                        glDrawArrays(prim.mode, 0, prim.vertexCount);
+                    }
+                }
+
+                for (const auto& child : node.children) {
+                    drawNode(child, model_mat, program);
+                }
+            };
+
+            bindProgramAndSetGlobals(defaultProgram);
+            for (const auto& root : model.root_nodes) {
+                drawNode(root, tr, defaultProgram);
+            }
+        }
+    }
+
+}

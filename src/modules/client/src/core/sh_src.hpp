@@ -1,31 +1,33 @@
 #pragma once
 
 #include <core/ShaderProgramManager.hpp>
+#include <rendering/ShaderSource.hpp>
+#include <rendering/Shader.hpp>
 
 namespace core::sh_src
 {
-    class v3D : public core::ShaderSource
+    class v3D : public rendering::ShaderSource
     {
         public:
-        v3D() : core::ShaderSource("shaders/v3D.glsl", ShaderType::Vertex) {
+        v3D() : rendering::ShaderSource("shaders/v3D.glsl", ShaderType::Vertex) {
 
         }
     };
 
-    class fSolid : public core::ShaderSource
+    class fSolid : public rendering::ShaderSource
     {
         public:
-        fSolid() : core::ShaderSource("shaders/fSolid.glsl", ShaderType::Fragment) {
+        fSolid() : rendering::ShaderSource("shaders/fSolid.glsl", ShaderType::Fragment) {
 
         }
     };
 
     // Extra shader for platform
 
-    class fPlatform : public core::ShaderSource {
+    class fPlatform : public rendering::ShaderSource {
     public:
-        fPlatform() : core::ShaderSource("shaders/fPlatform.glsl", ShaderType::Fragment) {
+        fPlatform() : rendering::ShaderSource("shaders/fPlatform.glsl", ShaderType::Fragment) {
 
         }
     };
-}
+};

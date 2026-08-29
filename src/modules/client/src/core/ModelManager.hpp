@@ -60,12 +60,13 @@ namespace core {
             for (const auto& [ref, model] : model_map) {
                 LoadedModelInfo info;
                 info.model_ref = ref;
-
-                auto it = model_to_path.find(ref);
-                if (it != model_to_path.end()) {
-                    info.model_path = it->second;
-                    out.push_back(info);
-                }
+                info.model_path = model.path;
+                out.push_back(info);
+                // auto it = model_to_path.find(ref);
+                // if (it != model_to_path.end()) {
+                //     info.model_path = it->second;
+                //     out.push_back(info);
+                // }
 
             }
 

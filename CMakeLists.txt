@@ -87,6 +87,7 @@ endif()
 # Executables
 # ---------------------------------------------------------
 # Server App
+
 add_executable(Server src/apps/server/main.cpp)
 set_target_properties(Server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
@@ -108,6 +109,7 @@ target_link_libraries(GUI PUBLIC
     glad 
     EditorLib 
     ClientLib 
+    imgui
     ${SDL_TARGET} 
     cglm::cglm 
     OpenGL::GL

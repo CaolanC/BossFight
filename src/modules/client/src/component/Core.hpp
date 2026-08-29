@@ -7,6 +7,11 @@
 #include <core/ModelManager.hpp>
 #include <array>
 #include <SDL3/SDL.h>
+#include <rendering/NewMesh.hpp>
+#include <rendering/MeshAsset.hpp>
+#include <rendering/MaterialAsset.hpp>
+
+#include <string>
 
 namespace component
 {
@@ -15,6 +20,10 @@ namespace component
 
     struct camera {
 
+    };
+
+    struct entity_name {
+        std::string name;
     };
 
     struct free_movement_camera {
@@ -44,13 +53,13 @@ namespace component
 
     struct user_control {};
 
-    struct mesh_manager {
-        core::MeshManager manager;
-    };
+    // struct mesh_manager {
+    //     core::MeshManager manager;
+    // };
 
-    struct material_manager {
-        core::ShaderProgramManager manager;
-    };
+    // struct material_manager {
+    //     core::ShaderProgramManager manager;
+    // };
 
     struct current_camera {
         entt::entity e;
@@ -81,11 +90,20 @@ namespace component
     };
 
     struct scale {
-        float s;
+        float s = 1.0f;
     };
 
     struct debug_spin {
         float speed = 1.0f;
+    };
+
+    struct mesh {
+        std::string mesh_path; // Optional innit
+	rendering::MeshAssetHandle mesh_handle;
+    };
+
+    struct material {
+	rendering::MaterialAssetHandle material_handle;		
     };
 
 }
