@@ -15,51 +15,54 @@
 
 namespace core
 {
-    struct LoadedMatInfo {
-        xg::Guid ref;
-        unsigned int program;
-    };
-
     class ShaderProgramManager {
     public:
 
-    ShaderProgramHandle default_material;
+    std::unordered_map<ShaderProgramHandle, unsigned int> shader_programs;
+
+    ShaderProgramHandle default_program;
 
     ShaderProgramManager() {};
     
     void init_default_material() {
 	std::vector<rendering::ShaderSource> shader_sources = {
-       	    core::sh_src::v3D(),
-            core::sh_src::fSolid()
+	    rendering::ShaderSource("assets/shaders/v3D.glsl"),
+	    rendering::ShaderSource("assets/shaders/fBasicLighting.glsl")
         };
 
-        default_material = from_source_vec(shader_sources);
+        default_program = from_source_vec(shader_sources);
+//from_source_vec(shader_sources);
     }
 
-    std::vector<LoadedMatInfo> get_loaded_materials() const {
-        std::vector<LoadedMatInfo> out;
-        out.reserve(program_map.size());
+    void shader_path_to_type(std::string shader_path) {
+	
+    } 
 
-        for (const auto& [ref, program] : program_map) {
-            LoadedMatInfo info;
-            info.ref= ref;
-            info.program = program;
-            out.push_back(info);
-            // auto it = model_to_path.find(ref);
-            // if (it != model_to_path.end()) {
-            //     info.model_path = it->second;
-            //     out.push_back(info);
-            // }
+    //std::vector<LoadedMatInfo> get_loaded_materials() const {
+    //    std::vector<LoadedMatInfo> out;
+    //    out.reserve(program_map.size());
 
-        }
+    //    for (const auto& [ref, program] : program_map) {
+    //        LoadedMatInfo info;
+    //        info.ref= ref;
+    //        info.program = program;
+    //        out.push_back(info);
+    //        // auto it = model_to_path.find(ref);
+    //        // if (it != model_to_path.end()) {
+    //        //     info.model_path = it->second;
+    //        //     out.push_back(info);
+    //        // }
 
-        return out;
-    }
+    //    }
 
-    ShaderProgramHandle from_source_vec(const std::vector<rendering::ShaderSource> shader_sources) {
-        
-        std::vector<rendering::Shader> shaders;
-        for (auto shader_source : shader_sources) {
+    //    return out;
+    //}
+
+    ShaderProgramHandle from_source_vec(const std::vector<rendering::ShaderSource>& shader_sources) {
+            
+	std::vector<rendering::Shader> shaders;
+
+        for (const auto& shader_source: shader_sources) {
             std::cout << "got to the shader loop\n";
 	    rendering::Shader shader;
             shader.from_source(shader_source);

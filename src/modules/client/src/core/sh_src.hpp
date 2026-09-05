@@ -9,7 +9,7 @@ namespace core::sh_src
     class v3D : public rendering::ShaderSource
     {
         public:
-        v3D() : rendering::ShaderSource("shaders/v3D.glsl", ShaderType::Vertex) {
+        v3D() : rendering::ShaderSource("shaders/v3D.glsl") {
 
         }
     };
@@ -17,7 +17,7 @@ namespace core::sh_src
     class fSolid : public rendering::ShaderSource
     {
         public:
-        fSolid() : rendering::ShaderSource("shaders/fSolid.glsl", ShaderType::Fragment) {
+        fSolid() : rendering::ShaderSource("shaders/fSolid.glsl") {
 
         }
     };
@@ -26,7 +26,7 @@ namespace core::sh_src
 
     class fPlatform : public rendering::ShaderSource {
     public:
-        fPlatform() : rendering::ShaderSource("shaders/fPlatform.glsl", ShaderType::Fragment) {
+        fPlatform() : rendering::ShaderSource("shaders/fPlatform.glsl") {
 
         }
     };

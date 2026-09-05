@@ -229,9 +229,9 @@ namespace gui {
             //app.client.active_registry.emplace<components::entity_name>(id, "Entity");
         }
 
-        if (ImGui::Button("Load Test Model")) {
-            std::cout << app.client.add_test_model() << '\n';
-        }
+       // if (ImGui::Button("Load Test Model")) {
+       //     std::cout << app.client.add_test_model() << '\n';
+       // }
 
         if (ImGui::Button("Load GLTF ModelTree.")) {
             auto m_tree = app.client.resource_manager.load_model("models/sink/scene.gltf");
@@ -387,48 +387,48 @@ namespace gui {
         //     app.selected_object = core::SerializedObject();
         // }
 
-        ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
-        ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
+        //ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
+        //ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
 
-        char name[128];
-        std::strncpy(name, app.selected_object.name.c_str(), 128);
-        name[sizeof(name) - 1] = '\0';
+        //char name[128];
+        //std::strncpy(name, app.selected_object.name.c_str(), 128);
+        //name[sizeof(name) - 1] = '\0';
 
-        if (ImGui::InputText("Name", name, sizeof(name))) {
-            app.selected_object.name = name;
-        }
+        //if (ImGui::InputText("Name", name, sizeof(name))) {
+        //    app.selected_object.name = name;
+        //}
 
-        float pos[3] = {
-            app.selected_object.position.x,
-            app.selected_object.position.y,
-            app.selected_object.position.z
-        };
+        //float pos[3] = {
+        //    app.selected_object.position.x,
+        //    app.selected_object.position.y,
+        //    app.selected_object.position.z
+        //};
 
-        glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(app.selected_object.rotation));
+        //glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(app.selected_object.rotation));
 
-        float rot[3] = {
-            euler_deg.x,
-            euler_deg.y,
-            euler_deg.z
-        };
+        //float rot[3] = {
+        //    euler_deg.x,
+        //    euler_deg.y,
+        //    euler_deg.z
+        //};
 
-        float scale = app.selected_object.scale;
+        //float scale = app.selected_object.scale;
 
         ImGui::Spacing();
         ImGui::Text("Transform");
 
         bool changed = false;
-        changed |= ImGui::DragFloat3("Position", pos, 0.05f);
-        ImGui::Text("Rotation (Pitch/Yaw/Roll)");
-        changed |= ImGui::DragFloat3("Rotation", rot, 1.0f);
-        changed |= ImGui::DragFloat("Scale", &scale, 0.05f, 0.01f, 100.0f);
+        //changed |= ImGui::DragFloat3("Position", pos, 0.05f);
+        //ImGui::Text("Rotation (Pitch/Yaw/Roll)");
+        //changed |= ImGui::DragFloat3("Rotation", rot, 1.0f);
+        //changed |= ImGui::DragFloat("Scale", &scale, 0.05f, 0.01f, 100.0f);
 
-        if (changed) {
-            app.selected_object.position = glm::vec3(pos[0], pos[1], pos[2]);
-            glm::vec3 euler_rad = glm::radians(glm::vec3(rot[0], rot[1], rot[2]));
-            app.selected_object.rotation = glm::quat(euler_rad);
-            app.selected_object.scale = scale;
-        }
+        //if (changed) {
+        //    app.selected_object.position = glm::vec3(pos[0], pos[1], pos[2]);
+        //    glm::vec3 euler_rad = glm::radians(glm::vec3(rot[0], rot[1], rot[2]));
+        //    app.selected_object.rotation = glm::quat(euler_rad);
+        //    app.selected_object.scale = scale;
+        //}
 
         if (ImGui::Button("Apply Edit", ImVec2(-1, 30))) {
             // bool ok = app.client.apply_gui_edit(app.selected_object);
@@ -521,53 +521,53 @@ namespace gui {
                 
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("Loaded Materials")) {
-                auto loaded_materials = app.client.material_manager.get_loaded_materials();
+           // if (ImGui::BeginTabItem("Loaded Materials")) {
+           //     auto loaded_materials = app.client.material_manager.get_loaded_materials();
 
-                if (loaded_materials.empty()) {
-                    ImGui::TextWrapped("No loaded models.");
-                } else {
-                    for (const auto& material : loaded_materials) {
-                        std::string label = material.ref;
+           //     if (loaded_materials.empty()) {
+           //         ImGui::TextWrapped("No loaded models.");
+           //     } else {
+           //         for (const auto& material : loaded_materials) {
+           //             std::string label = material.ref;
 
-                        bool selected = (app.selected_material_ref == material.ref);
+           //             bool selected = (app.selected_material_ref == material.ref);
 
-                        if (ImGui::Selectable(label.c_str(), selected)) {
-                            app.selected_material_ref = material.ref;
-                        }
-                    }
+           //             if (ImGui::Selectable(label.c_str(), selected)) {
+           //                 app.selected_material_ref = material.ref;
+           //             }
+           //         }
 
-                    ImGui::Spacing();
-                    ImGui::Separator();
+           //         ImGui::Spacing();
+           //         ImGui::Separator();
 
-                    if (app.selected_model_ref.isValid()) {
-                        ImGui::TextWrapped(
-                            "Selected model: %s",
-                            app.selected_model_path.empty()
-                                ? app.selected_model_ref.str().c_str()
-                                : app.selected_model_path.c_str()
-                        );
+           //         if (app.selected_model_ref.isValid()) {
+           //             ImGui::TextWrapped(
+           //                 "Selected model: %s",
+           //                 app.selected_model_path.empty()
+           //                     ? app.selected_model_ref.str().c_str()
+           //                     : app.selected_model_path.c_str()
+           //             );
 
-                        ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
+           //             ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
 
-                        if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
-                            core::LoadedModelInfo info;
-                            info.model_ref = app.selected_model_ref;
-                            info.model_path = app.selected_model_path;
+           //             if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
+           //                 core::LoadedModelInfo info;
+           //                 info.model_ref = app.selected_model_ref;
+           //                 info.model_path = app.selected_model_path;
 
-                            // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
-                            // if (ok) {
-                            //     app.status_text = "Object added from selected model";
-                            // }
-                            // else {
-                            //     app.status_text = "Failed to add object from selected model";
-                            // }
-                        }
-                    }
-                }
-                
-                ImGui::EndTabItem();
-            }
+           //                 // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
+           //                 // if (ok) {
+           //                 //     app.status_text = "Object added from selected model";
+           //                 // }
+           //                 // else {
+           //                 //     app.status_text = "Failed to add object from selected model";
+           //                 // }
+           //             }
+           //         }
+           //     }
+           //     
+           //     ImGui::EndTabItem();
+           // }
             if (ImGui::BeginTabItem("Help")) {
                 ImGui::Text("Controls");
                 ImGui::Separator();

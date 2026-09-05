@@ -61,7 +61,7 @@ namespace gui {
         int session_port = 0;
 
         std::string selected_object_id;
-        core::SerializedObject selected_object{};
+        //core::SerializedObject selected_object{};
 
         xg::Guid selected_model_ref{};
         std::string selected_model_path;

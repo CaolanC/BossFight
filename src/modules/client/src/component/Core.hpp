@@ -2,6 +2,7 @@
 
 #include <glm/fwd.hpp>
 #include <glm/detail/type_quat.hpp>
+#include <glm/glm.hpp>
 #include <core/MeshManager.hpp>
 #include <core/ShaderProgramManager.hpp>
 #include <core/ModelManager.hpp>
@@ -104,6 +105,15 @@ namespace component
 
     struct material {
 	rendering::MaterialAssetHandle material_handle;		
+    };
+
+    struct basic_color {
+	glm::vec3 color{1.0f, 0.5f, 0.31f};	
+    };
+
+    struct basic_light {
+	glm::vec3 color{1.0f, 1.0f, 1.0f};
+	glm::vec3 position{0, 0, 0};
     };
 
 }

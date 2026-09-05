@@ -85,10 +85,10 @@ namespace client {
         InputMode get_input_mode() const;
         void update();
 
-        std::vector<core::SerializedObject> get_scene_objects() const;
-        bool get_scene_object(const std::string& object_id, core::SerializedObject& out) const;
-        bool apply_gui_edit(core::SerializedObject& obj);
-        bool apply_gui_delete(core::SerializedObject& obj);
+        //std::vector<core::SerializedObject> get_scene_objects() const;
+        //bool get_scene_object(const std::string& object_id, core::SerializedObject& out) const;
+        //bool apply_gui_edit(core::SerializedObject& obj);
+        //bool apply_gui_delete(core::SerializedObject& obj);
 
         void setIsHost(bool status);
         bool getIsHost() const;
@@ -112,6 +112,6 @@ namespace client {
         bool is_host = false;
         bool scene_ready = false;
         bool timeToShutdown = false;
-        std::unordered_map<std::string, core::SerializedObject> deferred_updates;
+        //std::unordered_map<std::string, core::SerializedObject> deferred_updates;
     };
 }

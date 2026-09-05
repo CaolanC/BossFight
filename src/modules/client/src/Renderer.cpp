@@ -16,7 +16,6 @@
 
 namespace client {
 	Renderer::Renderer() {
-		
 	}
 
     void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height, rendering::ResourceManager resource_manager) {
@@ -38,7 +37,45 @@ namespace client {
 	);
 	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
 
+
+	// Get all the lights then upload them to the shader I think to start.
+	//auto basic_light_view = reg.view<component::basic_light, shared::component::transform>();
+	//for (auto [e, basic_light, tr] : basic_light_view) {
+	//    
+	//}
+
 	auto view = reg.view<component::mesh, component::material, shared::component::transform>();
+
+	for (auto [e, mesh, basic_color, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
+		
+	}
+
+
+	// Okay to continue the project we are going to set up the lighting next
+	// basically I want the basic lighting implemented to start,
+	// lighting the sink model.
+	// We don't need to give the light a geometry, it is something
+	// that gets attached to entities as a component
+	// if that entity has a component that's the lights mesh,
+	// as such light will need a local transform.
+	// But then for the new render function it should be fairly easy.
+	// We are starting with simple shaders that will take in the 
+	// position VBO for the mesh, basic color component <-
+	// 	That's how we implement different lighting styles,
+	// 	the render does them in order, we can add macros to
+	// 	remove in the final compile if the developer is only
+	// 	using one lighting method. Basic color is just an 
+	// 	rgb value. That's our first step.
+	// 	Then we can add a texture component.
+	// 	Then upgrade to PBR.
+	// 	Better to do it in code now,
+	// 	using a default texture,basic color, sink mesh
+	// 	and a separate light source.
+	//
+	// 	The Light Component
+	// 		Differnt types of components.
+	// 		First one I am making is the sun.
+	// 		Let's leave it at that
     }
 
     void Renderer::render(entt::registry& reg, int viewport_width, int viewport_height, core::ModelManager model_manager, core::ShaderProgramManager material_mgr) {

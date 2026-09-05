@@ -14,6 +14,7 @@
 #include <crossguid/guid.hpp>
 #include <core/sh_src.hpp>
 #include "hv/json.hpp"
+#include <rendering/ShaderSource.hpp>
 
 namespace client {
 
@@ -27,7 +28,7 @@ namespace client {
         // mesh_manager = mesh_manager;
         // model_manager = model_manager; 
         
-    }
+    };
 
     void Client::scene_registry_migration_temorary_bootstrap() {
 	if (glCreateShader == nullptr) {
@@ -38,28 +39,28 @@ namespace client {
         active_registry.ctx().emplace<component::mouse_state>();
         active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
         std::vector<rendering::ShaderSource> shader_sources = {
-                core::sh_src::v3D(),
-                core::sh_src::fSolid()
+		rendering::ShaderSource("assets/shaders/g3D.glsl)"),
+		rendering::ShaderSource("assets/shaders/gBasicLighting.glsl)")
             };
-        default_material = material_manager.from_source_vec(shader_sources);
-    }
 
-    xg::Guid Client::add_test_model() {
-        xg::Guid mod_ref = model_manager.add_model(model_loader.load_model("models/sink/scene.gltf"));
-        const auto e = active_registry.create();
-        active_registry.emplace<shared::component::position>(e, glm::vec3(0, 0, 0));
-        active_registry.emplace<shared::component::rotation>(e);
-        active_registry.emplace<shared::component::transform>(e);
-        active_registry.emplace<component::scale>(e, 1.0f);
-        active_registry.emplace<component::model_ref>(e, mod_ref);
-        active_registry.emplace<component::mat_ref>(e, default_material);
+    };
+        //default_material = material_manager.from_source_vec(shader_sources);
+    //xg::Guid Client::add_test_model() {
+    //    xg::Guid mod_ref = model_manager.add_model(model_loader.load_model("models/sink/scene.gltf"));
+    //    const auto e = active_registry.create();
+    //    active_registry.emplace<shared::component::position>(e, glm::vec3(0, 0, 0));
+    //    active_registry.emplace<shared::component::rotation>(e);
+    //    active_registry.emplace<shared::component::transform>(e);
+    //    active_registry.emplace<component::scale>(e, 1.0f);
+    //    active_registry.emplace<component::model_ref>(e, mod_ref);
+    //    active_registry.emplace<component::mat_ref>(e, default_material);
 
-        return mod_ref;
-    }
+    //    return mod_ref;
+    //}
 
     entt::entity Client::spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function) {
-         return spawn_function(std::ref(active_registry));
-    }
+    //     return spawn_function(std::ref(active_registry));
+    };
 
     int Client::create_new_entity() {
         return 0;
