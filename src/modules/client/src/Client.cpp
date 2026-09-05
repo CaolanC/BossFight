@@ -31,6 +31,7 @@ namespace client {
     };
 
     void Client::scene_registry_migration_temorary_bootstrap() {
+	std::cout << "got to this bs at least\n";
 	if (glCreateShader == nullptr) {
         SDL_Log("ERROR: glCreateShader is still NULL inside bootstrap!");
         return;
@@ -38,10 +39,10 @@ namespace client {
         active_registry.ctx().emplace<component::keyboard_state>();
         active_registry.ctx().emplace<component::mouse_state>();
         active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
-        std::vector<rendering::ShaderSource> shader_sources = {
-		rendering::ShaderSource("assets/shaders/g3D.glsl)"),
-		rendering::ShaderSource("assets/shaders/gBasicLighting.glsl)")
-            };
+        //std::vector<rendering::ShaderSource> shader_sources = {
+	//	rendering::ShaderSource("assets/shaders/v3D.glsl)"),
+	//	rendering::ShaderSource("assets/shaders/fBasicLighting.glsl)")
+        //    };
 
     };
         //default_material = material_manager.from_source_vec(shader_sources);
@@ -59,7 +60,7 @@ namespace client {
     //}
 
     entt::entity Client::spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function) {
-    //     return spawn_function(std::ref(active_registry));
+    	return spawn_function(std::ref(active_registry));
     };
 
     int Client::create_new_entity() {
@@ -199,6 +200,8 @@ namespace client {
             return;
     	}
 
+
+	
         scene_registry_migration_temorary_bootstrap();
 
         scene_ready = true;

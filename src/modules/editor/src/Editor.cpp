@@ -49,7 +49,6 @@ static bool init(AppContext& app) {
 
     ImGui_ImplSDL3_InitForOpenGL(app.window, app.gl_context);
     ImGui_ImplOpenGL3_Init(get_glsl_version());
-
     app.client.init_embedded();
 
     return true;
@@ -244,6 +243,7 @@ static void render(AppContext& app, EditorPanels& panels) {
 void Editor::run() {
     AppContext app;
     EditorPanels panels;
+
     if (!init(app)) return;
 
     while (!app.done) {
