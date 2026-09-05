@@ -30,10 +30,13 @@ entt::entity EntityFactory::create_entity_tree(entt::registry& reg, const ModelT
     reg.emplace<shared::component::transform>(entity, node.local_transform);
     reg.emplace<shared::component::hierarchy>(entity);
 
+
+    std::cout << "before check parent\n";
     // Link to parent if present
     if (parent != entt::null) {
         attach_child(reg, parent, entity);
     }
+    std::cout << "after check parent\n";
 
     // Attach submesh entities as children of this node
     for (MeshAssetHandle mesh_handle : node.mesh_handles) {
@@ -42,7 +45,7 @@ entt::entity EntityFactory::create_entity_tree(entt::registry& reg, const ModelT
         component::mesh mesh_comp;
         mesh_comp.mesh_handle = mesh_handle;
         reg.emplace<component::mesh>(mesh_entity, mesh_comp);
-	reg.emplace<component::scale>(entity);
+	reg.emplace<component::scale>(mesh_entity);
         reg.emplace<shared::component::position>(mesh_entity, glm::vec3(0.0f));
         reg.emplace<shared::component::rotation>(mesh_entity, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
         reg.emplace<shared::component::transform>(mesh_entity, glm::mat4(1.0f));
@@ -54,6 +57,8 @@ entt::entity EntityFactory::create_entity_tree(entt::registry& reg, const ModelT
     for (const ModelTreeNode& child_node : node.children) {
         create_entity_tree(reg, child_node, entity);
     }
+
+    std::cout << "we finished this entity, so its a parent eating ass\n";
 
     return entity;
 }

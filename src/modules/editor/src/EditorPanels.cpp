@@ -236,6 +236,7 @@ namespace gui {
         if (ImGui::Button("Load GLTF ModelTree.")) {
             auto m_tree = app.client.resource_manager.load_model("models/sink/scene.gltf");
 	    app.client.entity_factory.from_model_tree(app.client.active_registry, m_tree);
+	    std::cout << "allright we created that entity THEN it crashed\n";
         }
 
 

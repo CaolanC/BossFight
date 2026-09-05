@@ -44,10 +44,11 @@ namespace client {
 	//    
 	//}
 
-	auto view = reg.view<component::mesh, component::material, shared::component::transform>();
+	auto view = reg.view<component::mesh, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
 
-	for (auto [e, mesh, basic_color, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
-		
+	for (auto [e, mesh, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
+		// Okay so what we want to do tommorow is get it so that we have basic mesh showing, with its color based purely on the
+		// ambient light. That's our starting ground, material architecture decisions should emerge after that! :)
 	}
 
 

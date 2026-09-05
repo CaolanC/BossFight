@@ -31,7 +31,7 @@ ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
         load_node(mt_root_node, model, model.nodes[root_node]);
         model_tree.children.push_back(mt_root_node);
     }
-    
+    std::cout << "so apparently we successfully loaded the model tree\n";
     return model_tree;
 }
 
@@ -64,9 +64,9 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     submesh.draw_mode = utils::gl::glModeFromPrimitive(primitive.mode);
     
     load_positions(model, primitive, submesh);
-    load_normals(model, primitive, submesh);
-    load_texcoord(model, primitive, submesh);
-    load_indices(model, primitive, submesh);
+    //load_normals(model, primitive, submesh);
+    //load_texcoord(model, primitive, submesh);
+    //load_indices(model, primitive, submesh);
     // load_materials
     // Next need to interleave the extra vbo
     // glBindVertexArray(0);
