@@ -64,6 +64,7 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     submesh.draw_mode = utils::gl::glModeFromPrimitive(primitive.mode);
     
     load_positions(model, primitive, submesh);
+    load_indices(model, primitive, submesh);
     //load_normals(model, primitive, submesh);
     //load_texcoord(model, primitive, submesh);
     //load_indices(model, primitive, submesh);
@@ -115,17 +116,23 @@ void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& 
         const auto& iview = model.bufferViews.at(iacc.bufferView);
         const auto& ibuff = model.buffers.at(iview.buffer);
 
-        const unsigned char* idxData = ibuff.data.data() + iview.byteOffset + iacc.byteOffset;
+	const size_t component_size = utils::gl::bytesPerComponent(iacc.componentType);
+    	const size_t data_size_bytes = iacc.count * component_size;
 
-        // glGenBuffers(1, &submesh.ebo);
-        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, submesh.ebo);
-        // glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-        //                 utils::gl::bytesPerComponent(iacc.componentType) * iacc.count,
-        //                 idxData,
-        //                 GL_STATIC_DRAW);
+        const uint8_t* idxData = ibuff.data.data() + iview.byteOffset + iacc.byteOffset;
 
-        // submesh.indexCount = static_cast<GLsizei>(iacc.count);
-        // submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
+        submesh.indices.assign(idxData, idxData + data_size_bytes);
+	submesh.index_count = static_cast<uint32_t>(iacc.count);
+	submesh.index_type = utils::gl::glTypeFromComponent(iacc.componentType);
+        //glGenBuffers(1, &submesh.ebo);
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, submesh.ebo);
+        //glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        //	utils::gl::bytesPerComponent(iacc.componentType) * iacc.count,
+        //	idxData,
+        //	GL_STATIC_DRAW);
+
+        //submesh.indexCount = static_cast<GLsizei>(iacc.count);
+        //submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
     } 
 }
 
@@ -180,8 +187,9 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
             utils::gl::glTypeFromComponent(acc.componentType),
             no_components,
             acc.normalized,
-            stride
+            0
         ));
+	cpu_mesh.layout.stride = static_cast<GLsizei>(stride);
     }
 }
 

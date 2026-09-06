@@ -83,10 +83,11 @@ namespace client {
 
                 utils::gl::set_model_mat(transform, shader_program);
 
-                if (false) {
+                if (true) {
                     glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
                 } else {
                     // TODO: store vertexCount in GpuPrimitive for non-indexed draws
+			std::cout << "ye\n";
                     glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
                 }
                 //else {
