@@ -35,6 +35,17 @@ namespace client {
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, camera_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+	glGenBuffers(1, &lighting_ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, lighting_ubo);
+	glBufferData(
+		GL_UNIFORM_BUFFER,
+		sizeof(glm::vec4),
+		nullptr,
+		GL_DYNAMIC_DRAW
+	);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, lighting_ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
     }
 
     void Renderer::set_camera_ubo(const glm::vec3& camera_position, const glm::mat4& projection_matrix, const glm::mat4& view_matrix) {
@@ -42,6 +53,12 @@ namespace client {
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection_matrix));
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view_matrix));
 	glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec3), glm::value_ptr(camera_position));
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    };
+
+    void Renderer::set_lighting_ubo(const glm::vec4& ambient) {
+	glBindBuffer(GL_UNIFORM_BUFFER, lighting_ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec4), glm::value_ptr(ambient));
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
     };
 
@@ -65,6 +82,7 @@ namespace client {
 	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
 
 	set_camera_ubo(camera_position, projection_matrix, view_matrix);
+	set_lighting_ubo(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 
 	// Get all the lights then upload them to the shader I think to start.
