@@ -16,14 +16,25 @@
 
 
 namespace client {
-	Renderer::Renderer() {
+	Renderer::Renderer(rendering::ResourceManager& resource_manager) : resource_manager(resource_manager) {
+
 	}
+
+    void Renderer::init() {
+    }
 
     void Renderer::init_ubos() {
 	glGenBuffers(1, &camera_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, camera_ubo);
-	glBufferData(GL_UNIFORM_BUFFER, 144, NULL, GL_STATIC_DRAW);
+	glBufferData(
+		GL_UNIFORM_BUFFER,
+		sizeof(glm::mat4) * 2 + sizeof(glm::vec4),
+		nullptr,
+		GL_DYNAMIC_DRAW
+	);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, camera_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
     }
 
     void Renderer::set_camera_ubo(const glm::vec3& camera_position, const glm::mat4& projection_matrix, const glm::mat4& view_matrix) {
@@ -65,7 +76,23 @@ namespace client {
 	auto view = reg.view<component::mesh, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
 
 	for (auto [e, mesh, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
-		resource_manager.mesh_assets.at(mesh.mesh_handle);
+		GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh.mesh_handle).gpu_mesh.value();
+		glBindVertexArray(gpu_mesh.vao);
+		GLuint shader_program = resource_manager.shader_program_manager.program_map.at(resource_manager.shader_program_manager.default_program);
+		glUseProgram(shader_program);
+
+                utils::gl::set_model_mat(transform, shader_program);
+
+                if (false) {
+                    glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
+                } else {
+                    // TODO: store vertexCount in GpuPrimitive for non-indexed draws
+                    glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
+                }
+                //else {
+                //    // TODO: store vertexCount in GpuPrimitive for non-indexed draws
+                //    glDrawArrays(prim.mode, 0, prim.vertexCount);
+                //}
 		// Okay so what we want to do tommorow is get it so that we have basic mesh showing, with its color based purely on the
 		// ambient light. That's our starting ground, material architecture decisions should emerge after that! :)
 	}

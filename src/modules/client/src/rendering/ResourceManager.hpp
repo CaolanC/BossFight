@@ -18,6 +18,7 @@ namespace rendering {
     class ResourceManager {
         public:
         ResourceManager();
+	void init();
 	ModelTreeNode load_model(const std::string& model_path);
 	void load_model_to_gpu(const ModelTreeNode& model_tree);
 	void upload_node_to_gpu(const ModelTreeNode& node);

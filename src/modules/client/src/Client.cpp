@@ -37,6 +37,7 @@ namespace client {
         return;
     	}
 
+	resource_manager.init();
 	renderer.init_ubos();
 
         active_registry.ctx().emplace<component::keyboard_state>();
@@ -277,7 +278,7 @@ namespace client {
         // entt::registry& r = scene.getRegistry();
         //systems::Render(r, w, h);
 	renderer.new_render(active_registry, w, h);
-        renderer.render(active_registry, w, h, model_manager, material_manager);
+        //renderer.render(active_registry, w, h, model_manager, material_manager);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 

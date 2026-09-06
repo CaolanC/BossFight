@@ -13,6 +13,10 @@ namespace rendering {
 
     }
 
+    void ResourceManager::init() {
+	shader_program_manager.init();
+    }
+
     ModelTreeNode ResourceManager::load_model(const std::string& model_path) {
 	GLTFModelLoader model_loader(*this);
 	ModelTreeNode model_tree = model_loader.load_model(model_path);

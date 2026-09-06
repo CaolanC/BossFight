@@ -56,7 +56,7 @@ namespace client {
         core::ShaderProgramManager material_manager = core::ShaderProgramManager();
 	rendering::ResourceManager resource_manager;
         rendering::ModelLoader model_loader = rendering::ModelLoader();
-        client::Renderer renderer = client::Renderer();
+        client::Renderer renderer = client::Renderer(resource_manager);
         void scene_registry_migration_temorary_bootstrap();
         xg::Guid add_test_model();
         entt::entity spawn(std::function<entt::entity(entt::registry& registry)>const& spawn_function);

@@ -1,11 +1,11 @@
-#version 330 core
+#version 460 core
 
 out vec4 FragColor;
 
 layout(std140, binding = 0) uniform CameraUBO
 {
-    mat4 view_matrix;
     mat4 projection_matrix;
+    mat4 view_matrix;
     vec4 camera_position;
 };
 

@@ -22,12 +22,13 @@ namespace core
 
     ShaderProgramHandle default_program;
 
-    ShaderProgramManager() {};
+    ShaderProgramManager() {
+    };
     
-    void init_default_material() {
+    void init() {
 	std::vector<rendering::ShaderSource> shader_sources = {
-	    rendering::ShaderSource("assets/shaders/v3D.glsl"),
-	    rendering::ShaderSource("assets/shaders/fBasicLighting.glsl")
+	    rendering::ShaderSource("shaders/v3D.glsl"),
+	    rendering::ShaderSource("shaders/fBasicLighting.glsl")
         };
 
         default_program = from_source_vec(shader_sources);
@@ -63,7 +64,6 @@ namespace core
 	std::vector<rendering::Shader> shaders;
 
         for (const auto& shader_source: shader_sources) {
-            std::cout << "got to the shader loop\n";
 	    rendering::Shader shader;
             shader.from_source(shader_source);
 
@@ -94,7 +94,6 @@ namespace core
         return program_map.at(id);
     }
 
-    private:
     std::map<ShaderProgramHandle, unsigned int> program_map;
 };
 
