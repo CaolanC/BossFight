@@ -27,7 +27,12 @@ layout(std140, binding = 1) uniform LightingUBO
 //
 //};
 
+in vec3 vWorldPos;
+
 void main() {
+    float dist = length(camera_position.xyz - vWorldPos);
+    float darken = clamp(1.0 - dist * 0.05, 0.1, 1.0);
+
     vec3 ambient = ambient_lighting.color.rgb * ambient_lighting.color.w;
-    FragColor = vec4(ambient, 1.0);
+    FragColor = vec4(ambient, 1.0) * darken;
 }
