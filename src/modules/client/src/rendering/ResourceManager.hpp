@@ -24,7 +24,6 @@ namespace rendering {
 	MeshAssetHandle add_mesh_from_cpumesh(CPUMesh cpu_mesh);
 
 	
-        private:
 
 	MaterialManager material_manager;
 	std::vector<ModelTreeNode> model_trees;

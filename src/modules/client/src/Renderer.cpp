@@ -10,6 +10,7 @@
 #include <SharedComponents.hpp>
 #include <Renderer.hpp>
 #include <rendering/ResourceManager.hpp>
+#include <glad/glad.h>
 
 #include <iostream>
 
@@ -18,13 +19,28 @@ namespace client {
 	Renderer::Renderer() {
 	}
 
-    void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height, rendering::ResourceManager resource_manager) {
+    void Renderer::init_ubos() {
+	glGenBuffers(1, &camera_ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, camera_ubo);
+	glBufferData(GL_UNIFORM_BUFFER, 144, NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    void Renderer::set_camera_ubo(const glm::vec3& camera_position, const glm::mat4& projection_matrix, const glm::mat4& view_matrix) {
+	glBindBuffer(GL_UNIFORM_BUFFER, camera_ubo);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(projection_matrix));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view_matrix));
+	glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec3), glm::value_ptr(camera_position));
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    };
+
+    void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height) {
 	float aspect = 1.0f;
 	if (viewport_height > 0) {
 		aspect = static_cast<float>(viewport_width) / static_cast<float>(viewport_height);
 	};
 	
-	glm::mat4 projection = glm::perspective(
+	glm::mat4 projection_matrix = glm::perspective(
 	    glm::radians(60.0f),
 	    aspect,
 	    0.1f,
@@ -37,6 +53,8 @@ namespace client {
 	);
 	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
 
+	set_camera_ubo(camera_position, projection_matrix, view_matrix);
+
 
 	// Get all the lights then upload them to the shader I think to start.
 	//auto basic_light_view = reg.view<component::basic_light, shared::component::transform>();
@@ -47,6 +65,7 @@ namespace client {
 	auto view = reg.view<component::mesh, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
 
 	for (auto [e, mesh, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
+		resource_manager.mesh_assets.at(mesh.mesh_handle);
 		// Okay so what we want to do tommorow is get it so that we have basic mesh showing, with its color based purely on the
 		// ambient light. That's our starting ground, material architecture decisions should emerge after that! :)
 	}

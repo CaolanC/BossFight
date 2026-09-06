@@ -36,6 +36,9 @@ namespace client {
         SDL_Log("ERROR: glCreateShader is still NULL inside bootstrap!");
         return;
     	}
+
+	renderer.init_ubos();
+
         active_registry.ctx().emplace<component::keyboard_state>();
         active_registry.ctx().emplace<component::mouse_state>();
         active_registry.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
@@ -273,6 +276,7 @@ namespace client {
 
         // entt::registry& r = scene.getRegistry();
         //systems::Render(r, w, h);
+	renderer.new_render(active_registry, w, h);
         renderer.render(active_registry, w, h, model_manager, material_manager);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
