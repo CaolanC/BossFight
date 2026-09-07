@@ -9,6 +9,7 @@
 #include <rendering/MeshAsset.hpp>
 #include <rendering/MaterialAsset.hpp>
 #include <rendering/NewMesh.hpp>
+#include <rendering/TextureAsset.hpp>
 #include <core/ShaderProgramManager.hpp>
 
 namespace rendering {
@@ -31,6 +32,7 @@ namespace rendering {
 	
 	std::unordered_map<MeshAssetHandle, MeshAsset> mesh_assets;
 	std::unordered_map<MaterialAssetHandle, MaterialAsset> material_asset;
+	std::unordered_map<TextureAssetHandle, TextureAsset> texture_assets;
 	core::ShaderProgramManager shader_program_manager;
         
         // uint32_t add_mesh();

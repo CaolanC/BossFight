@@ -82,7 +82,7 @@ namespace client {
 	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
 
 	set_camera_ubo(camera_position, projection_matrix, view_matrix);
-	set_lighting_ubo(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	set_lighting_ubo(glm::vec4(1.0f, 1.0f, 1.0f, 0.1f));
 
 
 	// Get all the lights then upload them to the shader I think to start.

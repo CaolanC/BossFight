@@ -7,6 +7,8 @@ namespace rendering {
 
     struct MaterialAsset {
 	MaterialAssetHandle handle;
+	// texcord,
+	// texture(s?) handle
     };
 
 };

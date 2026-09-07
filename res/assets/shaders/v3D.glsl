@@ -21,7 +21,7 @@ void main() {
     vWorldPos = worldPos.xyz;
 
     vNorm = mat3(uModel) * aNorm;
-    vuV = uV;
 
+    //vNorm = aNorm;
     gl_Position = projection_matrix * view_matrix * worldPos;
 }

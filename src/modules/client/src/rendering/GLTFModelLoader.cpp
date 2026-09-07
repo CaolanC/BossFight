@@ -1,4 +1,5 @@
 #include <iostream>
+#include <filesystem>
 
 #include <rendering/GLTFModelLoader.hpp>
 #include <rendering/ModelTree.hpp>
@@ -7,7 +8,6 @@
 #include <rendering/ModelLoader.hpp>
 #include <rendering/ResourceManager.hpp>
 #include <utils/gl/helpers.hpp>
-
 
 namespace rendering {
 
@@ -19,6 +19,7 @@ GLTFModelLoader::GLTFModelLoader(ResourceManager& resource_manager)
 }
 
 ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
+    current_model_path = model_path;
     ModelTreeNode model_tree;
     std::cout << model_path << '\n';
     tinygltf::Model model;
@@ -65,10 +66,12 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     
     load_positions(model, primitive, submesh);
     load_indices(model, primitive, submesh);
-    //load_normals(model, primitive, submesh);
+    size_t norm_stride = load_normals(model, primitive, submesh);
     //load_texcoord(model, primitive, submesh);
     //load_indices(model, primitive, submesh);
-    // load_materials
+    load_materials(primitive, model);
+
+    submesh.interleaved.layout.stride = static_cast<GLsizei>(norm_stride);
     // Next need to interleave the extra vbo
     // glBindVertexArray(0);
 }
@@ -78,36 +81,35 @@ struct VBO_Slice {
     std::vector<uint8_t> slice;
 };
 
-void GLTFModelLoader::load_materials(tinygltf::Primitive& primitive) {
+void GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, tinygltf::Model& model) {
     //std::unordered_map<int, MaterialHandle> index_material_cache;
     // will probably have to move this out as different primtives can share the same material
     
-    // if (primitive.material >= 0 &&
-    // primitive.material < static_cast<int>(model.materials.size())) {
+    if (primitive.material >= 0 &&
+    	primitive.material < static_cast<int>(model.materials.size())) {
 
-    //     const auto& material = model.materials[primitive.material];
-    //     const auto& baseTex = material.pbrMetallicRoughness.baseColorTexture;
+    	const auto& material = model.materials[primitive.material];
+    	const auto& baseTex = material.pbrMetallicRoughness.baseColorTexture;
 
-    //     // glTF convention: index == -1 means "no texture"
-    //     if (baseTex.index >= 0 &&
-    //         baseTex.index < static_cast<int>(model.textures.size())) {
+    	//glTF convention: index == -1 means "no texture"
+    	if (baseTex.index >= 0 &&
+    	    baseTex.index < static_cast<int>(model.textures.size())) {
+	    const auto& texture = model.textures[baseTex.index];
+    	    if (texture.source >= 0 &&
+    		texture.source < static_cast<int>(model.images.size())) {
 
-    //         const auto& texture = model.textures[baseTex.index];
-    //         if (texture.source >= 0 &&
-    //             texture.source < static_cast<int>(model.images.size())) {
+    		const auto& image = model.images[texture.source];
+    		if (!image.uri.empty()) {
+		    //std::filesystem::path parent = p;
+    		    //parent = parent.parent_path();
+		    std::cout << current_model_path.parent_path() << " hehehe\n";
+		    std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
 
-    //             const auto& image = model.images[texture.source];
-    //             if (!image.uri.empty()) {
-    //                 fs::path parent = p;
-    //                 parent = parent.parent_path();
-    //                 fs::path fullPath = fs::path(utils::assets::get_asset(
-    //                     (parent / image.uri).string()));
-
-    //                 pr.texture = utils::Texture(fullPath.string().c_str());
-    //             }
-    //         }
-    //     }
-    // }
+    		    //pr.texture = utils::Texture(fullPath.string().c_str());
+    		}
+    	    }
+    	}
+    }
 }
 
 void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) {
@@ -177,11 +179,11 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
         const size_t data_size_bytes = acc.count * stride;
 
         // 1. Copy the raw buffer into the CPU mesh struct
-        cpu_mesh.position_vbo.assign(data, data + data_size_bytes);
+        cpu_mesh.position.vbo.assign(data, data + data_size_bytes);
 
         // 2. Track layout metadata needed to configure OpenGL attributes later
         cpu_mesh.vertex_count = static_cast<uint32_t>(acc.count);
-        cpu_mesh.layout.attributes.push_back(VertexAttribute(
+        cpu_mesh.position.layout.attributes.push_back(VertexAttribute(
             AttributeType::POSITION,
             0, // Attribute index (location = 0)
             utils::gl::glTypeFromComponent(acc.componentType),
@@ -189,7 +191,9 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
             acc.normalized,
             0
         ));
-	cpu_mesh.layout.stride = static_cast<GLsizei>(stride);
+
+	cpu_mesh.position.layout.stride = static_cast<GLsizei>(stride); // Potentially need to readd this in later, using some kind of map that allows us
+	// to have multiple interleaved/ singular vbo's, dynamically based on the task. More options for developers, with good defaults that just work.
     }
 }
 
@@ -225,7 +229,7 @@ void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive&
     }
 }
 
-void GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
+size_t GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
     auto normIt = primitive.attributes.find("NORMAL");
     if (normIt != primitive.attributes.end()) {
         const auto& acc  = model.accessors.at(normIt->second);
@@ -240,15 +244,23 @@ void GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive& 
         // const unsigned char* data = buff.data.data() + offset;
 
         const uint8_t* data = reinterpret_cast<const uint8_t*>(buff.data.data() + offset);
+        const size_t no_components  = utils::gl::numComponentsInType(acc.type);
+        
+	const size_t data_size_bytes = acc.count * stride;
 
-        // cpu_mesh.layout.attributes.push_back(VertexAttribute(
-        //         AttributeType::NORMAL,
-        //         1,
-        //         utils::gl::glTypeFromComponent(acc.componentType),
-        //         no_components,
-        //         false,
-        //         (void*() 0)
-        // ));
+	cpu_mesh.interleaved.vbo.assign(data, data + data_size_bytes); // This won't do for long as we need to interleaved the vbos.
+
+	std::cout << "we loaded la normals\n";
+        cpu_mesh.interleaved.layout.attributes.push_back(VertexAttribute(
+            AttributeType::NORMAL,
+            1,
+            utils::gl::glTypeFromComponent(acc.componentType),
+            no_components,
+            false,
+            0
+        ));
+
+	return stride;
 
         // return data;
         // glVertexAttribPointer(

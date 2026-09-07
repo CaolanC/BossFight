@@ -6,6 +6,9 @@
 
 #include <tiny_gltf.h>
 
+#include <string>
+#include <filesystem>
+
 namespace rendering {
 
 class ResourceManager;
@@ -24,11 +27,12 @@ class GLTFModelLoader {
     void load_node_mesh(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Node& node);
     void load_submesh(ModelTreeNode& mt_node, tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
-    void load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
+    size_t load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
-    void load_materials(tinygltf::Primitive& primitive);
+    void load_materials(tinygltf::Primitive& primitive, tinygltf::Model& model);
     ResourceManager& resource_manager;
+    std::filesystem::path current_model_path;
 };
 
 };
