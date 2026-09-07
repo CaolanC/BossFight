@@ -36,7 +36,7 @@ layout(std140, binding = 1) uniform LightingUBO
 
 uniform sampler2D uTex;
 
-in vec3 vWorldPos;
+in vec3 FragPos;
 in vec3 vNorm;
 in vec2 vUv;
 
@@ -45,7 +45,7 @@ void main() {
     vec3 point_light = vec3(0);
 
     vec3 norm = normalize(vNorm);
-    vec3 light_dir = normalize(vNorm - vWorldPos);
+    vec3 light_dir = normalize(camera_position.xyz - FragPos);
 
     float diff = max(dot(norm, light_dir), 0.0);
     vec3 diffuse = diff * vec3(1.0f, 1.0f, 1.0f); // Custom light colors later
