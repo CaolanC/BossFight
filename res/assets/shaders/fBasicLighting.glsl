@@ -70,8 +70,11 @@ void main() {
     for(int i = 0; i < no_lights; i++) {
 	PointLight pl = point_lights[i];
         light_dir = normalize(pl.position.xyz - FragPos);
-    	diffuse += calc_diffuse(light_dir, norm);
-    	specular += calc_specular(light_dir, norm);
+
+	float distance    = length(pl.position.xyz - FragPos);
+        float attenuation = 1.0 / (1.0 + 0.5 * distance + 0.3 * (distance * distance));
+    	diffuse += calc_diffuse(light_dir, norm) * attenuation;
+    	specular += calc_specular(light_dir, norm) * attenuation;
     };
 
     FragColor = vec4(ambient + diffuse + specular, 1.0);
