@@ -20,14 +20,17 @@ struct AmbientLighting {
 
 struct PointLight {
     vec4 position; // xyz = position, w = intensity. Dunno whether to keep that for the w component
+    vec4 color; 
 };
 
-#define NO_PT_LIGHTS 1
+#define MAX_LIGHTS 100
 
 layout(std140, binding = 1) uniform LightingUBO
 {
     AmbientLighting ambient_lighting;
-    PointLight[NO_PT_LIGHTS] point_lights;
+    PointLight[MAX_LIGHTS] point_lights;
+    int no_lights;
+
 };
 
 //vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
@@ -58,14 +61,18 @@ vec3 calc_specular(vec3 light_dir, vec3 norm) {
 
 void main() {
 
-    vec3 point_light = vec3(0);
-
-    vec3 light_dir = normalize(vec3(0.0f) - FragPos); // Static light position at origin for now :)
-    vec3 norm = normalize(vNorm);
-
-    vec3 diffuse = calc_diffuse(light_dir, norm);
-    vec3 specular = calc_specular(light_dir, norm);
-
     vec3 ambient = ambient_lighting.color.rgb * ambient_lighting.color.w;
+    vec3 diffuse = vec3(0.0);
+    vec3 specular = vec3(0.0);
+
+    vec3 norm = normalize(vNorm);
+    vec3 light_dir;
+    for(int i = 0; i < no_lights; i++) {
+	PointLight pl = point_lights[i];
+        light_dir = normalize(pl.position.xyz - FragPos);
+    	diffuse += calc_diffuse(light_dir, norm);
+    	specular += calc_specular(light_dir, norm);
+    };
+
     FragColor = vec4(ambient + diffuse + specular, 1.0);
 }

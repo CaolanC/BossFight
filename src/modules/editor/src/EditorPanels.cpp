@@ -300,6 +300,9 @@ namespace gui {
                     if (ImGui::MenuItem("Debug Spin")) {
                         app.client.active_registry.emplace_or_replace<component::debug_spin>(entity);
                     }
+                    if (ImGui::MenuItem("Point Light")) {
+                        app.client.active_registry.emplace_or_replace<component::basic_light>(entity);
+                    }
                     ImGui::EndMenu();
                 }
 

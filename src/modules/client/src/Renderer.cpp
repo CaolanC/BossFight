@@ -16,6 +16,7 @@
 
 
 namespace client {
+
 	Renderer::Renderer(rendering::ResourceManager& resource_manager) : resource_manager(resource_manager) {
 
 	}
@@ -39,7 +40,7 @@ namespace client {
 	glBindBuffer(GL_UNIFORM_BUFFER, lighting_ubo);
 	glBufferData(
 		GL_UNIFORM_BUFFER,
-		sizeof(glm::vec4),
+		sizeof(LightingUBOCPU),
 		nullptr,
 		GL_DYNAMIC_DRAW
 	);
@@ -56,9 +57,9 @@ namespace client {
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
     };
 
-    void Renderer::set_lighting_ubo(const glm::vec4& ambient) {
+    void Renderer::set_lighting_ubo(const LightingUBOCPU& lighting_ubo_cpu) {
 	glBindBuffer(GL_UNIFORM_BUFFER, lighting_ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec4), glm::value_ptr(ambient));
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(LightingUBOCPU), &lighting_ubo_cpu);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
     };
 
@@ -82,14 +83,25 @@ namespace client {
 	glm::vec3 camera_position = reg.get<shared::component::position>(curr_cam.e).value;
 
 	set_camera_ubo(camera_position, projection_matrix, view_matrix);
-	set_lighting_ubo(glm::vec4(1.0f, 1.0f, 1.0f, 0.1f));
 
 
 	// Get all the lights then upload them to the shader I think to start.
-	//auto basic_light_view = reg.view<component::basic_light, shared::component::transform>();
-	//for (auto [e, basic_light, tr] : basic_light_view) {
-	//    
-	//}
+	
+	LightingUBOCPU l_ubo_cpu;
+	auto basic_light_view = reg.view<component::basic_light, shared::component::position>();
+	int no_lights = 0;
+	for (auto [e, basic_light, pos] : basic_light_view.each()) { // Don't know if we want lights to have meshes or just a parent component that has both a light and a mesh, will have to see how it does
+	    if (no_lights >= 100) {
+	        break;
+	    };
+	    PointLightCPU pl;
+	    pl.position = glm::vec4(pos.value, 1.0f);
+	    l_ubo_cpu.point_lights[no_lights] = pl;
+	    no_lights++;
+	}
+	l_ubo_cpu.no_lights = no_lights;
+	
+	set_lighting_ubo(l_ubo_cpu);
 
 	auto view = reg.view<component::mesh, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
 
