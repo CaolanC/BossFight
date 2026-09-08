@@ -33,30 +33,28 @@ layout(std140, binding = 1) uniform LightingUBO
 
 };
 
-//vec3 CalcDirLight(DirectionalLight light, vec3 normal, vec3 viewDir) {
-//
-//};
-
 uniform sampler2D uTex;
 
 in vec3 FragPos;
 in vec3 vNorm;
 in vec2 vUv;
 
-vec3 calc_diffuse(vec3 light_dir, vec3 norm) {
+vec3 calc_diffuse(vec3 light_dir, vec3 norm, vec4 light_col) {
     float diff = max(dot(norm, light_dir), 0.0);
 
-    return diff * vec3(1.0f, 1.0f, 1.0f); // Custom light colors later
+    return diff * light_col.xyz;
+// * light_col.w;
 };
 
-vec3 calc_specular(vec3 light_dir, vec3 norm) {
+vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col) {
     float specular_strength = 0.5; // We can probabaly add this to the lighting ubo later
     vec3 view_dir = normalize(camera_position.xyz - FragPos);
     vec3 reflect_dir = reflect(-light_dir, norm);
 
     float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
     
-    return specular_strength * spec * vec3(1.0, 1.0, 1.0); // Custom light colors later
+    return specular_strength * spec * light_col.xyz;
+// * light_col.w; 
 };
 
 void main() {
@@ -73,9 +71,9 @@ void main() {
 
 	float distance    = length(pl.position.xyz - FragPos);
         float attenuation = 1.0 / (1.0 + 0.5 * distance + 0.3 * (distance * distance));
-    	diffuse += calc_diffuse(light_dir, norm) * attenuation;
-    	specular += calc_specular(light_dir, norm) * attenuation;
+    	diffuse += calc_diffuse(light_dir, norm, pl.color) * attenuation;
+    	specular += calc_specular(light_dir, norm, pl.color) * attenuation;
     };
 
     FragColor = vec4(ambient + diffuse + specular, 1.0);
-}
+};

@@ -96,6 +96,7 @@ namespace client {
 	    };
 	    PointLightCPU pl;
 	    pl.position = glm::vec4(pos.value, 1.0f);
+	    pl.color = basic_light.color;
 	    l_ubo_cpu.point_lights[no_lights] = pl;
 	    no_lights++;
 	}

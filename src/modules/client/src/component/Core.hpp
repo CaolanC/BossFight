@@ -112,8 +112,8 @@ namespace component
     };
 
     struct basic_light {
-	glm::vec3 color{1.0f, 1.0f, 1.0f};
-	glm::vec3 position{0, 0, 0};
+	glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+	glm::vec4 position{0, 0, 0, 0};
     };
 
 }

@@ -7,7 +7,7 @@ namespace client {
 
 	struct PointLightCPU { // This don't belong here but I'm lazy, we can move it to the rendering namespace and its own file once the renderer is migrating as well
 	    glm::vec4 position;
-	    glm::vec4 color;
+	    glm::vec4 color = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	};
 
 	struct LightingUBOCPU {

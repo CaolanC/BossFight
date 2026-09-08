@@ -355,8 +355,23 @@ namespace gui {
                     rot = glm::quat(euler_rad);
                     scale.s = s;
                 }
-                if (app.client.active_registry.all_of<component::model_ref>(entity)) {
-                    ImGui::TreeNodeEx("Comp_Model", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Model");
+                if (app.client.active_registry.all_of<component::basic_light>(entity)) {
+                    ImGui::TreeNodeEx("Comp_Light", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Light");
+
+                    auto& light = app.client.active_registry.get<component::basic_light>(entity);
+
+		    std::cout << light.color[0] << '\n';
+                    float u_col[4] = {
+			light.color[0],
+			light.color[1],
+			light.color[2],
+			light.color[3]
+                    };
+
+		    ImGui::DragFloat4("Color", u_col, 0.01f);
+
+		    light.color = glm::vec4(u_col[0], u_col[1], u_col[2], u_col[3]);
+
                 }
                 if (app.client.active_registry.all_of<component::mat_ref>(entity)) {
                     ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
