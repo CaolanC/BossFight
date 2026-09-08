@@ -24,6 +24,7 @@ namespace rendering {
 	void load_model_to_gpu(const ModelTreeNode& model_tree);
 	void upload_node_to_gpu(const ModelTreeNode& node);
 	MeshAssetHandle add_mesh_from_cpumesh(CPUMesh cpu_mesh);
+	MaterialAssetHandle add_material_asset(MaterialAsset material_asset);
 
 	
 
@@ -31,7 +32,7 @@ namespace rendering {
 	std::vector<ModelTreeNode> model_trees;
 	
 	std::unordered_map<MeshAssetHandle, MeshAsset> mesh_assets;
-	std::unordered_map<MaterialAssetHandle, MaterialAsset> material_asset;
+	std::unordered_map<MaterialAssetHandle, MaterialAsset> material_assets;
 	std::unordered_map<TextureAssetHandle, TextureAsset> texture_assets;
 	core::ShaderProgramManager shader_program_manager;
         

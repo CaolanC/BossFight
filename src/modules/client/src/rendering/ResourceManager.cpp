@@ -146,6 +146,13 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 	return mesh_handle;
     }
 
+	MaterialAssetHandle ResourceManager::add_material_asset(MaterialAsset material_asset) {
+		MaterialAssetHandle material_handle = xg::newGuid();
+		material_assets.emplace(material_handle, material_asset);
+
+		return material_handle;
+	};
+
     // uint32_t ResourceManager::add_mesh() {
     //     return 0;
     // }

@@ -1,5 +1,9 @@
 #pragma once
 
+struct CPUMaterial {
+	
+};
+
 struct Material {
-	ShaderProgramHandle shader_program;
+	//ShaderProgramHandle shader_program;
 };

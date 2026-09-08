@@ -3,6 +3,9 @@
 #include <rendering/MaterialManager.hpp>
 #include <rendering/NewMesh.hpp>
 #include <rendering/ResourceManager.hpp>
+#include <rendering/Material.hpp>
+#include <rendering/CPUTexture.hpp>
+#include <rendering/MaterialAsset.hpp>
 
 #include <tiny_gltf.h>
 
@@ -30,9 +33,12 @@ class GLTFModelLoader {
     size_t load_normals(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
     void load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh);
-    void load_materials(tinygltf::Primitive& primitive, tinygltf::Model& model);
+    MaterialAsset load_materials(tinygltf::Primitive& primitive, tinygltf::Model& model);
     ResourceManager& resource_manager;
     std::filesystem::path current_model_path;
+
+    //std::unordered_map<int, CPUMaterial> material_cache;
+    std::unordered_map<int, CPUTexture> texture_cache; // Need to remember to wipe these on each an every cycle of the gltf loader.
 };
 
 };

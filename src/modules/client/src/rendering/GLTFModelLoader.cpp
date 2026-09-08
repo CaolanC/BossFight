@@ -7,6 +7,7 @@
 #include <rendering/Model.hpp>
 #include <rendering/ModelLoader.hpp>
 #include <rendering/ResourceManager.hpp>
+#include <rendering/CPUTexture.hpp>
 #include <utils/gl/helpers.hpp>
 
 namespace rendering {
@@ -69,9 +70,13 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     size_t norm_stride = load_normals(model, primitive, submesh);
     //load_texcoord(model, primitive, submesh);
     //load_indices(model, primitive, submesh);
-    load_materials(primitive, model);
+    MaterialAsset material_asset = load_materials(primitive, model);
 
     submesh.interleaved.layout.stride = static_cast<GLsizei>(norm_stride);
+
+	resource_manager.add_material_asset(material_asset);
+    submesh.material_asset = resource_manager.add_material_asset(material_asset);
+
     // Next need to interleave the extra vbo
     // glBindVertexArray(0);
 }
@@ -81,10 +86,17 @@ struct VBO_Slice {
     std::vector<uint8_t> slice;
 };
 
-void GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, tinygltf::Model& model) {
-    //std::unordered_map<int, MaterialHandle> index_material_cache;
+MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, tinygltf::Model& model) {
+    std::unordered_map<int, CPUTexture> index_texture_cache;
     // will probably have to move this out as different primtives can share the same material
+    //
+    // If the material index is in the map, then the material refA
+    //
+    // If i understand correctly each mesh primitive references a material, but mutliple meshes have different primitives, which could all reference,
+    // the same fucking material, and each material can also reference the same fucking texture.
     
+    MaterialAsset material_asset;
+    TextureAsset texture_asset;
     if (primitive.material >= 0 &&
     	primitive.material < static_cast<int>(model.materials.size())) {
 
@@ -92,7 +104,7 @@ void GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, tinygltf::M
     	const auto& baseTex = material.pbrMetallicRoughness.baseColorTexture;
 
     	//glTF convention: index == -1 means "no texture"
-    	if (baseTex.index >= 0 &&
+    	if (!index_texture_cache.contains(baseTex.index) && baseTex.index >= 0 &&
     	    baseTex.index < static_cast<int>(model.textures.size())) {
 	    const auto& texture = model.textures[baseTex.index];
     	    if (texture.source >= 0 &&
@@ -104,12 +116,19 @@ void GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, tinygltf::M
     		    //parent = parent.parent_path();
 		    std::cout << current_model_path.parent_path() << " hehehe\n";
 		    std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
-
+		    // may need to std::move the cpu_texture into the map, unsure, it will probabaly need std::moved again from the map later on as well
+		    CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
+		    int in = baseTex.index;
+		    index_texture_cache.insert({in, cpu_texture});
+		    texture_asset.cpu_texture = cpu_texture;
+		    material_asset.texture_asset = texture_asset;
     		    //pr.texture = utils::Texture(fullPath.string().c_str());
     		}
     	    }
     	}
     }
+
+    return material_asset;
 }
 
 void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) {

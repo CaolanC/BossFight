@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <glad/glad.h>
 #include <vector>
+#include <rendering/MaterialAsset.hpp>
 
 enum class AttributeType {
     POSITION,
@@ -68,4 +69,5 @@ struct CPUMesh {
 
     //VertexLayout layout;
     GLenum draw_mode = GL_TRIANGLES;
+    std::optional<rendering::MaterialAssetHandle> material_asset;
 };

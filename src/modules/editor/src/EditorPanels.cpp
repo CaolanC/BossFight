@@ -360,7 +360,6 @@ namespace gui {
 
                     auto& light = app.client.active_registry.get<component::basic_light>(entity);
 
-		    std::cout << light.color[0] << '\n';
                     float u_col[4] = {
 			light.color[0],
 			light.color[1],
