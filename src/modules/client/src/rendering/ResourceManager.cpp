@@ -95,7 +95,7 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 	    	std::cout << "we added stuff to the interleaved vbo\n";
 
             // Configure vertex attributes defined in layout
-			const auto& attr = position_pair.attribute;
+			const auto& attr = normal_pair.attribute;
             glVertexAttribPointer(
                 attr.location,
                 attr.num_components,

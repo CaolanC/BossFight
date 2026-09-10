@@ -114,7 +114,6 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     		if (!image.uri.empty()) {
 		    //std::filesystem::path parent = p;
     		    //parent = parent.parent_path();
-		    std::cout << current_model_path.parent_path() << " hehehe\n";
 		    std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
 		    // may need to std::move the cpu_texture into the map, unsure, it will probabaly need std::moved again from the map later on as well
 		    CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
@@ -137,20 +136,14 @@ void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& 
         const auto& iview = model.bufferViews.at(iacc.bufferView);
         const auto& ibuff = model.buffers.at(iview.buffer);
 
-	const size_t component_size = utils::gl::bytesPerComponent(iacc.componentType);
+		const size_t component_size = utils::gl::bytesPerComponent(iacc.componentType);
     	const size_t data_size_bytes = iacc.count * component_size;
 
         const uint8_t* idxData = ibuff.data.data() + iview.byteOffset + iacc.byteOffset;
 
         submesh.indices.assign(idxData, idxData + data_size_bytes);
-	submesh.index_count = static_cast<uint32_t>(iacc.count);
-	submesh.index_type = utils::gl::glTypeFromComponent(iacc.componentType);
-        //glGenBuffers(1, &submesh.ebo);
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, submesh.ebo);
-        //glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-        //	utils::gl::bytesPerComponent(iacc.componentType) * iacc.count,
-        //	idxData,
-        //	GL_STATIC_DRAW);
+		submesh.index_count = static_cast<uint32_t>(iacc.count);
+		submesh.index_type = utils::gl::glTypeFromComponent(iacc.componentType);
 
         //submesh.indexCount = static_cast<GLsizei>(iacc.count);
         //submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
