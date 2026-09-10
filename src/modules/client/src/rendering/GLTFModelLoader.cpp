@@ -72,7 +72,7 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     //load_indices(model, primitive, submesh);
     MaterialAsset material_asset = load_materials(primitive, model);
 
-    submesh.interleaved.layout.stride = static_cast<GLsizei>(norm_stride);
+    //submesh.normals.layout.stride = static_cast<GLsizei>(norm_stride);
 
 	resource_manager.add_material_asset(material_asset);
     submesh.material_asset = resource_manager.add_material_asset(material_asset);
@@ -192,27 +192,35 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 
         const size_t no_components  = utils::gl::numComponentsInType(acc.type);
         const size_t component_size = utils::gl::bytesPerComponent(acc.componentType);
-        const size_t stride         = view.byteStride ? view.byteStride : (no_components * component_size);
+        const size_t byte_stride         = view.byteStride ? view.byteStride : (no_components * component_size);
 
         const uint8_t* data = buff.data.data() + view.byteOffset + acc.byteOffset;
-        const size_t data_size_bytes = acc.count * stride;
+        const size_t data_size_bytes = acc.count * byte_stride;
 
         // 1. Copy the raw buffer into the CPU mesh struct
-        cpu_mesh.position.vbo.assign(data, data + data_size_bytes);
+        //cpu_mesh.position.vbo.assign(data, data + data_size_bytes);
 
         // 2. Track layout metadata needed to configure OpenGL attributes later
         cpu_mesh.vertex_count = static_cast<uint32_t>(acc.count);
-        cpu_mesh.position.layout.attributes.push_back(VertexAttribute(
+        VertexAttribute attr = VertexAttribute(
             AttributeType::POSITION,
             0, // Attribute index (location = 0)
             utils::gl::glTypeFromComponent(acc.componentType),
             no_components,
             acc.normalized,
-            0
-        ));
+            0,
+			static_cast<GLsizei>(byte_stride)
+		);
 
-	cpu_mesh.position.layout.stride = static_cast<GLsizei>(stride); // Potentially need to readd this in later, using some kind of map that allows us
-	// to have multiple interleaved/ singular vbo's, dynamically based on the task. More options for developers, with good defaults that just work.
+		VBO_AttributePair vbo_attribute_pair;
+		vbo_attribute_pair.attribute = attr;
+		vbo_attribute_pair.vbo.assign(data, data + data_size_bytes);
+
+		cpu_mesh.add_data(AttributeType::POSITION, std::move(vbo_attribute_pair));
+
+        //cpu_mesh.data.insert(AttributeType::POSITION, vbo_attribute_pair);S
+		//cpu_mesh.position.layout.stride = static_cast<GLsizei>(stride); // Potentially need to readd this in later, using some kind of map that allows us
+		// to have multiple interleaved/ singular vbo's, dynamically based on the task. More options for developers, with good defaults that just work.
     }
 }
 
@@ -257,7 +265,7 @@ size_t GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive
 
         const size_t comps  = utils::gl::numComponentsInType(acc.type);
         const size_t csize  = utils::gl::bytesPerComponent(acc.componentType);
-        const size_t stride = view.byteStride ? view.byteStride : comps * csize;
+        const size_t byte_stride = view.byteStride ? view.byteStride : comps * csize;
         const size_t offset = view.byteOffset + acc.byteOffset;
 
         // const unsigned char* data = buff.data.data() + offset;
@@ -265,21 +273,28 @@ size_t GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive
         const uint8_t* data = reinterpret_cast<const uint8_t*>(buff.data.data() + offset);
         const size_t no_components  = utils::gl::numComponentsInType(acc.type);
         
-	const size_t data_size_bytes = acc.count * stride;
+		const size_t data_size_bytes = acc.count * byte_stride;
 
-	cpu_mesh.interleaved.vbo.assign(data, data + data_size_bytes); // This won't do for long as we need to interleaved the vbos.
+		//cpu_mesh.normals.vbo.assign(data, data + data_size_bytes); // This won't do for long as we need to interleaved the vbos.
 
-	std::cout << "we loaded la normals\n";
-        cpu_mesh.interleaved.layout.attributes.push_back(VertexAttribute(
+        //cpu_mesh.normals.layout.attributes.push_back(VertexAttribute(
+        auto attr = VertexAttribute(
             AttributeType::NORMAL,
             1,
             utils::gl::glTypeFromComponent(acc.componentType),
             no_components,
             false,
-            0
-        ));
+            0,
+			byte_stride
+        );
 
-	return stride;
+		VBO_AttributePair attribute_pair;
+		attribute_pair.attribute = attr;
+		attribute_pair.vbo.assign(data, data + data_size_bytes);
+
+		cpu_mesh.add_data(AttributeType::NORMAL, std::move(attribute_pair));
+
+	return byte_stride;
 
         // return data;
         // glVertexAttribPointer(

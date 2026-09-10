@@ -54,53 +54,57 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
         glBindVertexArray(gpu_mesh.vao);
 
         // Upload Position / Interleaved VBO
-        if (!cpu_mesh.position.vbo.empty()) {
+		const VBO_AttributePair& position_pair = cpu_mesh.data.at(AttributeType::POSITION);
+        if (!position_pair.vbo.empty()) {
             glGenBuffers(1, &gpu_mesh.position_vbo);
             glBindBuffer(GL_ARRAY_BUFFER, gpu_mesh.position_vbo);
             glBufferData(
                 GL_ARRAY_BUFFER,
-                cpu_mesh.position.vbo.size(),
-                cpu_mesh.position.vbo.data(),
+                position_pair.vbo.size(),
+                position_pair.vbo.data(),
                 GL_STATIC_DRAW
             );
 
-            // Configure vertex attributes defined in layout
-            for (const auto& attr : cpu_mesh.position.layout.attributes) {
-                glVertexAttribPointer(
-                    attr.location,
-                    attr.num_components,
-                    attr.component_type,
-                    attr.normalized,
-                    cpu_mesh.position.layout.stride,
-                    reinterpret_cast<const void*>(attr.offset)
-                );
-                glEnableVertexAttribArray(attr.location);
-            }
+			const auto& attr = position_pair.attribute;
+
+            //// Configure vertex attributes defined in layout
+            //for (const auto& attr : position_pair.attributes) {
+            glVertexAttribPointer(
+                attr.location,
+                attr.num_components,
+                attr.component_type,
+                attr.normalized,
+                attr.byte_stride,
+                reinterpret_cast<const void*>(attr.offset)
+            );
+            glEnableVertexAttribArray(attr.location);
+            //}
         }
 
-
-        if (!cpu_mesh.interleaved.vbo.empty()) {
+		
+		const VBO_AttributePair& normal_pair = cpu_mesh.data.at(AttributeType::NORMAL);
+        if (!normal_pair.vbo.empty()) {
             glGenBuffers(1, &gpu_mesh.interleaved_vbo);
             glBindBuffer(GL_ARRAY_BUFFER, gpu_mesh.interleaved_vbo);
             glBufferData(
                 GL_ARRAY_BUFFER,
-                cpu_mesh.interleaved.vbo.size(),
-                cpu_mesh.interleaved.vbo.data(),
+                normal_pair.vbo.size(),
+                normal_pair.vbo.data(),
                 GL_STATIC_DRAW
             );
-	    std::cout << "we added stuff to the interleaved vbo\n";
+	    	std::cout << "we added stuff to the interleaved vbo\n";
+
             // Configure vertex attributes defined in layout
-            for (const auto& attr : cpu_mesh.interleaved.layout.attributes) {
-                glVertexAttribPointer(
-                    attr.location,
-                    attr.num_components,
-                    attr.component_type,
-                    attr.normalized,
-                    cpu_mesh.interleaved.layout.stride,
-                    reinterpret_cast<const void*>(attr.offset)
-                );
-                glEnableVertexAttribArray(attr.location);
-            }
+			const auto& attr = position_pair.attribute;
+            glVertexAttribPointer(
+                attr.location,
+                attr.num_components,
+                attr.component_type,
+                attr.normalized,
+                attr.byte_stride,
+                reinterpret_cast<const void*>(attr.offset)
+            );
+            glEnableVertexAttribArray(attr.location);
         }
 
         // Upload Index Buffer (EBO) if indices exist
