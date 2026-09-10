@@ -80,6 +80,11 @@ struct CPUMesh {
     GLenum draw_mode = GL_TRIANGLES;
     std::optional<rendering::MaterialAssetHandle> material_asset;
 
+	std::vector<AttributeType> standalone_vbos;
+	std::vector<AttributeType> interleaved_vbos;
+
+	// Probabaly a good idea for interleaving: Two sets or similar that define which attributes should have their own vbo and which should be interleaved.
+
 	void add_data(AttributeType attribute_type, VBO_AttributePair attribute_pair) {
 		data.emplace(attribute_type, std::move(attribute_pair));
 	};

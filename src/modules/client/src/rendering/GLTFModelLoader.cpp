@@ -68,8 +68,7 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
     load_positions(model, primitive, submesh);
     load_indices(model, primitive, submesh);
     size_t norm_stride = load_normals(model, primitive, submesh);
-    //load_texcoord(model, primitive, submesh);
-    //load_indices(model, primitive, submesh);
+    load_texcoord(model, primitive, submesh);
     MaterialAsset material_asset = load_materials(primitive, model);
 
     //submesh.normals.layout.stride = static_cast<GLsizei>(norm_stride);
@@ -210,6 +209,7 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 		vbo_attribute_pair.vbo.assign(data, data + data_size_bytes);
 
 		cpu_mesh.add_data(AttributeType::POSITION, std::move(vbo_attribute_pair));
+		cpu_mesh.standalone_vbos.push_back(AttributeType::POSITION);
 
         //cpu_mesh.data.insert(AttributeType::POSITION, vbo_attribute_pair);S
 		//cpu_mesh.position.layout.stride = static_cast<GLsizei>(stride); // Potentially need to readd this in later, using some kind of map that allows us
@@ -220,32 +220,35 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) { // might want to add a string parameter for things like TEXCOORD_1 etc.
     auto texIt = primitive.attributes.find("TEXCOORD_0");
     if (texIt != primitive.attributes.end()) {
+		std::cout << "Texcoord 0 loaded\n";
         const auto& acc  = model.accessors.at(texIt->second);
         const auto& view = model.bufferViews.at(acc.bufferView);
         const auto& buff = model.buffers.at(view.buffer);
 
         const size_t comps  = utils::gl::numComponentsInType(acc.type);
         const size_t csize  = utils::gl::bytesPerComponent(acc.componentType);
-        const size_t stride = view.byteStride ? view.byteStride : comps * csize;
+        const size_t byte_stride = view.byteStride ? view.byteStride : comps * csize;
 
         const unsigned char* data = buff.data.data() + view.byteOffset + acc.byteOffset;
 
-        // GLuint vbo;
-        // glGenBuffers(1, vbo);
-        // glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        // glBufferData(GL_ARRAY_BUFFER, acc.count * stride, data, GL_STATIC_DRAW);
-        // submesh.vertexCount = static_cast<GLsizei>(acc.count);
-        // glVertexAttribPointer(
-        //     2,
-        //     static_cast<GLint>(comps),
-        //     utils::gl::glTypeFromComponent(acc.componentType),
-        //     acc.normalized ? GL_TRUE : GL_FALSE,
-        //     static_cast<GLsizei>(stride),
-        //     reinterpret_cast<void*>(0)
-        // );
-        // submesh.vbos.push_back(vbo);
+		const size_t data_size_bytes = acc.count * byte_stride;
+		auto attr = VertexAttribute(
+			AttributeType::TEXCOORD_0,
+			1,
+			utils::gl::glTypeFromComponent(acc.componentType),
+			comps,
+			false,
+			0,
+			byte_stride
+		);
 
-        // glEnableVertexAttribArray(2);
+		VBO_AttributePair attribute_pair;
+		attribute_pair.attribute = attr;
+		attribute_pair.vbo.assign(data, data + data_size_bytes);
+
+		submesh.add_data(AttributeType::TEXCOORD_0, std::move(attribute_pair));
+
+		submesh.interleaved_vbos.push_back(AttributeType::TEXCOORD_0);
     }
 }
 
@@ -285,6 +288,7 @@ size_t GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive
 		attribute_pair.attribute = attr;
 		attribute_pair.vbo.assign(data, data + data_size_bytes);
 
+		cpu_mesh.interleaved_vbos.push_back(AttributeType::NORMAL);
 		cpu_mesh.add_data(AttributeType::NORMAL, std::move(attribute_pair));
 
 	return byte_stride;

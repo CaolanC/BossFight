@@ -66,6 +66,7 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
             );
 
 			const auto& attr = position_pair.attribute;
+			std::cout << attr.byte_stride << " pos byte stride\n";
 
             //// Configure vertex attributes defined in layout
             //for (const auto& attr : position_pair.attributes) {
@@ -105,7 +106,31 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
                 reinterpret_cast<const void*>(attr.offset)
             );
             glEnableVertexAttribArray(attr.location);
-        }
+        } // Right, next need to interleave the cpu buffers :)
+
+		const void* offset = 0;
+		for(auto& attr_type : cpu_mesh.interleaved_vbos) {
+			const VBO_AttributePair& pair = cpu_mesh.data.at(attr_type);
+			//glGenBuffers(1, &gpu_mesh.interleaved_vbo;
+			//glBindBuffer(GL_ARRAY_BUFFER, gpu_mesh.interleaved_vbo);
+			//glBufferData(
+			//	GL_ARRAY_BUFFER,
+			//	pair.vbo.size(),
+			//	pair.vbo.data(),
+			//	GL_STATIC_DRAW
+			//);
+			
+			const auto& attr = pair.attribute;
+			//glVertexAttribPointer(
+			//	attr.location,
+			//	attr.num_components
+			//);
+			
+		}
+		const VBO_AttributePair& texcoord_pair = cpu_mesh.data.at(AttributeType::TEXCOORD_0);
+		const auto& attr = texcoord_pair.attribute;
+		std::cout << "texcoord bytes: " << attr.byte_stride << '\n';
+		
 
         // Upload Index Buffer (EBO) if indices exist
         if (!cpu_mesh.indices.empty()) {
