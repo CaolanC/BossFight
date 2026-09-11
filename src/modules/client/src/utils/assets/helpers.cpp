@@ -6,6 +6,8 @@
 namespace utils::assets {
     std::string get_asset(std::string const& path) {
         auto s = SLJA_ASSETS_DIR + path;
+
+	//std::cout << path << '\n';
         return s;
     }
 

@@ -2,11 +2,17 @@
 
 #include <glm/fwd.hpp>
 #include <glm/detail/type_quat.hpp>
+#include <glm/glm.hpp>
 #include <core/MeshManager.hpp>
 #include <core/ShaderProgramManager.hpp>
 #include <core/ModelManager.hpp>
 #include <array>
 #include <SDL3/SDL.h>
+#include <rendering/NewMesh.hpp>
+#include <rendering/MeshAsset.hpp>
+#include <rendering/MaterialAsset.hpp>
+
+#include <string>
 
 namespace component
 {
@@ -15,6 +21,10 @@ namespace component
 
     struct camera {
 
+    };
+
+    struct entity_name {
+        std::string name;
     };
 
     struct free_movement_camera {
@@ -44,13 +54,13 @@ namespace component
 
     struct user_control {};
 
-    struct mesh_manager {
-        core::MeshManager manager;
-    };
+    // struct mesh_manager {
+    //     core::MeshManager manager;
+    // };
 
-    struct material_manager {
-        core::ShaderProgramManager manager;
-    };
+    // struct material_manager {
+    //     core::ShaderProgramManager manager;
+    // };
 
     struct current_camera {
         entt::entity e;
@@ -81,11 +91,29 @@ namespace component
     };
 
     struct scale {
-        float s;
+        float s = 1.0f;
     };
 
     struct debug_spin {
         float speed = 1.0f;
+    };
+
+    struct mesh {
+        std::string mesh_path; // Optional innit
+	rendering::MeshAssetHandle mesh_handle;
+    };
+
+    struct material {
+	rendering::MaterialAssetHandle material_handle;		
+    };
+
+    struct basic_color {
+	glm::vec3 color{1.0f, 0.5f, 0.31f};	
+    };
+
+    struct basic_light {
+	glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+	glm::vec4 position{0, 0, 0, 0};
     };
 
 }
