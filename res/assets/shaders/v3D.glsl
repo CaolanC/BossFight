@@ -14,14 +14,14 @@ uniform mat4 uModel;
 
 out vec3 FragPos;
 out vec3 vNorm;
-out vec2 vuV;
+out vec2 vUV;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
     FragPos = worldPos.xyz;
 
     vNorm = mat3(uModel) * aNorm;
+	vUV = uV;
 
-    //vNorm = aNorm;
     gl_Position = projection_matrix * view_matrix * worldPos;
 }

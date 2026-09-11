@@ -8,8 +8,7 @@
 namespace rendering {
 
 CPUTexture::CPUTexture(char const* image_path) {
-    int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
+    //stbi_set_flip_vertically_on_load(true);
     data = stbi_load(image_path, &width, &height, &nrChannels, 0);
 
     // Determine format (3 channels = RGB, 4 channels = RGBA, et cetera)
@@ -31,7 +30,7 @@ CPUTexture::CPUTexture(char const* image_path) {
         std::cout << "Failed to load texture" << std::endl;
     }
 
-    stbi_image_free(data);
+    //stbi_image_free(data);
 };
 
 };

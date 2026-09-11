@@ -234,7 +234,7 @@ void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive&
 		const size_t data_size_bytes = acc.count * byte_stride;
 		auto attr = VertexAttribute(
 			AttributeType::TEXCOORD_0,
-			1,
+			2,
 			utils::gl::glTypeFromComponent(acc.componentType),
 			comps,
 			false,

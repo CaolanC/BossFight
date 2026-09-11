@@ -6,6 +6,8 @@
 #include <rendering/ResourceManager.hpp>
 #include <rendering/ModelTree.hpp>
 #include <rendering/NewMesh.hpp>
+#include <rendering/CPUTexture.hpp>
+#include <rendering/GPUTexture.hpp>
 
 namespace rendering {
 
@@ -127,10 +129,59 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 			//);
 			
 		}
-		const VBO_AttributePair& texcoord_pair = cpu_mesh.data.at(AttributeType::TEXCOORD_0);
-		const auto& attr = texcoord_pair.attribute;
-		std::cout << "texcoord bytes: " << attr.byte_stride << '\n';
+		//const VBO_AttributePair& texcoord_pair = cpu_mesh.data.at(AttributeType::TEXCOORD_0);
+		//const auto& attr = texcoord_pair.attribute;
+		//std::cout << "texcoord bytes: " << attr.byte_stride << '\n';
 		
+		const VBO_AttributePair& texcoord_pair = cpu_mesh.data.at(AttributeType::TEXCOORD_0);
+        if (!texcoord_pair.vbo.empty()) {
+            glGenBuffers(1, &gpu_mesh.texcoord_vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, gpu_mesh.texcoord_vbo);
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                texcoord_pair.vbo.size(),
+                texcoord_pair.vbo.data(),
+                GL_STATIC_DRAW
+            );
+	    	std::cout << "we added stuff to the interleaved vbo\n";
+
+            // Configure vertex attributes defined in layout
+			const auto& attr = texcoord_pair.attribute;
+            glVertexAttribPointer(
+                attr.location,
+                attr.num_components,
+                attr.component_type,
+                attr.normalized,
+                attr.byte_stride,
+                reinterpret_cast<const void*>(attr.offset)
+            );
+            glEnableVertexAttribArray(attr.location);
+        }
+
+		// Upload Texture
+		GPUTexture gpu_texture;
+		if (cpu_mesh.material_asset.has_value()) {
+			const MaterialAssetHandle& material_asset_handle = cpu_mesh.material_asset.value();
+			const MaterialAsset& material_asset = material_assets.at(material_asset_handle);
+			const CPUTexture& cpu_texture = material_asset.texture_asset.cpu_texture.value();
+			
+			glGenTextures(1, &gpu_mesh.texture); // Need to change this later to keep the asset system intact, does for now
+			glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			if (cpu_texture.data) {
+				glTexImage2D(GL_TEXTURE_2D, 0, cpu_texture.format, cpu_texture.width, cpu_texture.height, 0, cpu_texture.format, GL_UNSIGNED_BYTE, cpu_texture.data);
+    			glGenerateMipmap(GL_TEXTURE_2D);
+    		}
+
+			
+
+			//asset.material_asset = 
+			
+		}
 
         // Upload Index Buffer (EBO) if indices exist
         if (!cpu_mesh.indices.empty()) {
@@ -158,6 +209,7 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 
         // Store generated GPU handles back into the asset
         asset.gpu_mesh = gpu_mesh;
+		
     }
 
     // 2. Recursively process all child nodes

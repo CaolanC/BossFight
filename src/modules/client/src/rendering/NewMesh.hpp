@@ -40,12 +40,14 @@ struct GPUMesh {
     unsigned int vao = 0;
     unsigned int position_vbo = 0;
     unsigned int interleaved_vbo = 0;
+	unsigned int texcoord_vbo = 0; // these extra vbos are temporary, just lazy tonight. Getting textures on then we chilliiiin ;)
     unsigned int ebo = 0;
 
     // --- Draw Metadata for OpenGL calls ---
     uint32_t count = 0;                  // vertex_count or index_count
     GLenum index_type = 0;               // 0 if non-indexed, otherwise GL_UNSIGNED_INT, etc.
     GLenum draw_mode = GL_TRIANGLES;     // GL_TRIANGLES, GL_TRIANGLE_STRIP, etc.
+	unsigned int texture;
 };
 
 struct VBO_AttributePair {

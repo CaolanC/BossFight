@@ -1,4 +1,4 @@
-#version 460 core
+#version 460
 
 out vec4 FragColor;
 
@@ -15,11 +15,11 @@ struct DirectionalLight {
 };
 
 struct AmbientLighting {
-    vec4 color; // xyz = color, w = intensity
+    vec4 color;
 };
 
 struct PointLight {
-    vec4 position; // xyz = position, w = intensity. Dunno whether to keep that for the w component
+    vec4 position;
     vec4 color; 
 };
 
@@ -37,28 +37,27 @@ uniform sampler2D uTex;
 
 in vec3 FragPos;
 in vec3 vNorm;
-in vec2 vUv;
+in vec2 vUV;
 
 vec3 calc_diffuse(vec3 light_dir, vec3 norm, vec4 light_col) {
     float diff = max(dot(norm, light_dir), 0.0);
 
     return diff * light_col.xyz;
-// * light_col.w;
-};
+}
 
 vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col) {
     float specular_strength = 0.5; // We can probabaly add this to the lighting ubo later
     vec3 view_dir = normalize(camera_position.xyz - FragPos);
     vec3 reflect_dir = reflect(-light_dir, norm);
 
-    float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32);
+    float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
     
     return specular_strength * spec * light_col.xyz;
-// * light_col.w; 
-};
+}
 
 void main() {
 
+    //vec2 uv = vec2(vUV.x, 1.0 - vUV.y);
     vec3 ambient = ambient_lighting.color.rgb * ambient_lighting.color.w;
     vec3 diffuse = vec3(0.0);
     vec3 specular = vec3(0.0);
@@ -66,14 +65,15 @@ void main() {
     vec3 norm = normalize(vNorm);
     vec3 light_dir;
     for(int i = 0; i < no_lights; i++) {
-	PointLight pl = point_lights[i];
+        PointLight pl = point_lights[i];
         light_dir = normalize(pl.position.xyz - FragPos);
-
-	float distance    = length(pl.position.xyz - FragPos);
+	    float distance = length(pl.position.xyz - FragPos);
         float attenuation = 1.0 / (1.0 + 0.5 * distance + 0.3 * (distance * distance));
     	diffuse += calc_diffuse(light_dir, norm, pl.color) * attenuation;
     	specular += calc_specular(light_dir, norm, pl.color) * attenuation;
-    };
+    }
 
-    FragColor = vec4(ambient + diffuse + specular, 1.0);
-};
+    vec3 albedo = texture(uTex, vUV).rgb;
+	vec3 color = (ambient + diffuse) * albedo + specular;
+    FragColor = vec4(color, 1.0);
+}

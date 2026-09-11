@@ -10,6 +10,7 @@ class CPUTexture {
 
     GLint internal_format;
     GLenum  format;
+    int width, height, nrChannels;
     unsigned char* data;
 };
 

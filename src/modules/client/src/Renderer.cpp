@@ -112,15 +112,21 @@ namespace client {
 		GLuint shader_program = resource_manager.shader_program_manager.program_map.at(resource_manager.shader_program_manager.default_program);
 		glUseProgram(shader_program);
 
-                utils::gl::set_model_mat(transform, shader_program);
+        utils::gl::set_model_mat(transform, shader_program);
 
-                if (true) {
-                    glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
-                } else {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+
+		GLint tex_location = glGetUniformLocation(shader_program, "uTex");
+		glUniform1i(tex_location, 0);
+
+        if (true) {
+        	glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
+        } else {
                     // TODO: store vertexCount in GpuPrimitive for non-indexed draws
 			std::cout << "ye\n";
-                    glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
-                }
+            glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
+        }
                 //else {
                 //    // TODO: store vertexCount in GpuPrimitive for non-indexed draws
                 //    glDrawArrays(prim.mode, 0, prim.vertexCount);
