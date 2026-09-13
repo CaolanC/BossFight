@@ -49,7 +49,6 @@ static bool init(AppContext& app) {
 
     ImGui_ImplSDL3_InitForOpenGL(app.window, app.gl_context);
     ImGui_ImplOpenGL3_Init(get_glsl_version());
-
     app.client.init_embedded();
 
     return true;
@@ -181,7 +180,9 @@ static void draw_dockspace(AppContext& app) {
         ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoDocking |
-        ImGuiWindowFlags_NoBackground);
+        ImGuiWindowFlags_NoBackground |
+        ImGuiDockNodeFlags_PassthruCentralNode
+    );
 
     ImGuiID dockspace_id = ImGui::GetID("DockSpace");
     ImGuiDockNodeFlags dockspace_flags =
@@ -206,6 +207,11 @@ static void render(AppContext& app, EditorPanels& panels) {
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
+    if (app.show_demo_window) {
+        ImGui::SetNextWindowFocus();
+        ImGui::ShowDemoWindow(&app.show_demo_window);
+    }
+
     draw_dockspace(app);
     panels.draw_tools(app);
     panels.draw_viewport(app);
@@ -221,7 +227,7 @@ static void render(AppContext& app, EditorPanels& panels) {
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+    if (io.ConfigFlags ) { //& ImGuiConfigFlags_ViewportsEnable) {
         SDL_Window* backup = SDL_GL_GetCurrentWindow();
         SDL_GLContext backup_ctx = SDL_GL_GetCurrentContext();
 
@@ -237,6 +243,7 @@ static void render(AppContext& app, EditorPanels& panels) {
 void Editor::run() {
     AppContext app;
     EditorPanels panels;
+
     if (!init(app)) return;
 
     while (!app.done) {

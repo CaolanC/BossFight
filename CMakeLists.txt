@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.28.3)
 project(Soulja LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
+
 # Paths
 set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/res/assets/")
 set(SAVES_DIR "${CMAKE_SOURCE_DIR}/res/saves/")
@@ -10,33 +12,49 @@ set(SAVES_DIR "${CMAKE_SOURCE_DIR}/res/saves/")
 # Find Dependencies via Conan / System
 # ---------------------------------------------------------
 find_package(OpenGL REQUIRED)
-find_package(SDL3 REQUIRED)          # Provided by Conan (sdl/3.x maps to SDL3)
-find_package(glm REQUIRED)           # Provided by Conan
-find_package(EnTT REQUIRED)          # Provided by Conan
-find_package(concurrentqueue REQUIRED) # Provided by Conan
-find_package(cglm REQUIRED)          # Provided by Conan
+find_package(glm REQUIRED)            # Provided by Conan
+find_package(EnTT REQUIRED)           # Provided by Conan
+find_package(concurrentqueue REQUIRED)# Provided by Conan
+find_package(cglm REQUIRED)           # Provided by Conan
 
-# Set fallback or standard target variable 
-set(SDL_TARGET SDL3::SDL3-static)
-if(NOT TARGET ${SDL_TARGET})
-    set(SDL_TARGET SDL3::SDL3)
+find_package(SDL3 REQUIRED)
+
+# 1. If Conan created `sdl::sdl`, promote it to GLOBAL so subdirectories see it
+
+set_target_properties(sdl::sdl PROPERTIES IMPORTED_GLOBAL TRUE)
+
+include_directories(SYSTEM ${CONAN_INCLUDE_DIRS})
+
+if(TARGET glm::glm)
+    set_target_properties(glm::glm PROPERTIES IMPORTED_GLOBAL TRUE)
+    if(DEFINED GLM_INCLUDE_DIRS)
+        target_include_directories(glm::glm INTERFACE ${GLM_INCLUDE_DIRS})
+    elseif(DEFINED glm_INCLUDE_DIRS)
+        target_include_directories(glm::glm INTERFACE ${glm_INCLUDE_DIRS})
+    elseif(DEFINED GLM_INCLUDE_DIR)
+        target_include_directories(glm::glm INTERFACE ${GLM_INCLUDE_DIR})
+    endif()
 endif()
 
-# ---------------------------------------------------------
-# Global Linker Interception (Fixes raw -lconcurrentqueue leaks)
-# ---------------------------------------------------------
-# If a subdirectory requests 'concurrentqueue' instead of the namespaced 
-# 'concurrentqueue::concurrentqueue', this redirect block catches it 
-# and prevents the linker from searching for a non-existent static binary.
+if(DEFINED SDL3_INCLUDE_DIRS)
+    target_include_directories(sdl::sdl INTERFACE ${SDL3_INCLUDE_DIRS})
+elseif(DEFINED sdl_INCLUDE_DIRS)
+    target_include_directories(sdl::sdl INTERFACE ${sdl_INCLUDE_DIRS})
+elseif(DEFINED SDL3_INCLUDE_DIR)
+    target_include_directories(sdl::sdl INTERFACE ${SDL3_INCLUDE_DIR})
+endif()
+
+set(SDL_TARGET sdl::sdl)
+
+# Global Linker Interception
 if(TARGET concurrentqueue::concurrentqueue AND NOT TARGET concurrentqueue)
     add_library(concurrentqueue INTERFACE IMPORTED GLOBAL)
     target_link_libraries(concurrentqueue INTERFACE concurrentqueue::concurrentqueue)
 endif()
 
 # ---------------------------------------------------------
-# Subdirectories (Custom/In-Tree Third Party & App Modules)
+# Subdirectories (Third Party)
 # ---------------------------------------------------------
-# Kept in-tree because they are highly customized or absent from central repos
 add_subdirectory(thirdpartypoopers/libhv)
 add_subdirectory(thirdpartypoopers/glad)
 add_subdirectory(thirdpartypoopers/FastNoiseLite)
@@ -46,42 +64,23 @@ add_subdirectory(thirdpartypoopers/PolyVox)
 add_subdirectory(thirdpartypoopers/header_only)
 add_subdirectory(imguicmakeholder/imgui)
 
-# Internal Application Modules
-add_subdirectory(src/modules/server)
+# --- Fix 2: Internal Application Modules ---
+# SharedLib MUST be processed before ClientLib, which happens naturally inside add_subdirectory
 add_subdirectory(src/modules/shared)
+add_subdirectory(src/modules/server)
 add_subdirectory(src/modules/client)
 add_subdirectory(src/modules/gui)
 add_subdirectory(src/modules/editor)
 
 # Testing
 enable_testing()
-find_package(GTest REQUIRED) # Provided by Conan
+find_package(GTest REQUIRED)
 add_subdirectory(src/tests)
 
-# Manual overrides for custom built libhv binary fallbacks if needed
 set_target_properties(hv PROPERTIES
         IMPORTED_IMPLIB "${CMAKE_SOURCE_DIR}/lib/libhv.dll.a"
         IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bin/libhv.dll"
 )
-
-set(EXTRA_M_LIB)
-if(UNIX AND NOT APPLE)
-    set(EXTRA_M_LIB m)
-endif()
-
-# ---------------------------------------------------------
-# Module-Level Linkage (Fixes internal library module headers)
-# ---------------------------------------------------------
-# Explicitly feeds Conan dependencies down into your individual library modules
-# before they are compiled by their respective add_subdirectories.
-if(TARGET ServerLib)
-    target_link_libraries(ServerLib PRIVATE concurrentqueue::concurrentqueue EnTT::EnTT glm::glm)
-endif()
-
-if(TARGET ClientLib)
-    target_link_libraries(ClientLib PRIVATE EnTT::EnTT glm::glm ${SDL_TARGET})
-endif()
-
 
 # ---------------------------------------------------------
 # Executables
@@ -108,20 +107,15 @@ target_link_libraries(GUI PUBLIC
     glad 
     EditorLib 
     ClientLib 
+    imgui
     ${SDL_TARGET} 
     cglm::cglm 
     OpenGL::GL
 )
 set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
-target_compile_definitions(ClientLib PRIVATE SLJA_ASSETS_DIR="${ASSETS_DIR}")
-target_compile_definitions(ClientLib PRIVATE SLJA_SAVES_DIR="${SAVES_DIR}")
-
-# ---------------------------------------------------------
 # Post-Build Steps
-# ---------------------------------------------------------
 if (WIN32)
-    # Automatically copies runtime dependencies (like libhv if built shared)
     add_custom_command(TARGET Server POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_RUNTIME_DLLS:Server>
@@ -134,4 +128,3 @@ if (WIN32)
             $<TARGET_FILE_DIR:GUI>
     )
 endif()
-

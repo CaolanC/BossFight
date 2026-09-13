@@ -3,6 +3,8 @@ file(GLOB_RECURSE SHARED_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
 )
 
+find_package(glm REQUIRED)
+
 add_library(SharedLib ${SHARED_SOURCES}
         src/JSONHelper.hpp
         src/JSONHelper.cpp

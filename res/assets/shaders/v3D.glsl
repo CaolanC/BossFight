@@ -1,25 +1,27 @@
-#version 330 core
+#version 460 core
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNorm;
 layout (location = 2) in vec2 uV;
 
-uniform mat4 uProjection;
-uniform mat4 uView;
-uniform mat4 uModel;
-uniform vec3 uCamPos;
+layout (std140, binding=0) uniform CameraUBO {
+    mat4 projection_matrix;
+    mat4 view_matrix;
+    vec4 camera_position;
+};
 
-out vec3 vWorldPos;
-out vec3 vCamPos;
+uniform mat4 uModel;
+
+out vec3 FragPos;
 out vec3 vNorm;
-out vec2 vuV;
- // expect 4 (FLOAT)
+out vec2 vUV;
+
 void main() {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
-    vWorldPos = worldPos.xyz;
-    vCamPos   = uCamPos;
+    FragPos = worldPos.xyz;
 
-    gl_Position = uProjection * uView * worldPos ;
-    vNorm = aNorm;
-    vuV = uV;
+    vNorm = mat3(uModel) * aNorm;
+	vUV = uV;
+
+    gl_Position = projection_matrix * view_matrix * worldPos;
 }

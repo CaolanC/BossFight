@@ -1,136 +1,136 @@
-#include <JSONHelper.hpp>
-
-namespace shared {
-
-    // JSONHelper stores a lot of functions that handle deserialization and serialization.
-
-    //
-    // The following functions are responsible for making specific message types.
-    //
-    std::string JSONHelper::make_handshake(xg::Guid client_id, bool is_host) {
-        nlohmann::json message;
-        message["type"] = "handshake";
-        message["payload"] = serialize_client_info(client_id, is_host);
-
-        return message.dump();
-    }
-
-    std::string JSONHelper::make_handshake_ack() {
-        nlohmann::json message;
-        message["type"] = "handshake_ack";
-
-        return message.dump();
-    }
-
-    std::string JSONHelper::make_update_message(const std::string& type, const core::SerializedObject& obj) {
-        if (!(type == "add" || type == "edit" || type == "delete")) {
-            return "Invalid";
-        }
-        nlohmann::json message;
-        message["type"] = "update_" + type;
-        message["payload"] = serialize_object(obj);
-
-        return message.dump();
-    }
-
-    std::string JSONHelper::make_snapshot_message(const core::SceneSnapshot& snapshot) {
-        nlohmann::json message;
-        message["type"] = "snapshot";
-        message["payload"] = serialize_snapshot(snapshot);
-
-        return message.dump();
-    }
-
-    std::string JSONHelper::make_session_closed_message() {
-        nlohmann::json message;
-        message["type"] = "session_close";
-        return message.dump();
-    }
-
-    //
-    // The following functions handle serialization + deserialization.
-    //
-    nlohmann::json JSONHelper::serialize_snapshot(const core::SceneSnapshot& snapshot) {
-        nlohmann::json j = nlohmann::json::object();
-        j["objects"] = nlohmann::json::object();
-
-        for (const auto& [id, obj] : snapshot.getmap()) {
-            j["objects"][id] = serialize_object(obj);
-        }
-
-        return j;
-    }
-
-    nlohmann::json JSONHelper::serialize_object(const core::SerializedObject& obj) {
-        return nlohmann::json{
-                {"objectID", obj.objectID},
-                {"modelpath", obj.model_path},
-                {"name", obj.name},
-                {"model_ref", obj.model_ref.str()},
-                {"position", {obj.position.x, obj.position.y, obj.position.z}},
-                {"rotation", {obj.rotation.w, obj.rotation.x, obj.rotation.y, obj.rotation.z}},
-                {"scale", obj.scale}
-        };
-    }
-
-    core::SerializedObject JSONHelper::deserialize_object_string(const std::string& msg) {
-        nlohmann::json j = nlohmann::json::parse(msg);
-        std::cout << j;
-        return deserialize_object(j);
-    }
-
-    core::SerializedObject JSONHelper::deserialize_object(const nlohmann::json& j) {
-        core::SerializedObject obj;
-
-        obj.objectID = j.at("objectID").get<std::string>();
-        obj.model_path = j.at("modelpath").get<std::string>();
-        obj.name = j.at("name").get<std::string>();
-        obj.model_ref = xg::Guid(j.at("model_ref").get<std::string>());
-        auto pos = j.at("position");
-        obj.position = glm::vec3(pos[0], pos[1], pos[2]);
-        auto rot = j.at("rotation");
-        obj.rotation = glm::quat(rot[0], rot[1], rot[2], rot[3]);
-        obj.scale = j.at("scale").get<float>();
-
-        return obj;
-    }
-
-    nlohmann::json JSONHelper::serialize_client_info(xg::Guid client_id, bool is_host) {
-        return nlohmann::json{
-            {"client_id", client_id.str()},
-            {"role", is_host ? "host" : "client"}
-        };
-    }
-
-    core::SceneSnapshot JSONHelper::deserialize_snapshot_string(const std::string& msg) {
-        nlohmann::json j = nlohmann::json::parse(msg);
-        std::cout << j;
-        return shared::JSONHelper::deserialize_snapshot(j);
-    }
-
-    core::SceneSnapshot JSONHelper::deserialize_snapshot(const nlohmann::json& j) {
-        core::SceneSnapshot snapshot;
-
-        if (!j.is_object() || !j.contains("objects") || !j.at("objects").is_object()) {
-            return snapshot;
-        }
-
-        for (auto& [id, value] : j["objects"].items()) {
-            core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
-            snapshot.insert(id, obj);
-        }
-
-        return snapshot;
-    }
-
-    void JSONHelper::deserialize_snapshot_pointer(const nlohmann::json& j, core::SceneSnapshot& snapshot) {
-        if (!j.is_object() || !j.contains("objects") || !j.at("objects").is_object()) {
-            return;
-        }
-
-        for (auto& [id, value] : j["objects"].items()) {
-            core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
-            snapshot.insert(id, obj);
-        }
-    }
-}
+//#include <JSONHelper.hpp>
+//
+//namespace shared {
+//
+//    // JSONHelper stores a lot of functions that handle deserialization and serialization.
+//
+//    //
+//    // The following functions are responsible for making specific message types.
+//    //
+//    std::string JSONHelper::make_handshake(xg::Guid client_id, bool is_host) {
+//        nlohmann::json message;
+//        message["type"] = "handshake";
+//        message["payload"] = serialize_client_info(client_id, is_host);
+//
+//        return message.dump();
+//    }
+//
+//    std::string JSONHelper::make_handshake_ack() {
+//        nlohmann::json message;
+//        message["type"] = "handshake_ack";
+//
+//        return message.dump();
+//    }
+//
+//    std::string JSONHelper::make_update_message(const std::string& type, const core::SerializedObject& obj) {
+//        if (!(type == "add" || type == "edit" || type == "delete")) {
+//            return "Invalid";
+//        }
+//        nlohmann::json message;
+//        message["type"] = "update_" + type;
+//        message["payload"] = serialize_object(obj);
+//
+//        return message.dump();
+//    }
+//
+//    std::string JSONHelper::make_snapshot_message(const core::SceneSnapshot& snapshot) {
+//        nlohmann::json message;
+//        message["type"] = "snapshot";
+//        message["payload"] = serialize_snapshot(snapshot);
+//
+//        return message.dump();
+//    }
+//
+//    std::string JSONHelper::make_session_closed_message() {
+//        nlohmann::json message;
+//        message["type"] = "session_close";
+//        return message.dump();
+//    }
+//
+//    //
+//    // The following functions handle serialization + deserialization.
+//    //
+//    nlohmann::json JSONHelper::serialize_snapshot(const core::SceneSnapshot& snapshot) {
+//        nlohmann::json j = nlohmann::json::object();
+//        j["objects"] = nlohmann::json::object();
+//
+//        for (const auto& [id, obj] : snapshot.getmap()) {
+//            j["objects"][id] = serialize_object(obj);
+//        }
+//
+//        return j;
+//    }
+//
+//    nlohmann::json JSONHelper::serialize_object(const core::SerializedObject& obj) {
+//        return nlohmann::json{
+//                {"objectID", obj.objectID},
+//                {"modelpath", obj.model_path},
+//                {"name", obj.name},
+//                {"model_ref", obj.model_ref.str()},
+//                {"position", {obj.position.x, obj.position.y, obj.position.z}},
+//                {"rotation", {obj.rotation.w, obj.rotation.x, obj.rotation.y, obj.rotation.z}},
+//                {"scale", obj.scale}
+//        };
+//    }
+//
+//    core::SerializedObject JSONHelper::deserialize_object_string(const std::string& msg) {
+//        nlohmann::json j = nlohmann::json::parse(msg);
+//        std::cout << j;
+//        return deserialize_object(j);
+//    }
+//
+//    core::SerializedObject JSONHelper::deserialize_object(const nlohmann::json& j) {
+//        core::SerializedObject obj;
+//
+//        obj.objectID = j.at("objectID").get<std::string>();
+//        obj.model_path = j.at("modelpath").get<std::string>();
+//        obj.name = j.at("name").get<std::string>();
+//        obj.model_ref = xg::Guid(j.at("model_ref").get<std::string>());
+//        auto pos = j.at("position");
+//        obj.position = glm::vec3(pos[0], pos[1], pos[2]);
+//        auto rot = j.at("rotation");
+//        obj.rotation = glm::quat(rot[0], rot[1], rot[2], rot[3]);
+//        obj.scale = j.at("scale").get<float>();
+//
+//        return obj;
+//    }
+//
+//    nlohmann::json JSONHelper::serialize_client_info(xg::Guid client_id, bool is_host) {
+//        return nlohmann::json{
+//            {"client_id", client_id.str()},
+//            {"role", is_host ? "host" : "client"}
+//        };
+//    }
+//
+//    core::SceneSnapshot JSONHelper::deserialize_snapshot_string(const std::string& msg) {
+//        nlohmann::json j = nlohmann::json::parse(msg);
+//        std::cout << j;
+//        return shared::JSONHelper::deserialize_snapshot(j);
+//    }
+//
+//    core::SceneSnapshot JSONHelper::deserialize_snapshot(const nlohmann::json& j) {
+//        core::SceneSnapshot snapshot;
+//
+//        if (!j.is_object() || !j.contains("objects") || !j.at("objects").is_object()) {
+//            return snapshot;
+//        }
+//
+//        for (auto& [id, value] : j["objects"].items()) {
+//            core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
+//            snapshot.insert(id, obj);
+//        }
+//
+//        return snapshot;
+//    }
+//
+//    void JSONHelper::deserialize_snapshot_pointer(const nlohmann::json& j, core::SceneSnapshot& snapshot) {
+//        if (!j.is_object() || !j.contains("objects") || !j.at("objects").is_object()) {
+//            return;
+//        }
+//
+//        for (auto& [id, value] : j["objects"].items()) {
+//            core::SerializedObject obj = shared::JSONHelper::deserialize_object(value);
+//            snapshot.insert(id, obj);
+//        }
+//    }
+//}
