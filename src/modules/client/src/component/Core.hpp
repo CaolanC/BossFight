@@ -100,20 +100,24 @@ namespace component
 
     struct mesh {
         std::string mesh_path; // Optional innit
-	rendering::MeshAssetHandle mesh_handle;
+		rendering::MeshAssetHandle mesh_handle;
     };
 
     struct material {
-	rendering::MaterialAssetHandle material_handle;		
+		rendering::MaterialAssetHandle material_handle;		
     };
 
     struct basic_color {
-	glm::vec3 color{1.0f, 0.5f, 0.31f};	
+		glm::vec3 color{1.0f, 0.5f, 0.31f};	
     };
 
     struct basic_light {
-	glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
-	glm::vec4 position{0, 0, 0, 0};
+		glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+		glm::vec4 position{0, 0, 0, 0};
     };
+
+	struct scene_root {
+		
+	};
 
 }

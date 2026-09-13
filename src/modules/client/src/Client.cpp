@@ -37,8 +37,8 @@ namespace client {
         return;
     	}
 
-	resource_manager.init();
-	renderer.init_ubos();
+		resource_manager.init();
+		renderer.init_ubos();
 
         active_registry.ctx().emplace<component::keyboard_state>();
         active_registry.ctx().emplace<component::mouse_state>();
@@ -99,102 +99,7 @@ namespace client {
     }
 
     bool Client::start(std::string server_ip, int& ws_port) {
-        // std::string ws_host = extract_host_from_http_url(server_ip);
-        // if (is_host){
-        //     // int ws_port = 0;
-        //     if (request_create_session(server_ip, ws_port)) {
-        //         std::cout << "Created session on " << ws_port << "\n";
-        //         if (connect_client(ws_host, ws_port)) {
-        //             std::cout << "Connected to client\n";
-        //             return true;
-        //         }
-        //         else {
-        //             std::cout << "Failed to connect to sws on port " << ws_port << ".\n";
-        //             return false;
-        //         }
-        //     }
-        //     else {
-        //         return false;
-        //     }
-        // }
-        // else {
-        //     if (connect_client(ws_host, ws_port)) {
-        //         std::cout << "Connected to client on port " << ws_port << "\n";
-        //         return true;
-        //     }
-        //     else {
-        //         std::cout << "Failed to connect to client on port " << ws_port << "\n";
-        //         return false;
-        //     }
-        // }
     }
-
-    // 3 functions for starting scene based on user input (host blank, host from file, join as guest)
-    // Each set respective host status, call the start function above, and initialize after
-    // Then send a handshake message to server
-
-    // bool Client::start_host_blank(const std::string& server_ip, int& ws_port) {
-    //     setIsHost(true);
-
-    //     //if (!(start(server_ip, ws_port))){
-    //     //    scene_ready = false;
-    //     //    return false;
-    //     //}
-
-    //     scene.bootstrap();
-    //     scene.set_camera_position(glm::vec3(0, 3, 3));
-    //     scene_ready = true;
-
-    //     //net_client.send(shared::JSONHelper::make_handshake(client_id, true));
-
-    //     return true;
-    // }
-
-    // bool Client::start_host_file(const std::string& server_ip, const std::string& file_path, int& ws_port) {
-    //     setIsHost(true);
-
-    //     if (!(utils::assets::filepath_exists(file_path))) {
-    //         scene_ready = false;
-    //         return false;
-    //     }
-
-    //     if (!(start(server_ip, ws_port))){
-    //         scene_ready = false;
-    //         return false;
-    //     }
-
-    //     bool ok = scene.bootstrap_from_file(file_path);
-    //     if (!ok) {
-    //         scene_ready = false;
-    //         net_client.send(shared::JSONHelper::make_session_closed_message());
-    //         return false;
-    //     }
-
-    //     scene.set_camera_position(glm::vec3(0, 3, 3));
-    //     scene_ready = true;
-
-    //     net_client.send(shared::JSONHelper::make_handshake(client_id, true));
-
-    //     return true;
-    // }
-
-    // bool Client::start_guest(const std::string &server_ip, int port) {
-    //     net_client.disconnect();
-    //     setIsHost(false);
-
-    //     if(!(start(server_ip, port))) {
-    //         scene_ready = false;
-    //         return false;
-    //     }
-
-    //     scene.bootstrap();
-    //     scene.set_camera_position(glm::vec3(0, 3, 3));
-    //     scene_ready = false;
-
-    //     net_client.send(shared::JSONHelper::make_handshake(client_id, false));
-
-    //     return true;
-    // }
 
     void Client::init_embedded() {
         if (bootstrapped) return;
@@ -390,115 +295,10 @@ namespace client {
         return scene_ready;
     }
 
-    // Gets object list from scene.
-    // std::vector<core::SerializedObject> Client::get_scene_objects() const {
-    //     return scene.get_object_info();
-    // }
-
-    // Gets a specific object from the scene's registry.
-    // bool Client::get_scene_object(const std::string& object_id, core::SerializedObject& out) const {
-    //     return scene.registry_lookup_to_obj(object_id, out);
-    // }
-
-    // Applies local edit if called from the GUI. Sends relevant message.
-    // bool Client::apply_gui_edit(core::SerializedObject &obj) {
-    //     bool ok = scene.edit_obj(obj);
-
-    //     if (ok) {
-    //         net_client.send(shared::JSONHelper::make_update_message("edit", obj));
-    //     }
-
-    //     return ok;
-    // }
-
-    // Applies local deletion if called from the GUI. Sends relevant message.
-    // bool Client::apply_gui_delete(core::SerializedObject &obj) {
-    //     bool ok = scene.delete_obj(obj);
-
-    //     if (ok) {
-    //         net_client.send(shared::JSONHelper::make_update_message("delete", obj));
-    //     }
-
-    //     return ok;
-    // }
-
-    // Get the loaded model list from the scene.
-    // std::vector<core::LoadedModelInfo> Client::get_loaded_models() const {
-    //     return scene.get_loaded_models();
-    // }
-
-    // Adds an object from the loaded model list. Auto sets name to "Object" if none is supplied.
-    // bool Client::add_object_from_loaded_model(const core::LoadedModelInfo& model_info, std::string name) {
-    //     if (name.empty()) {
-    //         name = "Object";
-    //     }
-    //     core::SerializedObject obj;
-    //     obj.objectID = xg::newGuid().str();
-    //     obj.model_ref = model_info.model_ref;
-    //     obj.name = name;
-    //     obj.model_path = model_info.model_path;
-    //     obj.position = glm::vec3(0.0f, 0.0f, 0.0f);
-    //     obj.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-    //     obj.scale = 1.0f;
-
-    //     bool ok = scene.add_obj(obj);
-
-    //     if (ok) {
-    //         net_client.send(shared::JSONHelper::make_update_message("add", obj));
-    //     }
-
-    //     return ok;
-    // }
-
-    // Imports model. If asset doesn't exist, don't go through.
-    // bool Client::importLocalModel(const std::string& file_path) {
-    //     if (!(checkAsset(file_path))) {
-    //         return false;
-    //     }
-    //     bool ok = scene.load_model_from_gui(file_path);
-
-    //     if (ok) {
-    //         poll_deferred_updates();
-    //     }
-
-    //     return ok;
-    // }
-
     // Asset checking function. Calls model_file_exists in util::assets. Placed here so GUI can access.
     bool Client::checkAsset(const std::string& file_path) {
         return utils::assets::model_file_exists(file_path);
     }
-
-    // Save (write) to a file.
-    // bool Client::save_to_file(std::string& file_path) {
-    //     core::SceneSnapshot save_snapshot = scene.build_snapshot();
-    //     return core::SceneSerializer::save(save_snapshot, utils::assets::get_filepath(file_path));
-    // }
-
-    // Save and quit the application. Send session_close message to WebSockets.
-    // bool Client::save_and_quit(const std::string& file_path) {
-    //     if (!is_host) {
-    //         return false;
-    //     }
-
-    //     std::string jsonfile;
-
-    //     if (file_path.empty()) {
-    //         jsonfile = "blank.json";
-    //     }
-    //     else {
-    //         jsonfile = file_path + ".json";
-    //     }
-
-    //     bool ok = save_to_file(jsonfile);
-
-    //     if (!ok) {
-    //         return false;
-    //     }
-
-    //     net_client.send(shared::JSONHelper::make_session_closed_message());
-    //     return true;
-    // }
 
     // Disconnect and quit the application (or set the bool that decides it).
     void Client::disconnect_and_quit() {
