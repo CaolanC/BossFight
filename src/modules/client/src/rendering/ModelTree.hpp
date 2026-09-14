@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <memory>
 
 namespace rendering {
 
@@ -37,6 +38,7 @@ struct ModelTreeNode {
     
     std::vector<ModelTreeNode> children;
     std::vector<rendering::MeshAssetHandle> mesh_handles;
+	std::unordered_map<rendering::MeshAssetHandle, std::shared_ptr<rendering::MaterialAssetHandle>> mesh_material_map;
     CPUMaterial material;
     
     // Each node can reference a mesh, material, texture ?

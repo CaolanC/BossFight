@@ -20,7 +20,8 @@ RenderSystem::run(entt::registry& reg) {
     }
     l_ubo_cpu.no_lights = no_lights;
 
-    set_lighting_ubo(l_ubo_cpu); // This probabaly works for now actually. Just need to make it call the Renderer instead. ;)
+    set_lighting_ubo(l_ubo_cpu); // This probabaly works for now actually. Just need to make it call the Renderer instead. ;) And make it take a list
+		// of lights instead of the light ubu, maybe a struct with the size
 
     for (auto [e, mesh, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
         mesh.handle;
