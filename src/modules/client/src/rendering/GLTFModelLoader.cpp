@@ -1,5 +1,6 @@
 #include <iostream>
 #include <filesystem>
+#include <memory>
 
 #include <rendering/GLTFModelLoader.hpp>
 #include <rendering/ModelTree.hpp>
@@ -85,9 +86,8 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
 	// Could do this:
 	MeshAssetHandle mesh_handle = resource_manager.add_mesh_from_cpumesh(std::move(submesh));
 	mt_node.mesh_handles.push_back(mesh_handle);
-	//mt_node.mesh_material_map.emplace(mesh_handle, material_asset_handle);
-    // Next need to interleave the extra vbo
-    // glBindVertexArray(0);
+	mt_node.mesh_material_map.emplace(mesh_handle, material_asset_handle);
+	// Need to handle the material and texture cache soon.
 }
 
 struct VBO_Slice {
@@ -105,6 +105,7 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     // the same fucking material, and each material can also reference the same fucking texture.
     
     MaterialAsset material_asset;
+	material_asset.shader_program_handle = resource_manager.shader_program_manager.default_program;
     TextureAsset texture_asset;
     if (primitive.material >= 0 &&
     	primitive.material < static_cast<int>(model.materials.size())) {

@@ -25,7 +25,7 @@ namespace client {
 			void set_lighting_ubo(const LightingUBOCPU& lighting_ubo_cpu);
 			void init();
 			void init_ubos();
-			void draw_mesh(rendering::MeshAssetHandle& mesh_asset, rendering::MaterialAssetHandle& material_asset);
+			void draw_mesh(rendering::MeshAssetHandle& mesh_handle, rendering::MaterialAssetHandle& material_handle, glm::mat4& transform);
 		private:
 			unsigned int camera_ubo, lighting_ubo;
 			rendering::ResourceManager& resource_manager;

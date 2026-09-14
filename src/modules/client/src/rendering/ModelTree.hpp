@@ -38,7 +38,7 @@ struct ModelTreeNode {
     
     std::vector<ModelTreeNode> children;
     std::vector<rendering::MeshAssetHandle> mesh_handles;
-	std::unordered_map<rendering::MeshAssetHandle, std::shared_ptr<rendering::MaterialAssetHandle>> mesh_material_map;
+	std::unordered_map<rendering::MeshAssetHandle, rendering::MaterialAssetHandle> mesh_material_map;
     CPUMaterial material;
     
     // Each node can reference a mesh, material, texture ?

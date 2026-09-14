@@ -10,6 +10,7 @@
 #include <SharedComponents.hpp>
 #include <Renderer.hpp>
 #include <rendering/ResourceManager.hpp>
+#include <rendering/MaterialAsset.hpp>
 #include <glad/glad.h>
 
 #include <iostream>
@@ -62,23 +63,25 @@ namespace client {
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
     };
 
-	void draw_mesh(rendering::MeshAssetHandle& mesh_asset, rendering::MaterialAssetHandle& material_asset) {
-		//GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh_handle).gpu_mesh.value();
+	void Renderer::draw_mesh(rendering::MeshAssetHandle& mesh_handle, rendering::MaterialAssetHandle& material_handle, glm::mat4& transform) {
+		GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh_handle).gpu_mesh.value();
 		
-		//glBindVertexArray(gpu_mesh.vao);
-		//GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset);
-		//glUseProgram(shader_program);
+		glBindVertexArray(gpu_mesh.vao);
 
-		
+		const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
+		GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset.shader_program_handle);
+		glUseProgram(shader_program);
 
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+        utils::gl::set_model_mat(transform, shader_program);
 
-		//GLint tex_location = glGetUniformLocation(shader_program, "uTex");
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
 
-		//glUniform1i(tex_location, 0);
+		GLint tex_location = glGetUniformLocation(shader_program, "uTex");
 
-       	//glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr); // Need to implement non indexed drawing condition
+		glUniform1i(tex_location, 0);
+
+       	glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr); // Need to implement non indexed drawing condition
 	};
 
     void Renderer::new_render(entt::registry& reg, int viewport_width, int viewport_height) {
@@ -122,29 +125,34 @@ namespace client {
 	
 		set_lighting_ubo(l_ubo_cpu);
 
-		auto view = reg.view<component::mesh, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
+		auto view = reg.view<component::mesh, component::material, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
 
-		for (auto [e, mesh, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
-			GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh.mesh_handle).gpu_mesh.value();
-			glBindVertexArray(gpu_mesh.vao);
-			GLuint shader_program = resource_manager.shader_program_manager.program_map.at(resource_manager.shader_program_manager.default_program);
-			glUseProgram(shader_program);
+		for (auto [e, mesh, material, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
+			draw_mesh(mesh.mesh_handle, material.material_handle, transform);
+		//	GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh.mesh_handle).gpu_mesh.value();
+		//	glBindVertexArray(gpu_mesh.vao);
+		//	//GLuint shader_program = resource_manager.shader_program_manager.program_map.at(resource_manager.shader_program_manager.default_program);
+		//	const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material.material_handle);
+		//	GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset.shader_program_handle);
+		//
+		//	glUseProgram(shader_program);
 
-        	utils::gl::set_model_mat(transform, shader_program);
+        //	utils::gl::set_model_mat(transform, shader_program);
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+		//	glActiveTexture(GL_TEXTURE0);
+		//	//glBindTexture(GL_TEXTURE_2D, material_asset.texture_asset);
 
-			GLint tex_location = glGetUniformLocation(shader_program, "uTex");
-			glUniform1i(tex_location, 0);
+		//	glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+		//	GLint tex_location = glGetUniformLocation(shader_program, "uTex");
+		//	glUniform1i(tex_location, 0);
 
-        	if (true) {
-        		glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
-        	} else {
-                    // TODO: store vertexCount in GpuPrimitive for non-indexed draws
-				std::cout << "ye\n";
-            	glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
-        	}
+        //	if (true) {
+        //		glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
+        //	} else {
+        //            // TODO: store vertexCount in GpuPrimitive for non-indexed draws
+		//		std::cout << "ye\n";
+        //    	glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
+        //	}
 		}
 
     }

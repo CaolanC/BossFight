@@ -42,8 +42,13 @@ entt::entity EntityFactory::create_entity_tree(entt::registry& reg, const ModelT
 
         component::mesh mesh_comp;
         mesh_comp.mesh_handle = mesh_handle;
+		const MaterialAssetHandle& mesh_material = node.mesh_material_map.at(mesh_handle);
+		component::material material;
+		material.material_handle = mesh_material;
+
         reg.emplace<component::mesh>(mesh_entity, mesh_comp);
 		reg.emplace<component::scale>(mesh_entity);
+		reg.emplace<component::material>(mesh_entity, material);
         reg.emplace<shared::component::position>(mesh_entity, glm::vec3(0.0f));
         reg.emplace<shared::component::rotation>(mesh_entity, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
         reg.emplace<shared::component::transform>(mesh_entity, glm::mat4(1.0f));
