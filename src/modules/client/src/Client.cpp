@@ -31,7 +31,6 @@ namespace client {
     };
 
     void Client::scene_registry_migration_temorary_bootstrap() {
-	std::cout << "got to this bs at least\n";
 	if (glCreateShader == nullptr) {
         SDL_Log("ERROR: glCreateShader is still NULL inside bootstrap!");
         return;
