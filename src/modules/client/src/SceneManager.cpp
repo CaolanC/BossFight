@@ -8,10 +8,10 @@
 namespace runtime {
 
 SceneManager::SceneManager() {
-	new_scene("Default Scene");
+	create_scene("Default Scene");
 };
 
-entt::registry& SceneManager::new_scene(std::string scene_name) {
+entt::registry& SceneManager::create_scene(std::string scene_name) {
 	entt::registry reg;
 
     reg.ctx().emplace<component::keyboard_state>();

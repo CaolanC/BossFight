@@ -28,136 +28,12 @@ namespace gui {
 
         ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-        if (!app.client.is_scene_ready()) {
-            ImGui::Text("Session");
-            ImGui::Separator();
-
-            if (ImGui::Button("Host Session", ImVec2(-1, 30))) {
-                app.flow_mode = AppContext::SessionFlowMode::Host;
-                app.host_scene_mode = AppContext::HostSceneMode::None;
-                app.status_text = "Hosting session";
-            }
-            if (ImGui::Button("Join Session", ImVec2(-1, 30))){
-                app.flow_mode = AppContext::SessionFlowMode::Join;
-                app.host_scene_mode = AppContext::HostSceneMode::None;
-                app.status_text = "Joining session";
-            }
-
-            ImGui::Separator();
-
-            // Host flow
-
-            // if (app.flow_mode == AppContext::SessionFlowMode::Host) {
-            //     ImGui::Text("Host Session Setup");
-            //     ImGui::Spacing();
-
-            //     ImGui::InputText("##host_ip_input", app.host_ip_input, sizeof(app.host_ip_input));
-
-            //     if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
-            //         app.host_scene_mode = AppContext::HostSceneMode::Blank;
-            //         app.status_text = "Blank scene selected";
-            //     }
-
-            //     if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
-            //         app.host_scene_mode = AppContext::HostSceneMode::FromFile;
-            //         app.status_text = "Load-from-file selected";
-            //     }
-
-            //     ImGui::Spacing();
-
-            //     if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
-            //         ImGui::TextWrapped("A blank scene will be created.");
-
-            //         if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-            //             bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
-            //             if (ok) {
-            //                 app.status_text = "Host session started (blank scene)";
-            //                 app.session_info = std::string(app.host_ip_input);
-            //             }
-            //             else {
-            //                 app.status_text = "Host session started failed";
-            //             }
-            //         }
-
-            //     }
-            //     else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
-            //         ImGui::Text("Scene file");
-            //         ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
-
-            //         if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-            //             bool ok = app.client.start_host_file(std::string(app.host_ip_input) + ":30000", std::string(app.file_input), app.session_port);
-            //             if (ok) {
-            //                 app.status_text = std::string("Host session started from file: ") + app.file_input;
-            //                 app.session_info = std::string(app.host_ip_input);
-            //             }
-            //             else {
-            //                 app.status_text = "Failed to start host session";
-            //             }
-            //         }
-
-
-            //     }
-            // }
-
-            // Joining
-
-            // else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
-            //     ImGui::Text("Join Session");
-            //     ImGui::Spacing();
-
-            //     ImGui::Text("Server IP");
-            //     ImGui::InputText("##ip", app.guest_ip_input, sizeof(app.guest_ip_input));
-
-            //     ImGui::Text("Port");
-            //     ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
-
-            //     if (ImGui::Button("Join", ImVec2(-1, 30))) {
-            //         app.client.setIsHost(false);
-            //         int port = std::atoi(app.port_input);
-            //         bool ok = app.client.start_guest(std::string(app.guest_ip_input), port);
-            //         if (ok) {
-            //             app.status_text = std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input;
-            //             app.session_info = std::string(app.guest_ip_input);
-            //             app.session_port = port;
-            //         }
-            //         else {
-            //             app.status_text = "Failed to join session.";
-            //         }
-            //     }
-            // }
-
-        }
-
-        // Once succeed, get rid of buttons and show if client is a host or guest respectively.
-        // Also, display save and quit for host
-
-        else if (app.client.is_scene_ready() && app.client.getIsHost()) {
-            // ImGui::Text("Host Client");
-            // ImGui::Separator();
-
-            // ImGui::Text("Enter save file name below:");
-            // ImGui::InputText("##save_file", app.savetofile_input, sizeof(app.savetofile_input));
-            // if (ImGui::Button("Save and Quit", ImVec2(-1, 30))) {
-            //     if (app.client.save_and_quit(app.savetofile_input)) {
-            //         app.done = true;
-            //     }
-            //     else {
-            //         app.status_text = "Failed to save to file, client still open.";
-            //     }
-            // }
-        }
-        else if (app.client.is_scene_ready() && !(app.client.getIsHost())) {
-            ImGui::Text("Guest Client");
-        }
-
-        // Small info tab
-
-        ImGui::Separator();
-        ImGui::Text("Info");
-        ImGui::Separator();
-        ImGui::TextWrapped("Status: %s", app.status_text.c_str());
-        ImGui::TextWrapped("Session IP: %s", app.session_info.c_str());
-        ImGui::TextWrapped("Session Port: %d", app.session_port);
+        ImGui::Text("Scene");
+		//app.runtime.create_scene("New Scene");
+		std::vector<std::string> scene_names = app.runtime.get_scene_names();
+		for(std::string name : scene_names) {
+			ImGui::Text(name.c_str());
+		}
 
         ImGui::End();
     }
@@ -235,8 +111,13 @@ namespace gui {
 
         if (ImGui::Button("Load GLTF ModelTree.")) {
             auto m_tree = app.client.resource_manager.load_model("models/sink/scene.gltf");
-	    app.client.entity_factory.from_model_tree(app.client.active_registry, m_tree);
-	    std::cout << "allright we created that entity THEN it crashed\n";
+	    	app.client.entity_factory.from_model_tree(app.client.active_registry, m_tree);
+        }
+
+
+        if (ImGui::Button("Load GLTF ModelTree Runtime.")) {
+        	auto m_tree = app.runtime.resource_manager.load_model("models/sink/scene.gltf");
+	    	app.runtime.entity_factory.from_model_tree(app.runtime.active_scene, m_tree);
         }
 
 

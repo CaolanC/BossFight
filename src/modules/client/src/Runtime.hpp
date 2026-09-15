@@ -2,6 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <rendering/ResourceManager.hpp>
+#include <rendering/EntityFactory.hpp>
 #include <SceneManager.hpp>
 #include <Renderer.hpp>
 
@@ -15,13 +16,15 @@ class Runtime {
 	entt::entity create_entity();
 	entt::registry& get_scene_registry();
 	const std::vector<std::string> get_scene_names();
+	void create_scene(const std::string);
+	rendering::EntityFactory entity_factory; // Only public for now, this stuff should happen internally soon.	
+	SceneManager scene_manager; // This too.
+	rendering::ResourceManager resource_manager = rendering::ResourceManager(); // This too.
+	entt::registry& active_scene = scene_manager.get_scene("Default Scene"); // This too.
 
 	private:
-	rendering::ResourceManager resource_manager = rendering::ResourceManager();
 	client::Renderer renderer = client::Renderer(resource_manager);
-	SceneManager scene_manager;
 	std::vector<void (*)(entt::registry&)> systems;
-	entt::registry& active_scene = scene_manager.get_scene("Default Scene");
 
 	void update();
 };
