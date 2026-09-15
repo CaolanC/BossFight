@@ -1,5 +1,6 @@
 #include <iostream>
 #include <filesystem>
+#include <memory>
 
 #include <rendering/GLTFModelLoader.hpp>
 #include <rendering/ModelTree.hpp>
@@ -57,7 +58,7 @@ void GLTFModelLoader::load_node_mesh(ModelTreeNode& mt_node, tinygltf::Model& mo
         for (auto gf_submesh: mesh.primitives) {
             CPUMesh submesh;
             load_submesh(mt_node, model, gf_submesh, submesh);
-	    mt_node.mesh_handles.push_back(resource_manager.add_mesh_from_cpumesh(std::move(submesh)));
+	    	//mt_node.mesh_handles.push_back(resource_manager.add_mesh_from_cpumesh(std::move(submesh)));
         }
     }
 }
@@ -73,11 +74,20 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
 
     //submesh.normals.layout.stride = static_cast<GLsizei>(norm_stride);
 
-	resource_manager.add_material_asset(material_asset);
-    submesh.material_asset = resource_manager.add_material_asset(material_asset);
+	//resource_manager.add_material_asset(material_asset);
+    
+	const MaterialAssetHandle& material_asset_handle = resource_manager.add_material_asset(material_asset);
+	submesh.material_asset = material_asset_handle;
 
-    // Next need to interleave the extra vbo
-    // glBindVertexArray(0);
+
+	// So I think we need to make sure we delete the model tree after it loads a model, then recreate the model tree when exporting the final game executable.
+
+	// So the cpu mesh needs to store the index of the material, 
+	// Could do this:
+	MeshAssetHandle mesh_handle = resource_manager.add_mesh_from_cpumesh(std::move(submesh));
+	mt_node.mesh_handles.push_back(mesh_handle);
+	mt_node.mesh_material_map.emplace(mesh_handle, material_asset_handle);
+	// Need to handle the material and texture cache soon.
 }
 
 struct VBO_Slice {
@@ -95,6 +105,7 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     // the same fucking material, and each material can also reference the same fucking texture.
     
     MaterialAsset material_asset;
+	material_asset.shader_program_handle = resource_manager.shader_program_manager.default_program;
     TextureAsset texture_asset;
     if (primitive.material >= 0 &&
     	primitive.material < static_cast<int>(model.materials.size())) {
@@ -120,7 +131,6 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
 		    index_texture_cache.insert({in, cpu_texture});
 		    texture_asset.cpu_texture = cpu_texture;
 		    material_asset.texture_asset = texture_asset;
-    		    //pr.texture = utils::Texture(fullPath.string().c_str());
     		}
     	    }
     	}
