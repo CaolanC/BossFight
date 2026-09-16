@@ -30,6 +30,7 @@ class Runtime {
 
 	void process_input_event(const SDL_Event& event);
 	void begin_input_frame();
+	void render_to_window(int w, int h);
 
 
 	void update(); // This too.

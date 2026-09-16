@@ -94,6 +94,22 @@ void Runtime::render_to_texture(int w, int h) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Runtime::render_to_window(int w, int h) {
+    init_embedded();
+    
+    // 1. Bind the default window framebuffer (0)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    // 2. Adjust viewport to match the window dimensions
+    glViewport(0, 0, w, h);
+    glEnable(GL_DEPTH_TEST);
+ 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ 
+    renderer.new_render(active_scene, w, h);
+}
+
 unsigned int Runtime::get_render_texture() const {
     return color_texture;
 }
