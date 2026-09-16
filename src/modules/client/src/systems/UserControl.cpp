@@ -12,6 +12,9 @@ namespace systems {
         // 1. Guard against uninitialized context objects
         auto* kb = r.ctx().find<component::keyboard_state>();
         auto* ms = r.ctx().find<component::mouse_state>();
+		//ms->dx = 0.0f;
+		//ms->dy = 0.0f;
+
 
         if (!kb || !ms) {
             return; // Exit safely if input states aren't populated yet

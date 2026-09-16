@@ -71,6 +71,7 @@ add_subdirectory(src/modules/server)
 add_subdirectory(src/modules/client)
 add_subdirectory(src/modules/gui)
 add_subdirectory(src/modules/editor)
+add_subdirectory(src/modules/game)
 
 # Testing
 enable_testing()
@@ -113,6 +114,12 @@ target_link_libraries(GUI PUBLIC
     OpenGL::GL
 )
 set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+
+add_executable(Game src/apps/game/main.cpp)
+target_link_libraries(Game PUBLIC
+	GameLib
+)
+set_target_properties(Game PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 
 # Post-Build Steps
 if (WIN32)

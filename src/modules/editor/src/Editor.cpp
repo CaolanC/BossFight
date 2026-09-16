@@ -145,6 +145,8 @@ static void process_events(AppContext& app) {
         app.client.begin_input_frame();
     }
 
+	app.runtime.begin_input_frame();
+
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
 
@@ -160,7 +162,8 @@ static void process_events(AppContext& app) {
         }
 
         if (app.client.is_scene_ready() && app.client.get_input_mode() == client::InputMode::Client) {
-            app.client.process_input_event(e);
+            //app.client.process_input_event(e);
+            app.runtime.process_input_event(e);
         }
     }
 

@@ -98,6 +98,7 @@ namespace client {
 		);
 
 		auto& curr_cam = reg.ctx().get<component::current_camera>();
+
 		glm::mat4 view_matrix = glm::inverse(
 	    	reg.get<shared::component::transform>(curr_cam.e)
 		);
@@ -105,13 +106,10 @@ namespace client {
 
 		set_camera_ubo(camera_position, projection_matrix, view_matrix);
 
-
-		// Get all the lights then upload them to the shader I think to start.
-	
 		LightingUBOCPU l_ubo_cpu;
 		auto basic_light_view = reg.view<component::basic_light, shared::component::position>();
 		int no_lights = 0;
-		for (auto [e, basic_light, pos] : basic_light_view.each()) { // Don't know if we want lights to have meshes or just a parent component that has both a light and a mesh, will have to see how it does
+		for (auto [e, basic_light, pos] : basic_light_view.each()) {
 	    	if (no_lights >= 100) {
 	        	break;
 	    	};
@@ -125,34 +123,10 @@ namespace client {
 	
 		set_lighting_ubo(l_ubo_cpu);
 
-		auto view = reg.view<component::mesh, component::material, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
+		auto view = reg.view<component::mesh, component::material, shared::component::transform>();
 
-		for (auto [e, mesh, material, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
+		for (auto [e, mesh, material, transform] : view.each()) {
 			draw_mesh(mesh.mesh_handle, material.material_handle, transform);
-		//	GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh.mesh_handle).gpu_mesh.value();
-		//	glBindVertexArray(gpu_mesh.vao);
-		//	//GLuint shader_program = resource_manager.shader_program_manager.program_map.at(resource_manager.shader_program_manager.default_program);
-		//	const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material.material_handle);
-		//	GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset.shader_program_handle);
-		//
-		//	glUseProgram(shader_program);
-
-        //	utils::gl::set_model_mat(transform, shader_program);
-
-		//	glActiveTexture(GL_TEXTURE0);
-		//	//glBindTexture(GL_TEXTURE_2D, material_asset.texture_asset);
-
-		//	glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
-		//	GLint tex_location = glGetUniformLocation(shader_program, "uTex");
-		//	glUniform1i(tex_location, 0);
-
-        //	if (true) {
-        //		glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
-        //	} else {
-        //            // TODO: store vertexCount in GpuPrimitive for non-indexed draws
-		//		std::cout << "ye\n";
-        //    	glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
-        //	}
 		}
 
     }
