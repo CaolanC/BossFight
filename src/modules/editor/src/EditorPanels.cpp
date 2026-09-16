@@ -45,23 +45,6 @@ namespace gui {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-        // app.client.process_network_messages();
-
-        // bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
-        // if (!app.client.is_scene_ready()) {
-        //     ImGui::Dummy(ImVec2(0.0f, 40.0f));
-        //     ImGui::TextWrapped("No active scene yet.");
-        //     ImGui::Spacing();
-        //     ImGui::TextWrapped("Choose one of the options in the Tools panel:");
-        //     ImGui::BulletText("Host Session -> New Scene");
-        //     ImGui::BulletText("Host Session -> Load From File");
-        //     ImGui::BulletText("Join Session -> enter port and join");
-
-        //     ImGui::End();
-        //     ImGui::PopStyleVar();
-        //     return;
-        //}
-
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         int w = (int)size.x;
@@ -105,7 +88,7 @@ namespace gui {
         ImGui::Separator();
 
         if (ImGui::Button("Create Entity")) {
-            auto id = app.client.active_registry.create();
+            auto id = app.runtime.active_scene.create();
             //app.client.active_registry.emplace<components::entity_name>(id, "Entity");
         }
 
@@ -188,7 +171,7 @@ namespace gui {
                         app.client.active_registry.emplace_or_replace<component::debug_spin>(entity);
                     }
                     if (ImGui::MenuItem("Point Light")) {
-                        app.client.active_registry.emplace_or_replace<component::basic_light>(entity);
+                        active_scene.emplace_or_replace<component::basic_light>(entity);
                     }
                     ImGui::EndMenu();
                 }

@@ -6,6 +6,8 @@
 #include <SceneManager.hpp>
 #include <Renderer.hpp>
 
+#include <SDL3/SDL.h>
+
 #include <vector>
 
 namespace runtime {
@@ -25,6 +27,10 @@ class Runtime {
 	void ensure_framebuffer(int w, int h); // Ideally these don't exist here at all, but this too lol.
     void render_to_texture(int w, int h);
     unsigned int get_render_texture() const;
+
+	void process_input_event(const SDL_Event& event);
+	void begin_input_frame();
+
 
 	void update(); // This too.
 	private:
