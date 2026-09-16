@@ -33,6 +33,7 @@ class Runtime {
 	void render_to_window(int w, int h);
 
 
+	void init_embedded(); // This too but maybe an init function instead? dunno yet :DDDD!!!!. ;)
 	void update(); // This too.
 	private:
 	client::Renderer renderer = client::Renderer(resource_manager);
@@ -43,7 +44,6 @@ class Runtime {
     int framebuffer_width = 0;
     int framebuffer_height = 0;
 
-	void init_embedded();
 };
 
 #ifdef RUNTIME_EDITOR_API

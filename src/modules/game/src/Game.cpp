@@ -7,6 +7,7 @@ namespace game {
 
 Game::Game() {
 	create_window();
+	runtime.init_embedded();
 };
 
 int Game::create_window() {
@@ -48,10 +49,17 @@ int Game::create_window() {
         return -1;
     }
 
+	bool loaded = false;
 	while (!done) {
 		process_events();
+		runtime.update();
 		runtime.render_to_window(600, 600);
 		SDL_GL_SwapWindow(window);
+		if (!loaded) {
+			auto m_tree = runtime.resource_manager.load_model("models/sink/scene.gltf");
+			runtime.entity_factory.from_model_tree(runtime.active_scene, m_tree);
+			loaded = true;
+		}
 
 	};
 
