@@ -51,13 +51,8 @@ namespace gui {
         int h = (int)size.y;
 
         if (w > 0 && h > 0) {
-            //app.client.update();
-            //app.client.render_to_texture(w, h);
-
-            //GLuint tex = app.client.get_render_texture();
             app.runtime.update();
-			app.runtime.render_to_texture(w, h);
-			GLuint tex = app.runtime.get_render_texture();
+			GLuint tex = app.runtime.render_texture(w, h);
 
             ImGui::Image((ImTextureID)(intptr_t)tex, size, ImVec2(0,1), ImVec2(1,0));
             

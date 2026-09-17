@@ -7,7 +7,6 @@ namespace game {
 
 Game::Game() {
 	create_window();
-	runtime.init_embedded();
 };
 
 int Game::create_window() {
@@ -48,6 +47,8 @@ int Game::create_window() {
         SDL_Quit();
         return -1;
     }
+
+	runtime.init();
 
 	bool loaded = false;
 	while (!done) {
