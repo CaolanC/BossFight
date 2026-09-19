@@ -72,6 +72,7 @@ add_subdirectory(src/modules/client)
 add_subdirectory(src/modules/gui)
 add_subdirectory(src/modules/editor)
 add_subdirectory(src/modules/game)
+add_subdirectory(src/modules/pak)
 
 # Testing
 enable_testing()
@@ -114,6 +115,14 @@ target_link_libraries(GUI PUBLIC
     OpenGL::GL
 )
 set_target_properties(GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+
+add_executable(Pak src/apps/pak/main.cpp)
+target_link_libraries(Pak PUBLIC
+	PakLib
+)
+set_target_properties(Pak PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+# Can probabaly get rid of this target entirely, and just have the lib, because the game and the editor use pak I think it makes sense to have it
+# as it's own lib.
 
 add_executable(Game src/apps/game/main.cpp)
 target_link_libraries(Game PUBLIC

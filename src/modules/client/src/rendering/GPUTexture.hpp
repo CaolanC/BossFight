@@ -1,5 +1,10 @@
 #pragma once
 
+namespace rendering {
+
 struct GPUTexture {
-	unsigned int ID;
+	GLuint ID;
+	bool loaded = false;
+};
+
 };

@@ -35,4 +35,8 @@ game:
 	cmake --build build --target Game
 	./bin/Game
 
+pak:
+	cmake --build build --target Pak
+	./bin/Pak
+
 fresh: dump cmake

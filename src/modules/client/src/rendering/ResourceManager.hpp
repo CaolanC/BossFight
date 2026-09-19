@@ -25,7 +25,8 @@ namespace rendering {
 	void upload_node_to_gpu(const ModelTreeNode& node);
 	MeshAssetHandle add_mesh_from_cpumesh(CPUMesh cpu_mesh);
 	MaterialAssetHandle add_material_asset(MaterialAsset material_asset);
-
+	TextureAssetHandle add_texture_asset(TextureAsset texture_asset);
+	void upload_texture_to_gpu(TextureAssetHandle handle);
 	
 
 	MaterialManager material_manager;

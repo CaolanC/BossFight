@@ -11,6 +11,7 @@
 #include <Renderer.hpp>
 #include <rendering/ResourceManager.hpp>
 #include <rendering/MaterialAsset.hpp>
+#include <rendering/GPUTexture.hpp>
 #include <glad/glad.h>
 
 #include <iostream>
@@ -72,11 +73,18 @@ namespace client {
 		const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
 		GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset.shader_program_handle);
 		glUseProgram(shader_program);
+		
+		if (material_asset.base_color_texture_handle.has_value()) {
+		}
+		const rendering::TextureAsset& texture_asset = resource_manager.texture_assets.at(material_asset.base_color_texture_handle.value());
+		if (texture_asset.gpu_texture.has_value()) {
+		};
+		const rendering::GPUTexture& gpu_texture = texture_asset.gpu_texture.value();
 
         utils::gl::set_model_mat(transform, shader_program);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+		glBindTexture(GL_TEXTURE_2D, gpu_texture.ID);
 
 		GLint tex_location = glGetUniformLocation(shader_program, "uTex");
 

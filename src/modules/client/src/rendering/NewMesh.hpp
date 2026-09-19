@@ -47,7 +47,7 @@ struct GPUMesh {
     uint32_t count = 0;                  // vertex_count or index_count
     GLenum index_type = 0;               // 0 if non-indexed, otherwise GL_UNSIGNED_INT, etc.
     GLenum draw_mode = GL_TRIANGLES;     // GL_TRIANGLES, GL_TRIANGLE_STRIP, etc.
-	unsigned int texture;
+	//unsigned int texture;
 };
 
 struct VBO_AttributePair {
@@ -56,19 +56,7 @@ struct VBO_AttributePair {
 };
 
 struct CPUMesh {
-    //VBO_LayoutPair position;
-    //VBO_LayoutPair normals; 
-	//VBO_LayoutPair texcoords;
-
-	std::unordered_map<AttributeType, VBO_AttributePair> data; // So this seems like the right approach, but we need to check what this means for the stride in the layouts :thumbs_up:
-
-
-// <- We will want to upgrade this to a dynamic map, this will require updating the gpumesh as well as surrounding code.
-				// but honestly, a great idea.
-				// there's no need to interleave it cpu side, the interleaving optimizations only happen on the cpu, so either we go with the dynamic map
-				// or we can have a VBO_LayoutPair for each thing
-    //std::vector<uint8_t> position_vbo;
-    //std::vector<uint8_t> interleaved_vbo;
+	std::unordered_map<AttributeType, VBO_AttributePair> data;
 
     // --- Index Buffer Data ---
     std::vector<uint8_t> indices;        // Raw index data
@@ -80,7 +68,7 @@ struct CPUMesh {
 
     //VertexLayout layout;
     GLenum draw_mode = GL_TRIANGLES;
-    std::optional<rendering::MaterialAssetHandle> material_asset;
+    //std::optional<rendering::MaterialAssetHandle> material_asset;
 
 	std::vector<AttributeType> standalone_vbos;
 	std::vector<AttributeType> interleaved_vbos;

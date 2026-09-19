@@ -36,6 +36,7 @@ namespace rendering {
 void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
     // 1. Process all mesh handles associated with this node
     for (const MeshAssetHandle& handle : node.mesh_handles) {
+		upload_texture_to_gpu(material_assets.at(node.mesh_material_map.at(handle)).base_color_texture_handle.value()); // Will obviously need to get rid of this and the mesh material map in model tree
         auto it = mesh_assets.find(handle);
         if (it == mesh_assets.end()) {
             continue; // Handle not found in resource map
@@ -68,7 +69,6 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
             );
 
 			const auto& attr = position_pair.attribute;
-			std::cout << attr.byte_stride << " pos byte stride\n";
 
             //// Configure vertex attributes defined in layout
             //for (const auto& attr : position_pair.attributes) {
@@ -95,7 +95,6 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
                 normal_pair.vbo.data(),
                 GL_STATIC_DRAW
             );
-	    	std::cout << "we added stuff to the interleaved vbo\n";
 
             // Configure vertex attributes defined in layout
 			const auto& attr = normal_pair.attribute;
@@ -131,7 +130,6 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 		}
 		//const VBO_AttributePair& texcoord_pair = cpu_mesh.data.at(AttributeType::TEXCOORD_0);
 		//const auto& attr = texcoord_pair.attribute;
-		//std::cout << "texcoord bytes: " << attr.byte_stride << '\n';
 		
 		const VBO_AttributePair& texcoord_pair = cpu_mesh.data.at(AttributeType::TEXCOORD_0);
         if (!texcoord_pair.vbo.empty()) {
@@ -143,7 +141,6 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
                 texcoord_pair.vbo.data(),
                 GL_STATIC_DRAW
             );
-	    	std::cout << "we added stuff to the interleaved vbo\n";
 
             // Configure vertex attributes defined in layout
 			const auto& attr = texcoord_pair.attribute;
@@ -159,29 +156,29 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
         }
 
 		// Upload Texture
-		GPUTexture gpu_texture;
-		if (cpu_mesh.material_asset.has_value()) {
-			const MaterialAssetHandle& material_asset_handle = cpu_mesh.material_asset.value();
-			const MaterialAsset& material_asset = material_assets.at(material_asset_handle);
-			const CPUTexture& cpu_texture = material_asset.texture_asset.cpu_texture.value();
-			
-			glGenTextures(1, &gpu_mesh.texture); // Need to change this later to keep the asset system intact, does for now
-			glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+	//	GPUTexture gpu_texture;
+	//	if (cpu_mesh.material_asset.has_value()) {
+	//		const MaterialAssetHandle& material_asset_handle = cpu_mesh.material_asset.value();
+	//		const MaterialAsset& material_asset = material_assets.at(material_asset_handle);
+	//		const CPUTexture& cpu_texture = material_asset.texture_asset.cpu_texture.value();
+	//		
+	//		glGenTextures(1, &gpu_mesh.texture); // Need to change this later to keep the asset system intact, does for now
+	//		glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			if (cpu_texture.data) {
-				glTexImage2D(GL_TEXTURE_2D, 0, cpu_texture.format, cpu_texture.width, cpu_texture.height, 0, cpu_texture.format, GL_UNSIGNED_BYTE, cpu_texture.data);
-    			glGenerateMipmap(GL_TEXTURE_2D);
-    		}
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//		if (cpu_texture.data) {
+	//			glTexImage2D(GL_TEXTURE_2D, 0, cpu_texture.format, cpu_texture.width, cpu_texture.height, 0, cpu_texture.format, GL_UNSIGNED_BYTE, cpu_texture.data);
+    //			glGenerateMipmap(GL_TEXTURE_2D);
+    //		}
 
-			
+	//		
 
-			//asset.material_asset = 
-			
-		}
+	//		//asset.material_asset = 
+	//		
+	//	}
 
         // Upload Index Buffer (EBO) if indices exist
         if (!cpu_mesh.indices.empty()) {
@@ -234,6 +231,13 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 		return material_handle;
 	};
 
+	TextureAssetHandle ResourceManager::add_texture_asset(TextureAsset texture_asset) {
+		TextureAssetHandle texture_handle = xg::newGuid();
+		texture_assets.emplace(texture_handle, texture_asset);
+
+		return texture_handle;
+	};
+
     // uint32_t ResourceManager::add_mesh() {
     //     return 0;
     // }
@@ -245,4 +249,66 @@ void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
     // uint32_t ResourceManager::add_texture() {
 
     // }
+
+	void ResourceManager::upload_texture_to_gpu(TextureAssetHandle handle)
+	{
+    	auto it = texture_assets.find(handle);
+
+    	if (it == texture_assets.end()) {
+    	    return;
+		}
+
+    	TextureAsset& asset = it->second;
+
+    	if (asset.gpu_texture.has_value()) {
+
+    	    return;
+		}
+
+    	if (!asset.cpu_texture.has_value()) {
+    	    return;
+		}
+
+    	const CPUTexture& cpu = *asset.cpu_texture;
+
+    	GPUTexture gpu;
+
+    	glGenTextures(1, &gpu.ID);
+    	glBindTexture(GL_TEXTURE_2D, gpu.ID);
+
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    	glTexParameteri(
+    	    GL_TEXTURE_2D,
+    	    GL_TEXTURE_MIN_FILTER,
+    	    GL_LINEAR_MIPMAP_LINEAR
+    	);
+
+    	glTexParameteri(
+    	    GL_TEXTURE_2D,
+    	    GL_TEXTURE_MAG_FILTER,
+    	    GL_LINEAR
+    	);
+
+    	glTexImage2D(
+    	    GL_TEXTURE_2D,
+    	    0,
+    	    cpu.internal_format,
+    	    cpu.width,
+    	    cpu.height,
+    	    0,
+    	    cpu.format,
+    	    GL_UNSIGNED_BYTE,
+    	    cpu.data
+    	);
+
+    	glGenerateMipmap(GL_TEXTURE_2D);
+
+    	glBindTexture(GL_TEXTURE_2D, 0);
+
+    	gpu.loaded = true;
+    	asset.gpu_texture = gpu;
+	}
+
 }

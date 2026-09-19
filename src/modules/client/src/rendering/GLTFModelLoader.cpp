@@ -23,7 +23,6 @@ GLTFModelLoader::GLTFModelLoader(ResourceManager& resource_manager)
 ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
     current_model_path = model_path;
     ModelTreeNode model_tree;
-    std::cout << model_path << '\n';
     tinygltf::Model model;
     load_gltf_model(model_path, model);
 
@@ -34,7 +33,6 @@ ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
         load_node(mt_root_node, model, model.nodes[root_node]);
         model_tree.children.push_back(mt_root_node);
     }
-    std::cout << "so apparently we successfully loaded the model tree\n";
     return model_tree;
 }
 
@@ -77,7 +75,7 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
 	//resource_manager.add_material_asset(material_asset);
     
 	const MaterialAssetHandle& material_asset_handle = resource_manager.add_material_asset(material_asset);
-	submesh.material_asset = material_asset_handle;
+	//submesh.material_asset = material_asset_handle;
 
 
 	// So I think we need to make sure we delete the model tree after it loads a model, then recreate the model tree when exporting the final game executable.
@@ -130,7 +128,8 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
 		    int in = baseTex.index;
 		    index_texture_cache.insert({in, cpu_texture});
 		    texture_asset.cpu_texture = cpu_texture;
-		    material_asset.texture_asset = texture_asset;
+			TextureAssetHandle texture_asset_handle = resource_manager.add_texture_asset(texture_asset);
+		    material_asset.base_color_texture_handle = texture_asset_handle;
     		}
     	    }
     	}
@@ -153,37 +152,8 @@ void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& 
         submesh.indices.assign(idxData, idxData + data_size_bytes);
 		submesh.index_count = static_cast<uint32_t>(iacc.count);
 		submesh.index_type = utils::gl::glTypeFromComponent(iacc.componentType);
-
-        //submesh.indexCount = static_cast<GLsizei>(iacc.count);
-        //submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
     } 
 }
-
-//void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
-//   auto posIt = primitive.attributes.find("POSITION");
-//   if (posIt != primitive.attributes.end()) {
-//   const auto& acc  = model.accessors.at(posIt->second);
-//   const auto& view = model.bufferViews.at(acc.bufferView);
-//   const auto& buff = model.buffers.at(view.buffer);
-//
-//   const size_t no_components  = utils::gl::numComponentsInType(acc.type);
-//   const size_t component_size  = utils::gl::bytesPerComponent(acc.componentType);
-//   const size_t stride = view.byteStride ? view.byteStride : no_components * component_size;
-//
-//   const uint8_t* data = reinterpret_cast<const uint8_t*> (
-//   buff.data.data() + view.byteOffset + acc.byteOffset // I think maybe this could be uint8_t ?
-//   );
-//   // cpu_mesh.position_vbo.assign() = data;
-//   // cpu_mesh.layout.attributes.push_back(VertexAttribute(
-//   //         AttributeType::POSITION,
-//   //         0,
-//   //         utils::gl::glTypeFromComponent(acc.componentType),
-//   //         no_components,
-//   //         false,
-//   //         (void*() 0)
-//   // ));
-//   }
-//}
 
 void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
     auto posIt = primitive.attributes.find("POSITION");
@@ -230,7 +200,6 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) { // might want to add a string parameter for things like TEXCOORD_1 etc.
     auto texIt = primitive.attributes.find("TEXCOORD_0");
     if (texIt != primitive.attributes.end()) {
-		std::cout << "Texcoord 0 loaded\n";
         const auto& acc  = model.accessors.at(texIt->second);
         const auto& view = model.bufferViews.at(acc.bufferView);
         const auto& buff = model.buffers.at(view.buffer);

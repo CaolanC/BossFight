@@ -24,7 +24,7 @@ class Runtime {
 	rendering::ResourceManager resource_manager = rendering::ResourceManager(); // This too.
 	entt::registry& active_scene = scene_manager.get_scene("Default Scene"); // This too.
 
-	void ensure_framebuffer(int w, int h); // Ideally these don't exist here at all, but this too lol.
+	//void ensure_framebuffer(int w, int h); // Ideally these don't exist here at all, but this too lol.
     unsigned int render_texture(int w, int h);
     //unsigned int get_render_texture() const;
 
@@ -40,11 +40,11 @@ class Runtime {
 	private:
 	client::Renderer renderer = client::Renderer(resource_manager);
 	std::vector<void (*)(entt::registry&)> systems;
-    unsigned int framebuffer = 0; // I really don't want this stuff in here, so we can probabaly move it to the renderer, and expose an api instead.
-    unsigned int color_texture = 0;
-    unsigned int depth_rbo = 0;
-    int framebuffer_width = 0;
-    int framebuffer_height = 0;
+    //unsigned int framebuffer = 0; // I really don't want this stuff in here, so we can probabaly move it to the renderer, and expose an api instead.
+    //unsigned int color_texture = 0;
+    //unsigned int depth_rbo = 0;
+    //int framebuffer_width = 0;
+    //int framebuffer_height = 0;
 
 };
 
