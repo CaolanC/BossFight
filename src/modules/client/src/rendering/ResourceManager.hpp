@@ -27,6 +27,7 @@ namespace rendering {
 	MaterialAssetHandle add_material_asset(MaterialAsset material_asset);
 	TextureAssetHandle add_texture_asset(TextureAsset texture_asset);
 	void upload_texture_to_gpu(TextureAssetHandle handle);
+	void write_pak_file();
 	
 
 	MaterialManager material_manager;

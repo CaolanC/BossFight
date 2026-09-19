@@ -13,6 +13,7 @@ target_include_directories(PakLib
 target_link_libraries(PakLib
     PUBLIC
 		ClientLib
+		crossguid
 )
 
 target_compile_definitions(PakLib PRIVATE 

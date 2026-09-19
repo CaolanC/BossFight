@@ -34,6 +34,9 @@ namespace gui {
 		for(std::string name : scene_names) {
 			ImGui::Text(name.c_str());
 		}
+		if (ImGui::Button("Write .pak file")) {
+			app.runtime.resource_manager.write_pak_file();
+		}
 
         ImGui::End();
     }

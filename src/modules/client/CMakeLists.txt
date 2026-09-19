@@ -23,6 +23,7 @@ target_link_libraries(ClientLib
         concurrentqueue::concurrentqueue
         SharedLib
         nlohmann_json
+		PakLib
 )
 
 target_compile_definitions(ClientLib PRIVATE 

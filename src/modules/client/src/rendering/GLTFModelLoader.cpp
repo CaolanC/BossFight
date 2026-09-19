@@ -187,9 +187,10 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 		VBO_AttributePair vbo_attribute_pair;
 		vbo_attribute_pair.attribute = attr;
 		vbo_attribute_pair.vbo.assign(data, data + data_size_bytes);
+		vbo_attribute_pair.type = VBO_Type::STANDALONE;
 
 		cpu_mesh.add_data(AttributeType::POSITION, std::move(vbo_attribute_pair));
-		cpu_mesh.standalone_vbos.push_back(AttributeType::POSITION);
+		//cpu_mesh.standalone_vbos.push_back(AttributeType::POSITION);
 
         //cpu_mesh.data.insert(AttributeType::POSITION, vbo_attribute_pair);S
 		//cpu_mesh.position.layout.stride = static_cast<GLsizei>(stride); // Potentially need to readd this in later, using some kind of map that allows us
@@ -224,10 +225,11 @@ void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive&
 		VBO_AttributePair attribute_pair;
 		attribute_pair.attribute = attr;
 		attribute_pair.vbo.assign(data, data + data_size_bytes);
+		attribute_pair.type = VBO_Type::INTERLEAVED;
 
 		submesh.add_data(AttributeType::TEXCOORD_0, std::move(attribute_pair));
 
-		submesh.interleaved_vbos.push_back(AttributeType::TEXCOORD_0);
+		//submesh.interleaved_vbos.push_back(AttributeType::TEXCOORD_0);
     }
 }
 
@@ -266,8 +268,9 @@ size_t GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive
 		VBO_AttributePair attribute_pair;
 		attribute_pair.attribute = attr;
 		attribute_pair.vbo.assign(data, data + data_size_bytes);
+		attribute_pair.type = VBO_Type::INTERLEAVED;
 
-		cpu_mesh.interleaved_vbos.push_back(AttributeType::NORMAL);
+		//cpu_mesh.interleaved_vbos.push_back(AttributeType::NORMAL);
 		cpu_mesh.add_data(AttributeType::NORMAL, std::move(attribute_pair));
 
 	return byte_stride;
