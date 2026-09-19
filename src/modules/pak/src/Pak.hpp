@@ -54,9 +54,16 @@ class PakFile {
 		GLenum draw_mode;
 	};
 
-	struct Data {
-		
+	// The index data goes between the draw metadata and the attribute Data, using the index_count for its width.
+
+	struct AtrributeData {
+		AttributeType attribute_type;
+		VBO_Type vbo_type;
+		VertexAttribute vertex_attribute;
+		uint64_t vbo_data_size;
 	};
+
+	// Then we write the VBO_DATA itself, and do this for each attribute. So it's AttributeData, vbo_data, AttributeData, vbo_data, and so on and so forth.
 
 	struct Header {
 		char magic[4] = {'P', 'A', 'C', 'K'};
