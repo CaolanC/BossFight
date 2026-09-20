@@ -18,9 +18,19 @@ namespace rendering {
 
 	void ResourceManager::write_pak_file() {
 		pak::PakFile pak_file("Assets1.pak");
+
 		for(auto& mesh_A : mesh_assets) { // Obviously need to check if the cpu_mesh actually exists, handing this over to you future C.
 			pak_file.add_mesh(mesh_A.second.cpu_mesh.value());
-		}; 
+		};
+
+		for(auto& texture_A : texture_assets) { // Obviously need to check if the cpu_mesh actually exists, handing this over to you future C.
+			pak_file.add_texture(texture_A.second.cpu_texture.value());
+		};
+
+		for(auto& material_A : material_assets) { // Obviously need to check if the cpu_mesh actually exists, handing this over to you future C.
+			pak_file.add_material(material_A.second);
+		};
+
 		pak_file.close();
 		
 	};

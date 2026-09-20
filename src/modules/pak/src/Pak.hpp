@@ -23,7 +23,7 @@ class PakFile {
 	PakFile(std::string file_name);
 	void add_mesh(CPUMesh cpu_mesh); // Copy for now, see if it's handy and safe to pass as a reference later
 	void add_texture(rendering::CPUTexture cpu_texture);
-	void add_material();
+	void add_material(rendering::MaterialAsset material_asset);
 
 	void close();
 
@@ -39,8 +39,8 @@ class PakFile {
 	struct Entry {
 		Type type = Type::EndEntry;
 		xg::Guid guid;
-		uint32_t offset;
-		uint32_t size;
+		uint64_t offset; // Where in the file the actual data for the entry starts
+		uint64_t size; // The size of the data from the offset.
 	};
 
 	struct FileTable {
@@ -54,9 +54,22 @@ class PakFile {
 		GLenum draw_mode;
 	};
 
+	struct TextureMetadata {
+		GLint internal_format;
+		GLenum format;
+		int width, height,nr_channels;
+	};
+
+	struct MaterialMetadata {
+		xg::Guid material_asset_handle;
+		xg::Guid shader_program_handle;
+		xg::Guid color_texture_asset_handle;
+		bool has_color_texture = false;
+	};
+
 	// The index data goes between the draw metadata and the attribute Data, using the index_count for its width.
 
-	struct AtrributeData {
+	struct AttributeData {
 		AttributeType attribute_type;
 		VBO_Type vbo_type;
 		VertexAttribute vertex_attribute;

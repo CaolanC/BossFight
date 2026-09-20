@@ -34,7 +34,7 @@ struct VertexAttribute {
 	GLsizei byte_stride = 0;
 };
 
-struct VertexLayout {
+struct VertexLayout { // This can be removed :D
     GLsizei stride = 0;
     std::vector<VertexAttribute> attributes;
 };
@@ -67,6 +67,7 @@ struct VBO_AttributePair {
 
 struct CPUMesh {
     // --- Draw Metadata ---
+   	xg::Guid guid; 
     uint32_t vertex_count = 0;           // Total vertices (needed for glDrawArrays)
     uint32_t index_count = 0;            // Total indices (needed for glDrawElements)
     GLenum index_type = GL_UNSIGNED_INT; // GL_UNSIGNED_SHORT, GL_UNSIGNED_INT, etc.
