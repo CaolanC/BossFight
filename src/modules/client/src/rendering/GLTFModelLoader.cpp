@@ -103,7 +103,7 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     // the same fucking material, and each material can also reference the same fucking texture.
     
     MaterialAsset material_asset;
-	material_asset.shader_program_handle = resource_manager.shader_program_manager.default_program;
+	material_asset.shader_program_handle = resource_manager.default_shader_program_handle;
     TextureAsset texture_asset;
 
     if (primitive.material >= 0 &&
