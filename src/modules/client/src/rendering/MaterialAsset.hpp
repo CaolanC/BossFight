@@ -4,6 +4,7 @@
 
 #include <rendering/TextureAsset.hpp>
 #include <core/defines.hpp>
+#include <rendering/ShaderProgramAsset.hpp>
 
 namespace rendering {
     using MaterialAssetHandle = xg::Guid;
@@ -11,7 +12,8 @@ namespace rendering {
     struct MaterialAsset {
 		MaterialAssetHandle handle;
 		std::optional<TextureAssetHandle> base_color_texture_handle;
-		ShaderProgramHandle shader_program_handle;
+		ShaderProgramAssetHandle shader_program_handle;
+		//ShaderProgramHandle shader_program_handle;
     };
 
 };

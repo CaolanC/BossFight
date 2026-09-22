@@ -108,6 +108,10 @@ void PakFile::add_material(rendering::MaterialAsset material_asset) {
 	entry_count++;
 };
 
+void PakFile::add_shader_source(rendering::ShaderSource shader_source) {
+	shader_source.text;
+};
+
 void PakFile::close() {
 	ofs.seekp(sizeof(Header), std::ios::beg);
 	ofs.write(reinterpret_cast<const char*>(&file_table), sizeof(FileTable));

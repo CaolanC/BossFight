@@ -36,7 +36,26 @@ namespace rendering {
 	};
 
     void ResourceManager::init() {
+		
+
+		ShaderSource vert_shader_source = ShaderSource("shaders/v3D.glsl");
+		ShaderSource frag_shader_source = ShaderSource("shaders/fBasicLighting.glsl");
+
+        xg::Guid vsh_src_guid = xg::newGuid();
+        xg::Guid fsh_src_guid = xg::newGuid();
+
+        shader_sources.insert({vsh_src_guid, vert_shader_source});
+        shader_sources.insert({fsh_src_guid, frag_shader_source});
+
+		ShaderProgramAsset shader_program_asset;
+
+		shader_program_asset.vert_source = vsh_src_guid;
+		shader_program_asset.frag_source = fsh_src_guid;
+
+
+		default_shader_program_handle = compile_shader(shader_program_asset);
 		shader_program_manager.init();
+		
     }
 
     ModelTreeNode ResourceManager::load_model(const std::string& model_path) {
@@ -45,7 +64,6 @@ namespace rendering {
 		load_model_to_gpu(model_tree);
 
 		return model_tree;
-		//model_trees.push_back(model_tree);
     };
 
     void ResourceManager::load_model_to_gpu(const ModelTreeNode& model_tree) {
@@ -330,5 +348,38 @@ namespace rendering {
     	gpu.loaded = true;
     	asset.gpu_texture = gpu;
 	}
+
+    xg::Guid ResourceManager::compile_shader(ShaderProgramAsset shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
+
+		rendering::Shader vert_shader;
+		vert_shader.from_source(shader_sources.at(shader_asset.vert_source));
+
+		rendering::Shader frag_shader;
+		frag_shader.from_source(shader_sources.at(shader_asset.frag_source));
+
+        shader_asset.program_name = glCreateProgram();
+		GLuint program_name = shader_asset.program_name;
+
+        glAttachShader(program_name, vert_shader.get_shader());
+        glAttachShader(program_name, frag_shader.get_shader());
+
+        glLinkProgram(program_name);
+
+        GLint ok = GL_FALSE;
+        glGetProgramiv(program_name, GL_LINK_STATUS, &ok);
+        if (!ok) {
+            char log[2048];
+            glGetProgramInfoLog(program_name, sizeof log, nullptr, log);
+            SDL_Log("Link error: %s", log);
+		}
+		xg::Guid sh_pr_guid = xg::newGuid();
+		shader_asset.guid = sh_pr_guid;
+		shader_program_assets.insert({sh_pr_guid, shader_asset});
+
+		shaders.insert({xg::newGuid(), vert_shader});
+		shaders.insert({xg::newGuid(), frag_shader});
+
+        return sh_pr_guid; 
+    };
 
 }

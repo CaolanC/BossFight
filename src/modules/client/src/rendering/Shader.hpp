@@ -2,8 +2,11 @@
 
 #include <glad/glad.h>
 #include <rendering/ShaderSource.hpp>
+//#include <SDL/SDL3.h>
 
 namespace rendering {
+
+	using ShaderHandle = xg::Guid;
 
     class Shader
     {
@@ -14,21 +17,25 @@ namespace rendering {
 
             void from_source(rendering::ShaderSource source) {
 
-                if (glCreateShader == nullptr) {
-                    std::cerr << "CRITICAL: glCreateShader pointer is NULL! Context not initialized on this thread." << std::endl;
-                }
+                //if (glCreateShader == nullptr) {
+                //    std::cerr << "CRITICAL: glCreateShader pointer is NULL! Context not initialized on this thread." << std::endl;
+                //} // TBH this should never ever ever happen. So I comment it. But I'm a dumbass, this is handy for dev. Hmm. If all else fails uncomment this bs.
 
                 shader = glCreateShader(source.type);
-                char shader_source[2048];
-                std::string s = utils::assets::get_asset(source.path);
+                char shader_source[32412];
+                //std::string s = utils::assets::get_asset(source.path);
+                
+                std::string s = source.full_path;
                 get_shader_source(s.c_str(), shader_source, sizeof(shader_source));
                 const char* shader_src = shader_source;
+                //const char* shader_src = source.text;
+               
                 glShaderSource(shader, 1, &shader_src, NULL);
                 glCompileShader(shader);
 
                 GLint ok; char log[1024];
                 glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
-                if(!ok){ glGetShaderInfoLog(shader, sizeof(log), NULL, log); SDL_Log("VS: %s", log); }
+                //if(!ok){ glGetShaderInfoLog(shader, sizeof(log), NULL, log); SDL_Log("VS: %s", log); }
             }
 
             unsigned int get_shader() {

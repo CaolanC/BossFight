@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rendering/NewMesh.hpp>
+#include <rendering/ShaderSource.hpp>
+#include <rendering/Shader.hpp>
 
 #include <string>
 #include <fstream>
@@ -24,6 +26,7 @@ class PakFile {
 	void add_mesh(CPUMesh cpu_mesh); // Copy for now, see if it's handy and safe to pass as a reference later
 	void add_texture(rendering::CPUTexture cpu_texture);
 	void add_material(rendering::MaterialAsset material_asset);
+	void add_shader_source(rendering::ShaderSource shader_source);
 
 	void close();
 
@@ -65,6 +68,10 @@ class PakFile {
 		xg::Guid shader_program_handle;
 		xg::Guid color_texture_asset_handle;
 		bool has_color_texture = false;
+	};
+
+	struct ShaderSource {
+
 	};
 
 	// The index data goes between the draw metadata and the attribute Data, using the index_count for its width.

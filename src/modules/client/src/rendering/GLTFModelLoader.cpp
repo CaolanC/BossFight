@@ -105,6 +105,7 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     MaterialAsset material_asset;
 	material_asset.shader_program_handle = resource_manager.shader_program_manager.default_program;
     TextureAsset texture_asset;
+
     if (primitive.material >= 0 &&
     	primitive.material < static_cast<int>(model.materials.size())) {
 
@@ -115,22 +116,20 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     	if (!index_texture_cache.contains(baseTex.index) && baseTex.index >= 0 &&
     	    baseTex.index < static_cast<int>(model.textures.size())) {
 	    const auto& texture = model.textures[baseTex.index];
-    	    if (texture.source >= 0 &&
-    		texture.source < static_cast<int>(model.images.size())) {
-
-    		const auto& image = model.images[texture.source];
-    		if (!image.uri.empty()) {
-		    //std::filesystem::path parent = p;
-    		    //parent = parent.parent_path();
-		    std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
-		    // may need to std::move the cpu_texture into the map, unsure, it will probabaly need std::moved again from the map later on as well
-		    CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
-		    int in = baseTex.index;
-		    index_texture_cache.insert({in, cpu_texture});
-		    texture_asset.cpu_texture = cpu_texture;
-			TextureAssetHandle texture_asset_handle = resource_manager.add_texture_asset(texture_asset);
-		    material_asset.base_color_texture_handle = texture_asset_handle;
-    		}
+    	    if (texture.source >= 0 && texture.source < static_cast<int>(model.images.size())) {
+    			const auto& image = model.images[texture.source];
+    			if (!image.uri.empty()) {
+		    		//std::filesystem::path parent = p;
+    		    	//parent = parent.parent_path();
+		    		std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
+		    		// may need to std::move the cpu_texture into the map, unsure, it will probabaly need std::moved again from the map later on as well
+		    		CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
+		    		int in = baseTex.index;
+		    		index_texture_cache.insert({in, cpu_texture});
+		    		texture_asset.cpu_texture = cpu_texture;
+					TextureAssetHandle texture_asset_handle = resource_manager.add_texture_asset(texture_asset);
+		    		material_asset.base_color_texture_handle = texture_asset_handle;
+    			}
     	    }
     	}
     }
