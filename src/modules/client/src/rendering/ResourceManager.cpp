@@ -31,6 +31,12 @@ namespace rendering {
 			pak_file.add_material(material_A.second);
 		};
 
+		for(auto& shader_A : shader_program_assets) {
+			ShaderSource v_src = shader_sources.at(shader_A.second.vert_source);
+			ShaderSource f_src = shader_sources.at(shader_A.second.frag_source);
+			pak_file.add_shader_program(shader_A.second, v_src, f_src);
+		};
+
 		pak_file.close();
 		
 	};

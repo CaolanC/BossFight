@@ -7,6 +7,8 @@
 #include <utils/assets/helpers.hpp>
 
 #include <iostream>
+#include <fstream>
+#include <string>
 
 namespace rendering {
 
@@ -15,17 +17,38 @@ using ShaderSourceHandle = xg::Guid;
 class ShaderSource
 {
     public:
-    ShaderSource(std::string path) : path(path){
-    	type = type_from_path(path);
- 		full_path = utils::assets::get_asset(path);
-		char shsrc[32000];
-		get_shader_source(full_path.c_str(), shsrc, sizeof(shsrc));
-		text = shsrc;
-    };
+   // ShaderSource(std::string path) : path(path){
+   // 	type = type_from_path(path);
+   // 	full_path = utils::assets::get_asset(path);
+   // 	char shsrc[32000];
+   // 	get_shader_source(full_path.c_str(), shsrc, sizeof(shsrc));
+   // 	text = shsrc;
+   // };
+
+    ShaderSource(std::string path)
+        : path(path)
+    {
+        type = type_from_path(path);
+        full_path = utils::assets::get_asset(path);
+
+        std::ifstream file(full_path, std::ios::binary);
+
+        if (!file) {
+            throw std::runtime_error(
+                "Could not open shader: " + full_path
+            );
+        }
+
+        text = std::string(
+            std::istreambuf_iterator<char>(file),
+            std::istreambuf_iterator<char>()
+        );
+    }
 
     std::filesystem::path path;
     ShaderType type;
-	const char* text;
+	//const char* text;
+	std::string text;
 	std::string full_path;
 
     private:

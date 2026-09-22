@@ -108,8 +108,13 @@ void PakFile::add_material(rendering::MaterialAsset material_asset) {
 	entry_count++;
 };
 
-void PakFile::add_shader_source(rendering::ShaderSource shader_source) {
-	shader_source.text;
+void PakFile::add_shader_program(
+	rendering::ShaderProgramAsset shader_program_asset,
+	rendering::ShaderSource vshader_source,
+	rendering::ShaderSource fshader_source
+	)
+{
+	//shader_source.text;
 };
 
 void PakFile::close() {
