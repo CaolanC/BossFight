@@ -23,9 +23,10 @@ target_link_libraries(ClientLib
         concurrentqueue::concurrentqueue
         SharedLib
         nlohmann_json
+		PakLib
 )
 
 target_compile_definitions(ClientLib PRIVATE 
-    SLJA_ASSETS_DIR="${ASSETS_DIR}"
-    SLJA_SAVES_DIR="${SAVES_DIR}"
+    SLJA_ASSETS_DIR=\"${ASSETS_DIR}\"
+    SLJA_SAVES_DIR=\"${SAVES_DIR}\"
 )

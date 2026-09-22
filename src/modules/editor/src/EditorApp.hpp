@@ -7,6 +7,7 @@
 #include <SDL3/SDL.h>
 #include <Client.hpp>
 #include <SerializedObject.hpp>
+#include <Runtime.hpp>
 
 #include <optional>
 #include <entt/entt.hpp>
@@ -21,6 +22,8 @@ namespace gui {
             true,
             client::InputMode::Editor
         };
+
+		runtime::Runtime runtime;
 
         ImVec4 clear_color = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 

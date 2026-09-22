@@ -11,6 +11,7 @@
 #include <Renderer.hpp>
 #include <rendering/ResourceManager.hpp>
 #include <rendering/MaterialAsset.hpp>
+#include <rendering/GPUTexture.hpp>
 #include <glad/glad.h>
 
 #include <iostream>
@@ -23,6 +24,7 @@ namespace client {
 	}
 
     void Renderer::init() {
+		init_ubos();
     }
 
     void Renderer::init_ubos() {
@@ -69,13 +71,20 @@ namespace client {
 		glBindVertexArray(gpu_mesh.vao);
 
 		const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
-		GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset.shader_program_handle);
+		GLuint shader_program = resource_manager.shader_program_assets.at(material_asset.shader_program_handle).program_name;
 		glUseProgram(shader_program);
+		
+		if (material_asset.base_color_texture_handle.has_value()) {
+		}
+		const rendering::TextureAsset& texture_asset = resource_manager.texture_assets.at(material_asset.base_color_texture_handle.value());
+		if (texture_asset.gpu_texture.has_value()) {
+		};
+		const rendering::GPUTexture& gpu_texture = texture_asset.gpu_texture.value();
 
         utils::gl::set_model_mat(transform, shader_program);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
+		glBindTexture(GL_TEXTURE_2D, gpu_texture.ID);
 
 		GLint tex_location = glGetUniformLocation(shader_program, "uTex");
 
@@ -98,6 +107,7 @@ namespace client {
 		);
 
 		auto& curr_cam = reg.ctx().get<component::current_camera>();
+
 		glm::mat4 view_matrix = glm::inverse(
 	    	reg.get<shared::component::transform>(curr_cam.e)
 		);
@@ -105,13 +115,10 @@ namespace client {
 
 		set_camera_ubo(camera_position, projection_matrix, view_matrix);
 
-
-		// Get all the lights then upload them to the shader I think to start.
-	
 		LightingUBOCPU l_ubo_cpu;
 		auto basic_light_view = reg.view<component::basic_light, shared::component::position>();
 		int no_lights = 0;
-		for (auto [e, basic_light, pos] : basic_light_view.each()) { // Don't know if we want lights to have meshes or just a parent component that has both a light and a mesh, will have to see how it does
+		for (auto [e, basic_light, pos] : basic_light_view.each()) {
 	    	if (no_lights >= 100) {
 	        	break;
 	    	};
@@ -125,36 +132,83 @@ namespace client {
 	
 		set_lighting_ubo(l_ubo_cpu);
 
-		auto view = reg.view<component::mesh, component::material, shared::component::transform>(); // Need the material as well once it's implemented, but start with ambient for now.
+		auto view = reg.view<component::mesh, component::material, shared::component::transform>();
 
-		for (auto [e, mesh, material, transform] : view.each()) { // Basic lighting system, need to give this more thought but lets go with this for now
+		for (auto [e, mesh, material, transform] : view.each()) {
 			draw_mesh(mesh.mesh_handle, material.material_handle, transform);
-		//	GPUMesh& gpu_mesh = resource_manager.mesh_assets.at(mesh.mesh_handle).gpu_mesh.value();
-		//	glBindVertexArray(gpu_mesh.vao);
-		//	//GLuint shader_program = resource_manager.shader_program_manager.program_map.at(resource_manager.shader_program_manager.default_program);
-		//	const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material.material_handle);
-		//	GLuint shader_program = resource_manager.shader_program_manager.program_map.at(material_asset.shader_program_handle);
-		//
-		//	glUseProgram(shader_program);
-
-        //	utils::gl::set_model_mat(transform, shader_program);
-
-		//	glActiveTexture(GL_TEXTURE0);
-		//	//glBindTexture(GL_TEXTURE_2D, material_asset.texture_asset);
-
-		//	glBindTexture(GL_TEXTURE_2D, gpu_mesh.texture);
-		//	GLint tex_location = glGetUniformLocation(shader_program, "uTex");
-		//	glUniform1i(tex_location, 0);
-
-        //	if (true) {
-        //		glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr);
-        //	} else {
-        //            // TODO: store vertexCount in GpuPrimitive for non-indexed draws
-		//		std::cout << "ye\n";
-        //    	glDrawArrays(gpu_mesh.draw_mode, 0, gpu_mesh.count);
-        //	}
 		}
 
     }
 
+	void Renderer::render_to_texture(int w, int h, entt::registry& active_scene) {
+    	//init_embedded();
+    	ensure_framebuffer(w, h); 
+
+    	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    	glViewport(0, 0, w, h); 
+    	glEnable(GL_DEPTH_TEST);
+
+    	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    	new_render(active_scene, w, h); 
+    	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+	}
+
+	void Renderer::render_to_window(int w, int h, entt::registry& active_scene) {
+    	//init_embedded();
+
+    	// 1. Bind the default window framebuffer (0)
+    	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+
+    	// 2. Adjust viewport to match the window dimensions
+    	glViewport(0, 0, w, h); 
+    	glEnable(GL_DEPTH_TEST);
+
+    	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    	new_render(active_scene, w, h); 
+	}
+
+	void Renderer::ensure_framebuffer(int w, int h) { // This needs moved to the runtime api via the editor STAT. like we need that shyt GONE.
+	    if (framebuffer != 0 && framebuffer_width == w && framebuffer_height == h) {
+	        return;
+	    }   
+	
+	    if (framebuffer != 0) {
+	        glDeleteFramebuffers(1, &framebuffer);
+	        glDeleteTextures(1, &color_texture);
+	        glDeleteRenderbuffers(1, &depth_rbo);
+	    }   
+	
+	    framebuffer_width = w;
+	    framebuffer_height = h;
+	
+	    glGenFramebuffers(1, &framebuffer);
+	    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	
+	    glGenTextures(1, &color_texture);
+	    glBindTexture(GL_TEXTURE_2D, color_texture);
+	    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0); 
+	
+	    glGenRenderbuffers(1, &depth_rbo);
+	    glBindRenderbuffer(GL_RENDERBUFFER, depth_rbo);
+	    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h); 
+	    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_rbo);
+	
+	    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+	        std::printf("framebuffer incomplete\n");
+	    }   
+	    glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+	};
+
+	unsigned int Renderer::get_color_texture() {
+		return color_texture;
+	};
 }

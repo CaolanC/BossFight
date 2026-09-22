@@ -23,7 +23,6 @@ GLTFModelLoader::GLTFModelLoader(ResourceManager& resource_manager)
 ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
     current_model_path = model_path;
     ModelTreeNode model_tree;
-    std::cout << model_path << '\n';
     tinygltf::Model model;
     load_gltf_model(model_path, model);
 
@@ -34,7 +33,6 @@ ModelTreeNode GLTFModelLoader::load_model(std::string const& model_path) {
         load_node(mt_root_node, model, model.nodes[root_node]);
         model_tree.children.push_back(mt_root_node);
     }
-    std::cout << "so apparently we successfully loaded the model tree\n";
     return model_tree;
 }
 
@@ -77,7 +75,7 @@ void GLTFModelLoader::load_submesh(ModelTreeNode& mt_node, tinygltf::Model& mode
 	//resource_manager.add_material_asset(material_asset);
     
 	const MaterialAssetHandle& material_asset_handle = resource_manager.add_material_asset(material_asset);
-	submesh.material_asset = material_asset_handle;
+	//submesh.material_asset = material_asset_handle;
 
 
 	// So I think we need to make sure we delete the model tree after it loads a model, then recreate the model tree when exporting the final game executable.
@@ -105,8 +103,9 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     // the same fucking material, and each material can also reference the same fucking texture.
     
     MaterialAsset material_asset;
-	material_asset.shader_program_handle = resource_manager.shader_program_manager.default_program;
+	material_asset.shader_program_handle = resource_manager.default_shader_program_handle;
     TextureAsset texture_asset;
+
     if (primitive.material >= 0 &&
     	primitive.material < static_cast<int>(model.materials.size())) {
 
@@ -117,21 +116,20 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
     	if (!index_texture_cache.contains(baseTex.index) && baseTex.index >= 0 &&
     	    baseTex.index < static_cast<int>(model.textures.size())) {
 	    const auto& texture = model.textures[baseTex.index];
-    	    if (texture.source >= 0 &&
-    		texture.source < static_cast<int>(model.images.size())) {
-
-    		const auto& image = model.images[texture.source];
-    		if (!image.uri.empty()) {
-		    //std::filesystem::path parent = p;
-    		    //parent = parent.parent_path();
-		    std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
-		    // may need to std::move the cpu_texture into the map, unsure, it will probabaly need std::moved again from the map later on as well
-		    CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
-		    int in = baseTex.index;
-		    index_texture_cache.insert({in, cpu_texture});
-		    texture_asset.cpu_texture = cpu_texture;
-		    material_asset.texture_asset = texture_asset;
-    		}
+    	    if (texture.source >= 0 && texture.source < static_cast<int>(model.images.size())) {
+    			const auto& image = model.images[texture.source];
+    			if (!image.uri.empty()) {
+		    		//std::filesystem::path parent = p;
+    		    	//parent = parent.parent_path();
+		    		std::filesystem::path fullPath = std::filesystem::path(utils::assets::get_asset((current_model_path.parent_path() / image.uri).string()));
+		    		// may need to std::move the cpu_texture into the map, unsure, it will probabaly need std::moved again from the map later on as well
+		    		CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
+		    		int in = baseTex.index;
+		    		index_texture_cache.insert({in, cpu_texture});
+		    		texture_asset.cpu_texture = cpu_texture;
+					TextureAssetHandle texture_asset_handle = resource_manager.add_texture_asset(texture_asset);
+		    		material_asset.base_color_texture_handle = texture_asset_handle;
+    			}
     	    }
     	}
     }
@@ -153,37 +151,8 @@ void GLTFModelLoader::load_indices(tinygltf::Model& model, tinygltf::Primitive& 
         submesh.indices.assign(idxData, idxData + data_size_bytes);
 		submesh.index_count = static_cast<uint32_t>(iacc.count);
 		submesh.index_type = utils::gl::glTypeFromComponent(iacc.componentType);
-
-        //submesh.indexCount = static_cast<GLsizei>(iacc.count);
-        //submesh.indexType  = utils::gl::glTypeFromComponent(iacc.componentType);
     } 
 }
-
-//void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
-//   auto posIt = primitive.attributes.find("POSITION");
-//   if (posIt != primitive.attributes.end()) {
-//   const auto& acc  = model.accessors.at(posIt->second);
-//   const auto& view = model.bufferViews.at(acc.bufferView);
-//   const auto& buff = model.buffers.at(view.buffer);
-//
-//   const size_t no_components  = utils::gl::numComponentsInType(acc.type);
-//   const size_t component_size  = utils::gl::bytesPerComponent(acc.componentType);
-//   const size_t stride = view.byteStride ? view.byteStride : no_components * component_size;
-//
-//   const uint8_t* data = reinterpret_cast<const uint8_t*> (
-//   buff.data.data() + view.byteOffset + acc.byteOffset // I think maybe this could be uint8_t ?
-//   );
-//   // cpu_mesh.position_vbo.assign() = data;
-//   // cpu_mesh.layout.attributes.push_back(VertexAttribute(
-//   //         AttributeType::POSITION,
-//   //         0,
-//   //         utils::gl::glTypeFromComponent(acc.componentType),
-//   //         no_components,
-//   //         false,
-//   //         (void*() 0)
-//   // ));
-//   }
-//}
 
 void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& cpu_mesh) {
     auto posIt = primitive.attributes.find("POSITION");
@@ -217,9 +186,10 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 		VBO_AttributePair vbo_attribute_pair;
 		vbo_attribute_pair.attribute = attr;
 		vbo_attribute_pair.vbo.assign(data, data + data_size_bytes);
+		vbo_attribute_pair.type = VBO_Type::STANDALONE;
 
 		cpu_mesh.add_data(AttributeType::POSITION, std::move(vbo_attribute_pair));
-		cpu_mesh.standalone_vbos.push_back(AttributeType::POSITION);
+		//cpu_mesh.standalone_vbos.push_back(AttributeType::POSITION);
 
         //cpu_mesh.data.insert(AttributeType::POSITION, vbo_attribute_pair);S
 		//cpu_mesh.position.layout.stride = static_cast<GLsizei>(stride); // Potentially need to readd this in later, using some kind of map that allows us
@@ -230,7 +200,6 @@ void GLTFModelLoader::load_positions(tinygltf::Model& model, tinygltf::Primitive
 void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive& primitive, CPUMesh& submesh) { // might want to add a string parameter for things like TEXCOORD_1 etc.
     auto texIt = primitive.attributes.find("TEXCOORD_0");
     if (texIt != primitive.attributes.end()) {
-		std::cout << "Texcoord 0 loaded\n";
         const auto& acc  = model.accessors.at(texIt->second);
         const auto& view = model.bufferViews.at(acc.bufferView);
         const auto& buff = model.buffers.at(view.buffer);
@@ -255,10 +224,11 @@ void GLTFModelLoader::load_texcoord(tinygltf::Model& model, tinygltf::Primitive&
 		VBO_AttributePair attribute_pair;
 		attribute_pair.attribute = attr;
 		attribute_pair.vbo.assign(data, data + data_size_bytes);
+		attribute_pair.type = VBO_Type::INTERLEAVED;
 
 		submesh.add_data(AttributeType::TEXCOORD_0, std::move(attribute_pair));
 
-		submesh.interleaved_vbos.push_back(AttributeType::TEXCOORD_0);
+		//submesh.interleaved_vbos.push_back(AttributeType::TEXCOORD_0);
     }
 }
 
@@ -297,8 +267,9 @@ size_t GLTFModelLoader::load_normals(tinygltf::Model& model, tinygltf::Primitive
 		VBO_AttributePair attribute_pair;
 		attribute_pair.attribute = attr;
 		attribute_pair.vbo.assign(data, data + data_size_bytes);
+		attribute_pair.type = VBO_Type::INTERLEAVED;
 
-		cpu_mesh.interleaved_vbos.push_back(AttributeType::NORMAL);
+		//cpu_mesh.interleaved_vbos.push_back(AttributeType::NORMAL);
 		cpu_mesh.add_data(AttributeType::NORMAL, std::move(attribute_pair));
 
 	return byte_stride;

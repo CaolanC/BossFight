@@ -39,32 +39,13 @@ namespace core
 	
     } 
 
-    //std::vector<LoadedMatInfo> get_loaded_materials() const {
-    //    std::vector<LoadedMatInfo> out;
-    //    out.reserve(program_map.size());
-
-    //    for (const auto& [ref, program] : program_map) {
-    //        LoadedMatInfo info;
-    //        info.ref= ref;
-    //        info.program = program;
-    //        out.push_back(info);
-    //        // auto it = model_to_path.find(ref);
-    //        // if (it != model_to_path.end()) {
-    //        //     info.model_path = it->second;
-    //        //     out.push_back(info);
-    //        // }
-
-    //    }
-
-    //    return out;
-    //}
-
     ShaderProgramHandle from_source_vec(const std::vector<rendering::ShaderSource>& shader_sources) {
             
-	std::vector<rendering::Shader> shaders;
+		std::vector<rendering::Shader> shaders;
+        auto id = xg::newGuid();
 
         for (const auto& shader_source: shader_sources) {
-	    rendering::Shader shader;
+		    rendering::Shader shader;
             shader.from_source(shader_source);
 
             shaders.push_back(shader);
@@ -85,8 +66,10 @@ namespace core
             SDL_Log("Link error: %s", log);
         }
 
-        auto id = xg::newGuid();
         program_map.insert({id, program});
+		source_map.insert({id, shader_sources});
+		
+
         return id;
     };
 
@@ -95,6 +78,7 @@ namespace core
     }
 
     std::map<ShaderProgramHandle, unsigned int> program_map;
+	std::map<ShaderProgramHandle, std::vector<rendering::ShaderSource>> source_map;
 };
 
 }
