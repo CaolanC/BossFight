@@ -144,3 +144,5 @@ if (WIN32)
             $<TARGET_FILE_DIR:GUI>
     )
 endif()
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

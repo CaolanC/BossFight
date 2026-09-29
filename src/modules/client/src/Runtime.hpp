@@ -3,6 +3,7 @@
 #include <entt/entt.hpp>
 #include <rendering/ResourceManager.hpp>
 #include <rendering/EntityFactory.hpp>
+#include <rendering/ShaderSource.hpp>
 #include <SceneManager.hpp>
 #include <Renderer.hpp>
 
@@ -37,9 +38,11 @@ class Runtime {
 	void init();
 	void init_embedded(); // This too but maybe an init function instead? dunno yet :DDDD!!!!. ;)
 	void update(); // This too.
+	std::vector<rendering::ShaderSource> get_shader_sources();
 	private:
 	client::Renderer renderer = client::Renderer(resource_manager);
 	std::vector<void (*)(entt::registry&)> systems;
+	
     //unsigned int framebuffer = 0; // I really don't want this stuff in here, so we can probabaly move it to the renderer, and expose an api instead.
     //unsigned int color_texture = 0;
     //unsigned int depth_rbo = 0;

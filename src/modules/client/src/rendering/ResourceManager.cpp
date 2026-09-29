@@ -32,8 +32,8 @@ namespace rendering {
 		};
 
 		for(auto& shader_A : shader_program_assets) {
-			ShaderSource v_src = shader_sources.at(shader_A.second.vert_source);
-			ShaderSource f_src = shader_sources.at(shader_A.second.frag_source);
+			ShaderSource v_src = shader_manager.get_source(shader_A.second.vert_source);
+			ShaderSource f_src = shader_manager.get_source(shader_A.second.frag_source);
 			pak_file.add_shader_program(shader_A.second, v_src, f_src);
 		};
 
@@ -44,23 +44,25 @@ namespace rendering {
     void ResourceManager::init() {
 		
 
-		ShaderSource vert_shader_source = ShaderSource("shaders/v3D.glsl");
-		ShaderSource frag_shader_source = ShaderSource("shaders/fBasicLighting.glsl");
+	shader_manager.add_source("shaders/v3D.glsl");
+	shader_manager.add_source("shaders/fBasicLighting.glsl");
 
-        xg::Guid vsh_src_guid = xg::newGuid();
-        xg::Guid fsh_src_guid = xg::newGuid();
+        //xg::Guid vsh_src_guid = xg::newGuid();
+        //xg::Guid fsh_src_guid = xg::newGuid();
 
-        shader_sources.insert({vsh_src_guid, vert_shader_source});
-        shader_sources.insert({fsh_src_guid, frag_shader_source});
+        //shader_sources.insert({vsh_src_guid, vert_shader_source});
+        //shader_sources.insert({fsh_src_guid, frag_shader_source});
 
-		ShaderProgramAsset shader_program_asset;
+	//ShaderProgramAsset shader_program_asset;
 
-		shader_program_asset.vert_source = vsh_src_guid;
-		shader_program_asset.frag_source = fsh_src_guid;
+	//shader_program_asset.vert_source = vsh_src_guid;
+	//shader_program_asset.frag_source = fsh_src_guid;
+	
+	shader_manager.create_program("Default Program", "shaders/v3D.glsl", "shaders/fBasicLighting.glsl");
 
 
-		default_shader_program_handle = compile_shader(shader_program_asset);
-		shader_program_manager.init();
+	default_shader_program_handle = "Default Program";
+	shader_program_manager.init();
 		
     }
 
@@ -75,6 +77,15 @@ namespace rendering {
     void ResourceManager::load_model_to_gpu(const ModelTreeNode& model_tree) {
     	// Start recursive traversal from the root node
     	upload_node_to_gpu(model_tree);
+	}
+
+	std::vector<ShaderSource> ResourceManager::get_shader_sources() {
+		std::vector<ShaderSource> sources;
+		for (const auto& [k, v] : shader_sources) {
+			sources.push_back(v);
+		};
+
+		return sources;
 	}
 
 	void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
@@ -358,10 +369,10 @@ namespace rendering {
     xg::Guid ResourceManager::compile_shader(ShaderProgramAsset shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
 
 		rendering::Shader vert_shader;
-		vert_shader.from_source(shader_sources.at(shader_asset.vert_source));
+		vert_shader.from_source(shader_manager.get_source(shader_asset.vert_source));
 
 		rendering::Shader frag_shader;
-		frag_shader.from_source(shader_sources.at(shader_asset.frag_source));
+		frag_shader.from_source(shader_manager.get_source(shader_asset.frag_source));
 
         shader_asset.program_name = glCreateProgram();
 		GLuint program_name = shader_asset.program_name;

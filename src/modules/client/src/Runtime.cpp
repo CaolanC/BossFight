@@ -2,6 +2,7 @@
 #include <systems/Transform.hpp>
 #include <systems/Debug.hpp>
 #include <systems/UserControl.hpp>
+#include <rendering/ShaderSource.hpp>
 
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
@@ -18,6 +19,10 @@ void Runtime::update() {
 	for(auto& system : systems) {
 		system(active_scene);
 	}
+};
+
+std::vector<rendering::ShaderSource> Runtime::get_shader_sources() {
+	return resource_manager.get_shader_sources();
 };
 
 entt::entity Runtime::create_entity() {

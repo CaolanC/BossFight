@@ -17,6 +17,7 @@ enum Type {
 	Mesh,
 	Material,
 	Texture,
+	ShaderProgram,
 	EndEntry
 };
 
@@ -69,13 +70,13 @@ class PakFile {
 
 	struct MaterialMetadata {
 		xg::Guid material_asset_handle;
-		xg::Guid shader_program_handle;
+		std::string shader_program_handle; // After changing this to string it has become an object of dynamic size, so we will have to fix that when we come back to asset loading. :)
 		xg::Guid color_texture_asset_handle;
 		bool has_color_texture = false;
 	};
 
 	struct ShaderProgram {
-		xg::Guid guid;
+		std::string access_name;
 		uint64_t vsrc_size;
 		uint64_t fsrc_size;
 	}; // We basically just write/read the size of the thing, then write again. It's contiguous.

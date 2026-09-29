@@ -21,6 +21,7 @@ cmaked: conand
 		-DCMAKE_BUILD_TYPE=Debug
 
 gui:
+	@echo "COMPILING BOSSFIGHT."
 	cmake --build build --target GUI
 	./bin/GUI
 

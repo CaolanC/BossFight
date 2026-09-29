@@ -240,9 +240,17 @@ namespace gui {
 		    light.color = glm::vec4(u_col[0], u_col[1], u_col[2], u_col[3]);
 
                 }
-                if (active_scene.all_of<component::mat_ref>(entity)) {
-                    ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
+                //if (active_scene.all_of<component::mat_ref>(entity)) {
+                //    ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
+                //}
+
+                if (active_scene.all_of<component::material>(entity)) {
+                    ImGui::TreeNodeEx("Comp_NMaterial", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "NMaterial");
+					auto& material = active_scene.get<component::material>(entity);
+					
+					ImGui::Text("Nother material.");
                 }
+
                 if (active_scene.all_of<component::debug_spin>(entity)) {
                     ImGui::TreeNodeEx("Comp_DebugSpin", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Debug Spin");
                 }
@@ -277,8 +285,28 @@ namespace gui {
         ImGui::Begin("BottomPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
 
         if (ImGui::BeginTabBar("BottomTabs")) {
+            if (ImGui::BeginTabItem("Shaders##shader_tab")) {
 
-            if (ImGui::BeginTabItem("Help")) {
+				static char shader_source_buf[128] = "";
+
+				ImGui::Text("Add New Shader Source:");
+				if(ImGui::InputText("##shader_source", shader_source_buf, IM_ARRAYSIZE(shader_source_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+					shader_source_buf[0] = '\0';
+				};
+				ImGui::SameLine();
+
+				if (ImGui::Button("Add")) {
+					shader_source_buf[0] = '\0';
+				}
+				ImGui::EndTabItem();
+
+				const auto& shader_sources = app.runtime.get_shader_sources();
+				for(auto& shader_source : shader_sources) {
+					ImGui::Text(shader_source.path.string().c_str());
+				}
+			}
+
+            if (ImGui::BeginTabItem("Help##help_tab")) {
                 ImGui::Text("Controls");
                 ImGui::Separator();
                 ImGui::BulletText("Click inside the viewport to control the camera.");

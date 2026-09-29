@@ -114,12 +114,30 @@ void PakFile::add_shader_program(
 	rendering::ShaderSource fshader_source
 	)
 {
-	//shader_source.text;
+	Entry entry;
+	entry.type = Type::ShaderProgram;
+	entry.guid = shader_program_asset.guid;
+	entry.offset = static_cast<uint64_t>(ofs.tellp());
+	ShaderProgram sh_prog;
+	sh_prog.access_name = shader_program_asset.access_name;
+	sh_prog.vsrc_size = vshader_source.text.size();
+	sh_prog.fsrc_size = fshader_source.text.size();
+
+	ofs.write(reinterpret_cast<const char*>(&sh_prog), sizeof(ShaderProgram));
+	ofs.write(reinterpret_cast<const char*>(vshader_source.text.data()), vshader_source.text.size());
+	ofs.write(reinterpret_cast<const char*>(fshader_source.text.data()), fshader_source.text.size());
+	uint64_t entry_size = sizeof(ShaderProgram) + vshader_source.text.size() + fshader_source.text.size();
+
+	entry.size = entry_size;
+
+	file_table.entries[entry_count] = entry;
+	entry_count++;
 };
 
 void PakFile::close() {
 	ofs.seekp(sizeof(Header), std::ios::beg);
 	ofs.write(reinterpret_cast<const char*>(&file_table), sizeof(FileTable));
+	// We can make the file take a dynamic amount of entries by simply writing the filetable at the end and writing to the header where it begins lol.
 	ofs.close();
 };
 

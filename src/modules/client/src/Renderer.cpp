@@ -71,7 +71,8 @@ namespace client {
 		glBindVertexArray(gpu_mesh.vao);
 
 		const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
-		GLuint shader_program = resource_manager.shader_program_assets.at(material_asset.shader_program_handle).program_name;
+		GLuint shader_program = resource_manager.shader_manager.get_program(material_asset.shader_program_handle).program_name;
+		//GLuint shader_program = resource_manager.shader_program_assets.at(material_asset.shader_program_handle).program_name;
 		glUseProgram(shader_program);
 		
 		if (material_asset.base_color_texture_handle.has_value()) {
