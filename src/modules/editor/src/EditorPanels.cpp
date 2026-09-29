@@ -11,6 +11,7 @@
 #include <SerializedObject.hpp>
 #include <LoadedModelInfo.hpp>
 #include <EditorPanels.hpp>
+#include <rendering/MaterialAsset.hpp>
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
@@ -241,12 +242,10 @@ namespace gui {
 
                 }
                 if (active_scene.all_of<component::material>(entity)) {
-                    ImGui::TreeNodeEx("Comp_NMaterial", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "NMaterial");
+                    ImGui::TreeNodeEx("Comp_NMaterial", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
 					auto& material = active_scene.get<component::material>(entity);
-					//app.runtime.get_material_asset(material.material_handle);
-
-					
-					ImGui::Text("Nother material.");
+					const rendering::MaterialAsset& material_asset = app.runtime.get_material_asset(material.material_handle);
+					ImGui::Text(material_asset.shader_program_handle.c_str());
                 }
 
                 if (active_scene.all_of<component::debug_spin>(entity)) {
