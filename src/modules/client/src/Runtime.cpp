@@ -3,6 +3,7 @@
 #include <systems/Debug.hpp>
 #include <systems/UserControl.hpp>
 #include <rendering/ShaderSource.hpp>
+#include <rendering/MaterialAsset.hpp>
 
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
@@ -62,6 +63,10 @@ void Runtime::begin_input_frame() {
 	ms.dx = 0.0f;
 	ms.dy = 0.0f;
 }
+
+const rendering::MaterialAsset& Runtime::get_material_asset(const rendering::MaterialAssetHandle& material_handle) {
+	return resource_manager.get_material_asset(material_handle);
+};
 
 
 void Runtime::process_input_event(const SDL_Event& event) {

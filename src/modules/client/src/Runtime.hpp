@@ -4,6 +4,7 @@
 #include <rendering/ResourceManager.hpp>
 #include <rendering/EntityFactory.hpp>
 #include <rendering/ShaderSource.hpp>
+#include <rendering/MaterialAsset.hpp>
 #include <SceneManager.hpp>
 #include <Renderer.hpp>
 
@@ -32,6 +33,8 @@ class Runtime {
 	void process_input_event(const SDL_Event& event);
 	void begin_input_frame();
 	void render_to_window(int w, int h);
+
+	const rendering::MaterialAsset& get_material_asset(const rendering::MaterialAssetHandle& material_handle);
 	
 
 

@@ -240,13 +240,11 @@ namespace gui {
 		    light.color = glm::vec4(u_col[0], u_col[1], u_col[2], u_col[3]);
 
                 }
-                //if (active_scene.all_of<component::mat_ref>(entity)) {
-                //    ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
-                //}
-
                 if (active_scene.all_of<component::material>(entity)) {
                     ImGui::TreeNodeEx("Comp_NMaterial", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "NMaterial");
 					auto& material = active_scene.get<component::material>(entity);
+					//app.runtime.get_material_asset(material.material_handle);
+
 					
 					ImGui::Text("Nother material.");
                 }
@@ -261,20 +259,8 @@ namespace gui {
     }
 
     
-        // Logic for editor tab below. Shows name, position, rotation and scale fields.
-        // Rotation is symbolized by pitch, yaw and roll.
-        // Pitch = up and down, yaw = left and right, roll = front and back
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Text("Selected Object");
-        ImGui::Spacing();
-
-
-        ImGui::Spacing();
-        ImGui::Text("Transform");
-
-        bool changed = false;
+        //bool changed = false;
 
         ImGui::End();
     }

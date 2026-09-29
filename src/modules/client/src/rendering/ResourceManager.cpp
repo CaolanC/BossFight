@@ -66,6 +66,10 @@ namespace rendering {
 		
     }
 
+    const MaterialAsset& ResourceManager::get_material_asset(const MaterialAssetHandle& handle) {
+	return material_assets.at(handle);
+    };
+
     ModelTreeNode ResourceManager::load_model(const std::string& model_path) {
 		GLTFModelLoader model_loader(*this);
 		ModelTreeNode model_tree = model_loader.load_model(model_path);
