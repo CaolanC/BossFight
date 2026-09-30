@@ -36,11 +36,28 @@ ShaderSource ShaderManager::get_source(std::string path) {
 	shader_sources.at(path);
 };
 
+
+std::vector<ShaderSource> ShaderManager::get_shader_sources() {
+	std::vector<ShaderSource> sources;
+	for (const auto& [k, v] : shader_sources) {
+		sources.push_back(v);
+	};
+
+	return sources;
+}
+
 const ShaderProgramAsset& ShaderManager::get_program(std::string access_name) {
 	return shader_program_assets.at(access_name);
 };
 
+std::vector<const ShaderProgramAsset*> ShaderManager::get_programs() {
+	std::vector<const ShaderProgramAsset*> programs;
+	for(const auto& [k, v] : shader_program_assets) {
+		programs.push_back(&v);
+	}
 
+	return programs;
+};
 
 void ShaderManager::compile_shader(ShaderProgramAsset& shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
 

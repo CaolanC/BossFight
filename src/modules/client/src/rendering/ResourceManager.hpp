@@ -34,7 +34,9 @@ namespace rendering {
 	void write_pak_file();
 	std::vector<ShaderSource> get_shader_sources();
 	//std::vector<ShaderProgram> get_shader_programs();
-	const MaterialAsset& get_material_asset(const MaterialAssetHandle& handle);
+	MaterialAsset& get_material_asset(const MaterialAssetHandle& handle);
+	std::vector<const ShaderProgramAsset*> get_programs();
+	//const ShaderProgramAsset& get_program_asset(
 
 
 	xg::Guid compile_shader(ShaderProgramAsset shader_asset);

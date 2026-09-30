@@ -244,8 +244,26 @@ namespace gui {
                 if (active_scene.all_of<component::material>(entity)) {
                     ImGui::TreeNodeEx("Comp_NMaterial", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
 					auto& material = active_scene.get<component::material>(entity);
-					const rendering::MaterialAsset& material_asset = app.runtime.get_material_asset(material.material_handle);
+					rendering::MaterialAsset& material_asset = app.runtime.get_material_asset(material.material_handle);
 					ImGui::Text(material_asset.shader_program_handle.c_str());
+					std::vector<const rendering::ShaderProgramAsset*> programs = app.runtime.resource_manager.shader_manager.get_programs();
+					std::string selected_program =  material_asset.shader_program_handle.c_str();
+					std::vector<std::string> program_options;
+					int current_item = 0;
+					for (auto& program : programs) {
+						program_options.push_back(program->access_name);
+					}
+
+					auto vector_getter = [](void* vec, int idx) -> const char* {
+					    auto& vector = *static_cast<std::vector<std::string>*>(vec);
+					    if (idx < 0 || idx >= static_cast<int>(vector.size())) return nullptr;
+					    return vector[idx].c_str();
+					};
+					auto it = std::find(program_options.begin(), program_options.end(), selected_program);
+					current_item = std::distance(program_options.begin(), it);
+					ImGui::Combo("Select Material", &current_item, vector_getter, static_cast<void*>(&program_options), static_cast<int>(program_options.size()));
+					material_asset.shader_program_handle = program_options[current_item];
+					
                 }
 
                 if (active_scene.all_of<component::debug_spin>(entity)) {
@@ -288,6 +306,12 @@ namespace gui {
 				const auto& shader_sources = app.runtime.get_shader_sources();
 				for(auto& shader_source : shader_sources) {
 					ImGui::Text(shader_source.path.string().c_str());
+				}
+				ImGui::Separator();
+
+				rendering::ResourceManager resource_manager = app.runtime.resource_manager;
+				for(auto& shader_program : resource_manager.shader_manager.get_programs()) {
+					ImGui::Text(shader_program->access_name.c_str());
 				}
 			}
 

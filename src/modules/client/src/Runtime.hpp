@@ -34,7 +34,7 @@ class Runtime {
 	void begin_input_frame();
 	void render_to_window(int w, int h);
 
-	const rendering::MaterialAsset& get_material_asset(const rendering::MaterialAssetHandle& material_handle);
+	rendering::MaterialAsset& get_material_asset(const rendering::MaterialAssetHandle& material_handle);
 	
 
 

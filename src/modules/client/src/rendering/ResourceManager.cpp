@@ -46,6 +46,7 @@ namespace rendering {
 
 	shader_manager.add_source("shaders/v3D.glsl");
 	shader_manager.add_source("shaders/fBasicLighting.glsl");
+	shader_manager.add_source("shaders/fWhite.glsl");
 
         //xg::Guid vsh_src_guid = xg::newGuid();
         //xg::Guid fsh_src_guid = xg::newGuid();
@@ -59,16 +60,19 @@ namespace rendering {
 	//shader_program_asset.frag_source = fsh_src_guid;
 	
 	shader_manager.create_program("Default Program", "shaders/v3D.glsl", "shaders/fBasicLighting.glsl");
-
+	shader_manager.create_program("White Program", "shaders/v3D.glsl", "shaders/fWhite.glsl");
 
 	default_shader_program_handle = "Default Program";
 	shader_program_manager.init();
 		
     }
 
-    const MaterialAsset& ResourceManager::get_material_asset(const MaterialAssetHandle& handle) {
+    MaterialAsset& ResourceManager::get_material_asset(const MaterialAssetHandle& handle) {
 	return material_assets.at(handle);
     };
+
+    //std::vector<const ShaderProgramAsset*> ResourceManager::get_programs() {
+//	};
 
     ModelTreeNode ResourceManager::load_model(const std::string& model_path) {
 		GLTFModelLoader model_loader(*this);
@@ -84,12 +88,7 @@ namespace rendering {
 	}
 
 	std::vector<ShaderSource> ResourceManager::get_shader_sources() {
-		std::vector<ShaderSource> sources;
-		for (const auto& [k, v] : shader_sources) {
-			sources.push_back(v);
-		};
-
-		return sources;
+		return shader_manager.get_shader_sources(); // Might stop doing this and use the resource managers dedicated API, would be much faster.
 	}
 
 	void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {

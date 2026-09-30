@@ -64,7 +64,7 @@ void Runtime::begin_input_frame() {
 	ms.dy = 0.0f;
 }
 
-const rendering::MaterialAsset& Runtime::get_material_asset(const rendering::MaterialAssetHandle& material_handle) {
+rendering::MaterialAsset& Runtime::get_material_asset(const rendering::MaterialAssetHandle& material_handle) {
 	return resource_manager.get_material_asset(material_handle);
 };
 
