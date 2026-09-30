@@ -1,0 +1,21 @@
+name: Ubuntu Editor Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: make conan
+      run: make conan
+    - name: make cmake
+      run: make cmake
+    - name: make gui
+      run: make gui
