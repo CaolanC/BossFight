@@ -47,6 +47,7 @@ namespace rendering {
 	shader_manager.add_source("shaders/v3D.glsl");
 	shader_manager.add_source("shaders/fBasicLighting.glsl");
 	shader_manager.add_source("shaders/fWhite.glsl");
+	shader_manager.add_source("shaders/fSDLRayMarching.glsl");
 
         //xg::Guid vsh_src_guid = xg::newGuid();
         //xg::Guid fsh_src_guid = xg::newGuid();
@@ -61,6 +62,8 @@ namespace rendering {
 	
 	shader_manager.create_program("Default Program", "shaders/v3D.glsl", "shaders/fBasicLighting.glsl");
 	shader_manager.create_program("White Program", "shaders/v3D.glsl", "shaders/fWhite.glsl");
+	shader_manager.create_program("RayMarching Program", "shaders/v3D.glsl", "shaders/fSDLRayMarching.glsl");
+
 
 	default_shader_program_handle = "Default Program";
 	shader_program_manager.init();

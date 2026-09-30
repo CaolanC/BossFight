@@ -41,3 +41,11 @@ pak:
 	./bin/Pak
 
 fresh: dump cmake
+
+cmake2: conan2
+	cmake -B build -S . -G Ninja -DCMAKE_TOOLCHAIN_FILE=build/build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+	cmake --build build 
+	-DCMAKE_BUILD_TYPE=Release
+
+conan2:
+	conan install . --output-folder=build -s build_type=Release --build=missing -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
