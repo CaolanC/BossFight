@@ -31,7 +31,6 @@ namespace client {
     };
 
     void Client::scene_registry_migration_temorary_bootstrap() {
-	std::cout << "got to this bs at least\n";
 	if (glCreateShader == nullptr) {
         SDL_Log("ERROR: glCreateShader is still NULL inside bootstrap!");
         return;
@@ -164,7 +163,7 @@ namespace client {
 
         // entt::registry& r = scene.getRegistry();
         //systems::Render(r, w, h);
-	renderer.new_render(active_registry, w, h);
+		renderer.new_render(active_registry, w, h);
         //renderer.render(active_registry, w, h, model_manager, material_manager);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

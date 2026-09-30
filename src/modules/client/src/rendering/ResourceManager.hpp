@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include <rendering/GLTFModelLoader.hpp>
 #include <rendering/ModelTree.hpp>
@@ -10,6 +11,9 @@
 #include <rendering/MaterialAsset.hpp>
 #include <rendering/NewMesh.hpp>
 #include <rendering/TextureAsset.hpp>
+#include <rendering/ShaderSource.hpp>
+#include <rendering/ShaderProgramAsset.hpp>
+#include <rendering/ShaderManager.hpp>
 #include <core/ShaderProgramManager.hpp>
 
 namespace rendering {
@@ -25,7 +29,17 @@ namespace rendering {
 	void upload_node_to_gpu(const ModelTreeNode& node);
 	MeshAssetHandle add_mesh_from_cpumesh(CPUMesh cpu_mesh);
 	MaterialAssetHandle add_material_asset(MaterialAsset material_asset);
+	TextureAssetHandle add_texture_asset(TextureAsset texture_asset);
+	void upload_texture_to_gpu(TextureAssetHandle handle);
+	void write_pak_file();
+	std::vector<ShaderSource> get_shader_sources();
+	//std::vector<ShaderProgram> get_shader_programs();
+	MaterialAsset& get_material_asset(const MaterialAssetHandle& handle);
+	std::vector<const ShaderProgramAsset*> get_programs();
+	//const ShaderProgramAsset& get_program_asset(
 
+
+	xg::Guid compile_shader(ShaderProgramAsset shader_asset);
 	
 
 	MaterialManager material_manager;
@@ -34,7 +48,14 @@ namespace rendering {
 	std::unordered_map<MeshAssetHandle, MeshAsset> mesh_assets;
 	std::unordered_map<MaterialAssetHandle, MaterialAsset> material_assets;
 	std::unordered_map<TextureAssetHandle, TextureAsset> texture_assets;
+	std::unordered_map<ShaderSourceHandle, ShaderSource> shader_sources; // Contains actual shader source text.
+	std::unordered_map<ShaderProgramAssetHandle, ShaderProgramAsset> shader_program_assets;
+	std::unordered_map<ShaderHandle, Shader> shaders; // Compiled shaders.
 	core::ShaderProgramManager shader_program_manager;
+
+	rendering::ShaderManager shader_manager;
+
+	std::string default_shader_program_handle;
         
         // uint32_t add_mesh();
         // uint32_t add_texture();

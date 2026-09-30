@@ -9,7 +9,7 @@ conand:
 	conan install . --output-folder=build -s build_type=Debug --build=missing
 
 # Configure CMake for Release
-cmake: conan
+cmake:
 	cmake -B build -S . \
 		-DCMAKE_TOOLCHAIN_FILE=build/build/Release/generators/conan_toolchain.cmake \
 		-DCMAKE_BUILD_TYPE=Release
@@ -21,6 +21,7 @@ cmaked: conand
 		-DCMAKE_BUILD_TYPE=Debug
 
 gui:
+	@echo "COMPILING BOSSFIGHT."
 	cmake --build build --target GUI
 	./bin/GUI
 
@@ -30,5 +31,13 @@ guid: cmaked
 
 dump:
 	rm -rf build bin/GUI bin/Server
+
+game:
+	cmake --build build --target Game
+	./bin/Game
+
+pak:
+	cmake --build build --target Pak
+	./bin/Pak
 
 fresh: dump cmake

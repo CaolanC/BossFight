@@ -28,8 +28,8 @@ static bool init(AppContext& app) {
 	    return false;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
     app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
     app.gl_context = SDL_GL_CreateContext(app.window);
@@ -37,6 +37,7 @@ static bool init(AppContext& app) {
     SDL_GL_MakeCurrent(app.window, app.gl_context);
 
     gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -49,7 +50,9 @@ static bool init(AppContext& app) {
 
     ImGui_ImplSDL3_InitForOpenGL(app.window, app.gl_context);
     ImGui_ImplOpenGL3_Init(get_glsl_version());
-    app.client.init_embedded();
+
+	app.runtime.init();
+    //app.client.init_embedded();
 
     return true;
 }
@@ -145,6 +148,8 @@ static void process_events(AppContext& app) {
         app.client.begin_input_frame();
     }
 
+	app.runtime.begin_input_frame();
+
     while (SDL_PollEvent(&e)) {
         ImGui_ImplSDL3_ProcessEvent(&e);
 
@@ -159,9 +164,7 @@ static void process_events(AppContext& app) {
             SDL_SetWindowMouseGrab(app.window, false);
         }
 
-        if (app.client.is_scene_ready() && app.client.get_input_mode() == client::InputMode::Client) {
-            app.client.process_input_event(e);
-        }
+        app.runtime.process_input_event(e);
     }
 
     if (app.client.is_scene_ready()) {

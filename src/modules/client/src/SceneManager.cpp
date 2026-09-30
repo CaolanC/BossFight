@@ -8,15 +8,16 @@
 namespace runtime {
 
 SceneManager::SceneManager() {
-	new_scene("Default Scene");
+	create_scene("Default Scene");
 };
 
-entt::registry& SceneManager::new_scene(std::string scene_name) {
+entt::registry& SceneManager::create_scene(std::string scene_name) {
 	entt::registry reg;
 
     reg.ctx().emplace<component::keyboard_state>();
     reg.ctx().emplace<component::mouse_state>();
-	spawn::freecam(reg);
+	//spawn::freecam(reg);
+    reg.ctx().emplace<component::current_camera>(spawn::freecam(reg));
     //reg.ctx().emplace<component::current_camera>(spawn(spawn::freecam));
 	
 	auto [it, inserted] = scene_map.emplace(scene_name, std::move(reg));

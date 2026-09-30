@@ -6,6 +6,9 @@
 #include <vector>
 #include <rendering/MaterialAsset.hpp>
 
+// We really need to namespace ts, but I'm too lazy to sort it rn in case we need to rename a buncha shit, so come back to it innaminute,
+// doing the pak shyt rn and I'd love to get it done
+
 enum class AttributeType {
     POSITION,
     NORMAL,
@@ -17,7 +20,8 @@ enum class AttributeType {
     JOINTS_0,
     JOINTS_1,
     WEIGHTS_0,
-    WEIGHTS_1
+    WEIGHTS_1,
+	END_ATTRIBUTE // This is for parsing the .pak version of the file, makes it fairly handy to detect when we've finished loading attribute types.
 };
 
 struct VertexAttribute {
@@ -30,9 +34,14 @@ struct VertexAttribute {
 	GLsizei byte_stride = 0;
 };
 
-struct VertexLayout {
+struct VertexLayout { // This can be removed :D
     GLsizei stride = 0;
     std::vector<VertexAttribute> attributes;
+};
+
+enum VBO_Type {
+	STANDALONE,
+	INTERLEAVED
 };
 
 struct GPUMesh {
@@ -47,45 +56,29 @@ struct GPUMesh {
     uint32_t count = 0;                  // vertex_count or index_count
     GLenum index_type = 0;               // 0 if non-indexed, otherwise GL_UNSIGNED_INT, etc.
     GLenum draw_mode = GL_TRIANGLES;     // GL_TRIANGLES, GL_TRIANGLE_STRIP, etc.
-	unsigned int texture;
+	//unsigned int texture;
 };
 
 struct VBO_AttributePair {
     std::vector<uint8_t> vbo;
     VertexAttribute attribute;
+	VBO_Type type;
 };
 
 struct CPUMesh {
-    //VBO_LayoutPair position;
-    //VBO_LayoutPair normals; 
-	//VBO_LayoutPair texcoords;
-
-	std::unordered_map<AttributeType, VBO_AttributePair> data; // So this seems like the right approach, but we need to check what this means for the stride in the layouts :thumbs_up:
-
-
-// <- We will want to upgrade this to a dynamic map, this will require updating the gpumesh as well as surrounding code.
-				// but honestly, a great idea.
-				// there's no need to interleave it cpu side, the interleaving optimizations only happen on the cpu, so either we go with the dynamic map
-				// or we can have a VBO_LayoutPair for each thing
-    //std::vector<uint8_t> position_vbo;
-    //std::vector<uint8_t> interleaved_vbo;
-
-    // --- Index Buffer Data ---
-    std::vector<uint8_t> indices;        // Raw index data
-    GLenum index_type = GL_UNSIGNED_INT; // GL_UNSIGNED_SHORT, GL_UNSIGNED_INT, etc.
-
     // --- Draw Metadata ---
+   	xg::Guid guid; 
     uint32_t vertex_count = 0;           // Total vertices (needed for glDrawArrays)
     uint32_t index_count = 0;            // Total indices (needed for glDrawElements)
+    GLenum index_type = GL_UNSIGNED_INT; // GL_UNSIGNED_SHORT, GL_UNSIGNED_INT, etc.
 
     //VertexLayout layout;
     GLenum draw_mode = GL_TRIANGLES;
-    std::optional<rendering::MaterialAssetHandle> material_asset;
 
-	std::vector<AttributeType> standalone_vbos;
-	std::vector<AttributeType> interleaved_vbos;
+    // --- Index Buffer Data ---
+    std::vector<uint8_t> indices;        // Raw index data
 
-	// Probabaly a good idea for interleaving: Two sets or similar that define which attributes should have their own vbo and which should be interleaved.
+	std::unordered_map<AttributeType, VBO_AttributePair> data;
 
 	void add_data(AttributeType attribute_type, VBO_AttributePair attribute_pair) {
 		data.emplace(attribute_type, std::move(attribute_pair));

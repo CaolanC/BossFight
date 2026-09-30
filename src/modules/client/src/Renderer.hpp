@@ -26,9 +26,19 @@ namespace client {
 			void init();
 			void init_ubos();
 			void draw_mesh(rendering::MeshAssetHandle& mesh_handle, rendering::MaterialAssetHandle& material_handle, glm::mat4& transform);
+			void render_to_texture(int w, int h, entt::registry& active_scene);
+			void render_to_window(int w, int h, entt::registry& active_scene);
+			unsigned get_color_texture();
 		private:
+			void ensure_framebuffer(int w, int h);
 			unsigned int camera_ubo, lighting_ubo;
 			rendering::ResourceManager& resource_manager;
 			unsigned int default_shader_program;
+      		unsigned int framebuffer = 0;
+       		unsigned int color_texture = 0;
+        	unsigned int depth_rbo = 0;
+        	int framebuffer_width = 0;
+        	int framebuffer_height = 0;
+
 	};
 }

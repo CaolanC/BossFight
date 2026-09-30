@@ -11,6 +11,7 @@
 #include <SerializedObject.hpp>
 #include <LoadedModelInfo.hpp>
 #include <EditorPanels.hpp>
+#include <rendering/MaterialAsset.hpp>
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
@@ -28,136 +29,15 @@ namespace gui {
 
         ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-        if (!app.client.is_scene_ready()) {
-            ImGui::Text("Session");
-            ImGui::Separator();
-
-            if (ImGui::Button("Host Session", ImVec2(-1, 30))) {
-                app.flow_mode = AppContext::SessionFlowMode::Host;
-                app.host_scene_mode = AppContext::HostSceneMode::None;
-                app.status_text = "Hosting session";
-            }
-            if (ImGui::Button("Join Session", ImVec2(-1, 30))){
-                app.flow_mode = AppContext::SessionFlowMode::Join;
-                app.host_scene_mode = AppContext::HostSceneMode::None;
-                app.status_text = "Joining session";
-            }
-
-            ImGui::Separator();
-
-            // Host flow
-
-            // if (app.flow_mode == AppContext::SessionFlowMode::Host) {
-            //     ImGui::Text("Host Session Setup");
-            //     ImGui::Spacing();
-
-            //     ImGui::InputText("##host_ip_input", app.host_ip_input, sizeof(app.host_ip_input));
-
-            //     if (ImGui::Button("New Scene", ImVec2(-1, 28))) {
-            //         app.host_scene_mode = AppContext::HostSceneMode::Blank;
-            //         app.status_text = "Blank scene selected";
-            //     }
-
-            //     if (ImGui::Button("Load From File", ImVec2(-1, 28))) {
-            //         app.host_scene_mode = AppContext::HostSceneMode::FromFile;
-            //         app.status_text = "Load-from-file selected";
-            //     }
-
-            //     ImGui::Spacing();
-
-            //     if (app.host_scene_mode == AppContext::HostSceneMode::Blank) {
-            //         ImGui::TextWrapped("A blank scene will be created.");
-
-            //         if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-            //             bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
-            //             if (ok) {
-            //                 app.status_text = "Host session started (blank scene)";
-            //                 app.session_info = std::string(app.host_ip_input);
-            //             }
-            //             else {
-            //                 app.status_text = "Host session started failed";
-            //             }
-            //         }
-
-            //     }
-            //     else if (app.host_scene_mode == AppContext::HostSceneMode::FromFile) {
-            //         ImGui::Text("Scene file");
-            //         ImGui::InputText("##scene_file", app.file_input, sizeof(app.file_input));
-
-            //         if (ImGui::Button("Start Host Session", ImVec2(-1, 30))) {
-            //             bool ok = app.client.start_host_file(std::string(app.host_ip_input) + ":30000", std::string(app.file_input), app.session_port);
-            //             if (ok) {
-            //                 app.status_text = std::string("Host session started from file: ") + app.file_input;
-            //                 app.session_info = std::string(app.host_ip_input);
-            //             }
-            //             else {
-            //                 app.status_text = "Failed to start host session";
-            //             }
-            //         }
-
-
-            //     }
-            // }
-
-            // Joining
-
-            // else if (app.flow_mode == AppContext::SessionFlowMode::Join) {
-            //     ImGui::Text("Join Session");
-            //     ImGui::Spacing();
-
-            //     ImGui::Text("Server IP");
-            //     ImGui::InputText("##ip", app.guest_ip_input, sizeof(app.guest_ip_input));
-
-            //     ImGui::Text("Port");
-            //     ImGui::InputText("##port", app.port_input, sizeof(app.port_input));
-
-            //     if (ImGui::Button("Join", ImVec2(-1, 30))) {
-            //         app.client.setIsHost(false);
-            //         int port = std::atoi(app.port_input);
-            //         bool ok = app.client.start_guest(std::string(app.guest_ip_input), port);
-            //         if (ok) {
-            //             app.status_text = std::string("Joining session at ") + app.guest_ip_input + ":" + app.port_input;
-            //             app.session_info = std::string(app.guest_ip_input);
-            //             app.session_port = port;
-            //         }
-            //         else {
-            //             app.status_text = "Failed to join session.";
-            //         }
-            //     }
-            // }
-
-        }
-
-        // Once succeed, get rid of buttons and show if client is a host or guest respectively.
-        // Also, display save and quit for host
-
-        else if (app.client.is_scene_ready() && app.client.getIsHost()) {
-            // ImGui::Text("Host Client");
-            // ImGui::Separator();
-
-            // ImGui::Text("Enter save file name below:");
-            // ImGui::InputText("##save_file", app.savetofile_input, sizeof(app.savetofile_input));
-            // if (ImGui::Button("Save and Quit", ImVec2(-1, 30))) {
-            //     if (app.client.save_and_quit(app.savetofile_input)) {
-            //         app.done = true;
-            //     }
-            //     else {
-            //         app.status_text = "Failed to save to file, client still open.";
-            //     }
-            // }
-        }
-        else if (app.client.is_scene_ready() && !(app.client.getIsHost())) {
-            ImGui::Text("Guest Client");
-        }
-
-        // Small info tab
-
-        ImGui::Separator();
-        ImGui::Text("Info");
-        ImGui::Separator();
-        ImGui::TextWrapped("Status: %s", app.status_text.c_str());
-        ImGui::TextWrapped("Session IP: %s", app.session_info.c_str());
-        ImGui::TextWrapped("Session Port: %d", app.session_port);
+        ImGui::Text("Scene");
+		//app.runtime.create_scene("New Scene");
+		std::vector<std::string> scene_names = app.runtime.get_scene_names();
+		for(std::string name : scene_names) {
+			ImGui::Text(name.c_str());
+		}
+		if (ImGui::Button("Write .pak file")) {
+			app.runtime.resource_manager.write_pak_file();
+		}
 
         ImGui::End();
     }
@@ -169,35 +49,17 @@ namespace gui {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-        // app.client.process_network_messages();
-
-        // bool ok = app.client.start_host_blank(std::string(app.host_ip_input) + ":30000", app.session_port);
-        // if (!app.client.is_scene_ready()) {
-        //     ImGui::Dummy(ImVec2(0.0f, 40.0f));
-        //     ImGui::TextWrapped("No active scene yet.");
-        //     ImGui::Spacing();
-        //     ImGui::TextWrapped("Choose one of the options in the Tools panel:");
-        //     ImGui::BulletText("Host Session -> New Scene");
-        //     ImGui::BulletText("Host Session -> Load From File");
-        //     ImGui::BulletText("Join Session -> enter port and join");
-
-        //     ImGui::End();
-        //     ImGui::PopStyleVar();
-        //     return;
-        //}
-
         ImVec2 size = ImGui::GetContentRegionAvail();
 
         int w = (int)size.x;
         int h = (int)size.y;
 
         if (w > 0 && h > 0) {
-            app.client.update();
-            app.client.render_to_texture(w, h);
-
-            GLuint tex = app.client.get_render_texture();
+            app.runtime.update();
+			GLuint tex = app.runtime.render_texture(w, h);
 
             ImGui::Image((ImTextureID)(intptr_t)tex, size, ImVec2(0,1), ImVec2(1,0));
+            
 
         }
 
@@ -225,7 +87,7 @@ namespace gui {
         ImGui::Separator();
 
         if (ImGui::Button("Create Entity")) {
-            auto id = app.client.active_registry.create();
+            auto id = app.runtime.active_scene.create();
             //app.client.active_registry.emplace<components::entity_name>(id, "Entity");
         }
 
@@ -235,8 +97,13 @@ namespace gui {
 
         if (ImGui::Button("Load GLTF ModelTree.")) {
             auto m_tree = app.client.resource_manager.load_model("models/sink/scene.gltf");
-	    app.client.entity_factory.from_model_tree(app.client.active_registry, m_tree);
-	    std::cout << "allright we created that entity THEN it crashed\n";
+	    	app.client.entity_factory.from_model_tree(app.client.active_registry, m_tree);
+        }
+
+
+        if (ImGui::Button("Load GLTF ModelTree Runtime.")) {
+        	auto m_tree = app.runtime.resource_manager.load_model("models/sink/scene.gltf");
+	    	app.runtime.entity_factory.from_model_tree(app.runtime.active_scene, m_tree);
         }
 
 
@@ -250,8 +117,10 @@ namespace gui {
         ImGui::EndMenu();
     }
 
-    const auto& view = app.client.active_registry.view<entt::entity>();
-
+    //const auto& view = app.client.active_registry.view<entt::entity>();
+    
+    auto& active_scene = app.runtime.active_scene;
+    const auto& view = active_scene.view<entt::entity>();
 
     if (ImGui::BeginChild("Entity List", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar)) {
         for (auto entity : view) {
@@ -286,10 +155,10 @@ namespace gui {
                 if (ImGui::BeginMenu("Add Component")) {
                     if (ImGui::MenuItem("Transform")) {
                         // Example EnTT emplace:
-                        app.client.active_registry.emplace_or_replace<shared::component::position>(entity, glm::vec3(0, 0, 0));
-                        app.client.active_registry.emplace_or_replace<shared::component::rotation>(entity, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
-                        app.client.active_registry.emplace_or_replace<component::scale>(entity);
-                        app.client.active_registry.emplace_or_replace<shared::component::transform>(entity);
+                        active_scene.emplace_or_replace<shared::component::position>(entity, glm::vec3(0, 0, 0));
+                        active_scene.emplace_or_replace<shared::component::rotation>(entity, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+                        active_scene.emplace_or_replace<component::scale>(entity);
+                        active_scene.emplace_or_replace<shared::component::transform>(entity);
                     }
                     if (ImGui::MenuItem("Model")) {
                         app.client.active_registry.emplace_or_replace<component::model_ref>(entity, app.selected_model_ref);
@@ -301,7 +170,7 @@ namespace gui {
                         app.client.active_registry.emplace_or_replace<component::debug_spin>(entity);
                     }
                     if (ImGui::MenuItem("Point Light")) {
-                        app.client.active_registry.emplace_or_replace<component::basic_light>(entity);
+                        active_scene.emplace_or_replace<component::basic_light>(entity);
                     }
                     ImGui::EndMenu();
                 }
@@ -326,13 +195,13 @@ namespace gui {
 
             // Tree Pop if open
             if (isOpen) {
-                if (app.client.active_registry.all_of<shared::component::transform>(entity)) {
+                if (active_scene.all_of<shared::component::transform>(entity)) {
                     ImGui::TreeNodeEx("Comp_Transform", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Transform");
-                    auto& pos = app.client.active_registry.get<shared::component::position>(entity);
+                    auto& pos = active_scene.get<shared::component::position>(entity);
                     float v[3] = {pos.value[0], pos.value[1], pos.value[2]};
                     ImGui::DragFloat3("Position", v, 0.05f);
-                    \
-                    auto& rot = app.client.active_registry.get<shared::component::rotation>(entity);
+                    
+                    auto& rot = active_scene.get<shared::component::rotation>(entity);
 
                     glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(rot));
 
@@ -344,7 +213,7 @@ namespace gui {
 
                     ImGui::DragFloat3("Rotation", u_rot, 1.0f);
 
-                    auto& scale = app.client.active_registry.get<component::scale>(entity);
+                    auto& scale = active_scene.get<component::scale>(entity);
                     float s = scale.s;
                     ImGui::DragFloat("Scale", &s, 0.05f, 0.01f, 100.0f);
 
@@ -355,10 +224,10 @@ namespace gui {
                     rot = glm::quat(euler_rad);
                     scale.s = s;
                 }
-                if (app.client.active_registry.all_of<component::basic_light>(entity)) {
+                if (active_scene.all_of<component::basic_light>(entity)) {
                     ImGui::TreeNodeEx("Comp_Light", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Light");
 
-                    auto& light = app.client.active_registry.get<component::basic_light>(entity);
+                    auto& light = active_scene.get<component::basic_light>(entity);
 
                     float u_col[4] = {
 			light.color[0],
@@ -372,10 +241,32 @@ namespace gui {
 		    light.color = glm::vec4(u_col[0], u_col[1], u_col[2], u_col[3]);
 
                 }
-                if (app.client.active_registry.all_of<component::mat_ref>(entity)) {
-                    ImGui::TreeNodeEx("Comp_Material", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
+                if (active_scene.all_of<component::material>(entity)) {
+                    ImGui::TreeNodeEx("Comp_NMaterial", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Material");
+					auto& material = active_scene.get<component::material>(entity);
+					rendering::MaterialAsset& material_asset = app.runtime.get_material_asset(material.material_handle);
+					ImGui::Text(material_asset.shader_program_handle.c_str());
+					std::vector<const rendering::ShaderProgramAsset*> programs = app.runtime.resource_manager.shader_manager.get_programs();
+					std::string selected_program =  material_asset.shader_program_handle.c_str();
+					std::vector<std::string> program_options;
+					int current_item = 0;
+					for (auto& program : programs) {
+						program_options.push_back(program->access_name);
+					}
+
+					auto vector_getter = [](void* vec, int idx) -> const char* {
+					    auto& vector = *static_cast<std::vector<std::string>*>(vec);
+					    if (idx < 0 || idx >= static_cast<int>(vector.size())) return nullptr;
+					    return vector[idx].c_str();
+					};
+					auto it = std::find(program_options.begin(), program_options.end(), selected_program);
+					current_item = std::distance(program_options.begin(), it);
+					ImGui::Combo("Select Material", &current_item, vector_getter, static_cast<void*>(&program_options), static_cast<int>(program_options.size()));
+					material_asset.shader_program_handle = program_options[current_item];
+					
                 }
-                if (app.client.active_registry.all_of<component::debug_spin>(entity)) {
+
+                if (active_scene.all_of<component::debug_spin>(entity)) {
                     ImGui::TreeNodeEx("Comp_DebugSpin", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Debug Spin");
                 }
                 ImGui::TreePop();
@@ -385,100 +276,8 @@ namespace gui {
     }
 
     
-        // Logic for editor tab below. Shows name, position, rotation and scale fields.
-        // Rotation is symbolized by pitch, yaw and roll.
-        // Pitch = up and down, yaw = left and right, roll = front and back
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Text("Selected Object");
-        ImGui::Spacing();
-
-        // if (app.selected_entity.has_value()) {
-        //     ImGui::TextWrapped("Select an object from the list above.");
-        //     ImGui::End();
-        //     return;
-        // }
-
-        // if (!(app.selected_object_id.empty()) && !(app.client.scene.check_registry(app.selected_object.objectID))) {
-        //     app.selected_object_id = "";
-        //     app.selected_object = core::SerializedObject();
-        // }
-
-        //ImGui::TextWrapped("Object ID: %s", app.selected_object.objectID.c_str());
-        //ImGui::TextWrapped("Model Path: %s", app.selected_object.model_path.c_str());
-
-        //char name[128];
-        //std::strncpy(name, app.selected_object.name.c_str(), 128);
-        //name[sizeof(name) - 1] = '\0';
-
-        //if (ImGui::InputText("Name", name, sizeof(name))) {
-        //    app.selected_object.name = name;
-        //}
-
-        //float pos[3] = {
-        //    app.selected_object.position.x,
-        //    app.selected_object.position.y,
-        //    app.selected_object.position.z
-        //};
-
-        //glm::vec3 euler_deg = glm::degrees(glm::eulerAngles(app.selected_object.rotation));
-
-        //float rot[3] = {
-        //    euler_deg.x,
-        //    euler_deg.y,
-        //    euler_deg.z
-        //};
-
-        //float scale = app.selected_object.scale;
-
-        ImGui::Spacing();
-        ImGui::Text("Transform");
-
-        bool changed = false;
-        //changed |= ImGui::DragFloat3("Position", pos, 0.05f);
-        //ImGui::Text("Rotation (Pitch/Yaw/Roll)");
-        //changed |= ImGui::DragFloat3("Rotation", rot, 1.0f);
-        //changed |= ImGui::DragFloat("Scale", &scale, 0.05f, 0.01f, 100.0f);
-
-        //if (changed) {
-        //    app.selected_object.position = glm::vec3(pos[0], pos[1], pos[2]);
-        //    glm::vec3 euler_rad = glm::radians(glm::vec3(rot[0], rot[1], rot[2]));
-        //    app.selected_object.rotation = glm::quat(euler_rad);
-        //    app.selected_object.scale = scale;
-        //}
-
-        if (ImGui::Button("Apply Edit", ImVec2(-1, 30))) {
-            // bool ok = app.client.apply_gui_edit(app.selected_object);
-            // if (ok) {
-            //     app.status_text = "Object edited successfully";
-            // }
-            // else {
-            //     app.status_text = "Failed to edit object";
-            // }
-
-            // if (ok) {
-            //     core::SerializedObject latest;
-            //     if (app.client.get_scene_object(app.selected_object_id, latest)) {
-            //         app.selected_object = latest;
-            //     }
-            // }
-        }
-
-        if (ImGui::Button("Delete Object", ImVec2(-1, 30))) {
-            // bool ok = app.client.apply_gui_delete(app.selected_object);
-            // if (ok) {
-            //     app.status_text = "Object deleted successfully";
-            // }
-            // else {
-            //     app.status_text = "Failed to delete object";
-            // }
-
-            // if (ok) {
-            //     app.selected_object = core::SerializedObject();
-            //     app.selected_object_id = "";
-            // }
-        }
+        //bool changed = false;
 
         ImGui::End();
     }
@@ -489,104 +288,34 @@ namespace gui {
         ImGui::Begin("BottomPanel", nullptr, ImGuiWindowFlags_NoTitleBar);
 
         if (ImGui::BeginTabBar("BottomTabs")) {
+            if (ImGui::BeginTabItem("Shaders##shader_tab")) {
 
-           // if (ImGui::BeginTabItem("Loaded Models")) {
+				static char shader_source_buf[128] = "";
 
-           //     auto loaded_models = app.client.model_manager.get_loaded_models();
+				ImGui::Text("Add New Shader Source:");
+				if(ImGui::InputText("##shader_source", shader_source_buf, IM_ARRAYSIZE(shader_source_buf), ImGuiInputTextFlags_EnterReturnsTrue)) {
+					shader_source_buf[0] = '\0';
+				};
+				ImGui::SameLine();
 
-           //     if (loaded_models.empty()) {
-           //         ImGui::TextWrapped("No loaded models.");
-           //     } else {
-           //         for (const auto& model : loaded_models) {
-           //             std::string label = model.model_path;
+				if (ImGui::Button("Add")) {
+					shader_source_buf[0] = '\0';
+				}
+				ImGui::EndTabItem();
 
-           //             bool selected = (app.selected_model_ref == model.model_ref);
+				const auto& shader_sources = app.runtime.get_shader_sources();
+				for(auto& shader_source : shader_sources) {
+					ImGui::Text(shader_source.path.string().c_str());
+				}
+				ImGui::Separator();
 
-           //             if (ImGui::Selectable(label.c_str(), selected)) {
-           //                 app.selected_model_ref = model.model_ref;
-           //                 app.selected_model_path = model.model_path;
-           //             }
-           //         }
+				rendering::ResourceManager resource_manager = app.runtime.resource_manager;
+				for(auto& shader_program : resource_manager.shader_manager.get_programs()) {
+					ImGui::Text(shader_program->access_name.c_str());
+				}
+			}
 
-           //         ImGui::Spacing();
-           //         ImGui::Separator();
-
-           //         if (app.selected_model_ref.isValid()) {
-           //             ImGui::TextWrapped(
-           //                 "Selected model: %s",
-           //                 app.selected_model_path.empty()
-           //                     ? app.selected_model_ref.str().c_str()
-           //                     : app.selected_model_path.c_str()
-           //             );
-
-           //             ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
-
-           //             if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
-           //                 core::LoadedModelInfo info;
-           //                 info.model_ref = app.selected_model_ref;
-           //                 info.model_path = app.selected_model_path;
-
-           //                 // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
-           //                 // if (ok) {
-           //                 //     app.status_text = "Object added from selected model";
-           //                 // }
-           //                 // else {
-           //                 //     app.status_text = "Failed to add object from selected model";
-           //                 // }
-           //             }
-           //         }
-           //     }
-           //     
-           //     ImGui::EndTabItem();
-           // }
-           // if (ImGui::BeginTabItem("Loaded Materials")) {
-           //     auto loaded_materials = app.client.material_manager.get_loaded_materials();
-
-           //     if (loaded_materials.empty()) {
-           //         ImGui::TextWrapped("No loaded models.");
-           //     } else {
-           //         for (const auto& material : loaded_materials) {
-           //             std::string label = material.ref;
-
-           //             bool selected = (app.selected_material_ref == material.ref);
-
-           //             if (ImGui::Selectable(label.c_str(), selected)) {
-           //                 app.selected_material_ref = material.ref;
-           //             }
-           //         }
-
-           //         ImGui::Spacing();
-           //         ImGui::Separator();
-
-           //         if (app.selected_model_ref.isValid()) {
-           //             ImGui::TextWrapped(
-           //                 "Selected model: %s",
-           //                 app.selected_model_path.empty()
-           //                     ? app.selected_model_ref.str().c_str()
-           //                     : app.selected_model_path.c_str()
-           //             );
-
-           //             ImGui::InputText("##objectname", app.objectname, sizeof(app.objectname));
-
-           //             if (ImGui::Button("Add Object From Selected Model", ImVec2(-1, 30))) {
-           //                 core::LoadedModelInfo info;
-           //                 info.model_ref = app.selected_model_ref;
-           //                 info.model_path = app.selected_model_path;
-
-           //                 // bool ok = app.client.add_object_from_loaded_model(info, app.objectname);
-           //                 // if (ok) {
-           //                 //     app.status_text = "Object added from selected model";
-           //                 // }
-           //                 // else {
-           //                 //     app.status_text = "Failed to add object from selected model";
-           //                 // }
-           //             }
-           //         }
-           //     }
-           //     
-           //     ImGui::EndTabItem();
-           // }
-            if (ImGui::BeginTabItem("Help")) {
+            if (ImGui::BeginTabItem("Help##help_tab")) {
                 ImGui::Text("Controls");
                 ImGui::Separator();
                 ImGui::BulletText("Click inside the viewport to control the camera.");
