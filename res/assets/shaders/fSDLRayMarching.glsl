@@ -43,7 +43,7 @@ float GetLight(vec3 p) {
 float sph(ivec3 i, vec3 f, ivec3 c) {
 	//float rad = 0.5;
 
-	float rad = 0.5 * ((i.y + f.y) / 2);
+	float rad = 0.5 * (abs(i.y + f.y) / 2);
 
 	return length(f-vec3(c)) - rad;
 }
@@ -54,12 +54,12 @@ float sdBase(vec3 p) {
 
 	return min(
 		min(
-		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0))),
-		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0)))
+		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 1))),
+		  min(sph(i, f, ivec3(0, 1, 0)), sph(i, f, ivec3(0, 1, 1)))
 		),
 		min(
-		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0))),
-		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0)))
+		  min(sph(i, f, ivec3(1, 0, 0)), sph(i, f, ivec3(1, 0, 1))),
+		  min(sph(i, f, ivec3(1, 1, 0)), sph(i, f, ivec3(1, 1, 1)))
 		)
 	);
 }
