@@ -43,7 +43,7 @@ float GetLight(vec3 p) {
 float sph(ivec3 i, vec3 f, ivec3 c) {
 	//float rad = 0.5;
 
-	float rad = 0.5 * sin(i.y);
+	float rad = 0.5 * ((i.y + f.y) / 2);
 
 	return length(f-vec3(c)) - rad;
 }
