@@ -15,7 +15,7 @@ layout(std140, binding = 0) uniform CameraUBO
 };
 
 float sd_sphere(vec3 pos, float radius) {
-	pos.x = pos.x - round(pos.x);
+	//pos.x = pos.x - round(pos.x);
 	float distance = length(pos) - radius;
 	//distance += cos(pos.x) * 0.5;
 	return distance;
@@ -40,12 +40,35 @@ float GetLight(vec3 p) {
 	return clamp(dot(light_vector, surface_normal), 0., 1.);
 }
 
+float sph(ivec3 i, vec3 f, ivec3 c) {
+	float rad = 0.5;
+
+	return length(f-vec3(c)) - rad;
+}
+
+float sdBase(vec3 p) {
+	ivec3 i = ivec3(floor(p));
+	vec3 f = fract(p);
+
+	return min(
+		min(
+		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0))),
+		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0)))
+		),
+		min(
+		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0))),
+		  min(sph(i, f, ivec3(0, 0, 0)), sph(i, f, ivec3(0, 0, 0)))
+		)
+	);
+}
+
 float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	float ray_length = 0.0;
 
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
-		float dist_scene = sd_sphere(p, 0.5);
+		//float dist_scene = sd_sphere(p, 0.5);
+		float dist_scene = sdBase(p);
 		ray_length += dist_scene;
 		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
 	}
@@ -60,8 +83,8 @@ void main() {
 
 	float dif = GetLight(position);
 
-	vec3 col = vec3(dif); //+ GetNormal(position);
-	col = GetNormal(position);
+	//vec3 col = vec3(dif); //+ GetNormal(position);
+	vec3 col = GetNormal(position);
 	//col = vec3(dif);
 	//col += GetNormal(position);
 
