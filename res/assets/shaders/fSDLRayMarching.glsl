@@ -24,8 +24,8 @@ float sd_sphere(vec3 pos, float radius) {
 
 vec3 GetNormal(vec3 p) {
 	vec2 e = vec2(.01, 0);
-	float d = sd_sphere(p, 0.5);
-	vec3 normal = d - vec3(
+	//float d = sd_sphere(p, 0.5);
+	vec3 normal = vec3(
 		sd_sphere(p-e.xyy, 0.5),
 		sd_sphere(p-e.yxy, 0.5),
 		sd_sphere(p-e.yyx, 0.5)
@@ -35,12 +35,26 @@ vec3 GetNormal(vec3 p) {
 }
 
 
-float sph(ivec3 i, vec3 f, ivec3 c) {
-	float rad = 0.7;
+float old_sph(ivec3 i, vec3 f, ivec3 c) {
+	float rad = 0.1;
 
 	//float rad = 0.5 * (abs(i.y + f.y) / 10);
 
 	return length(f-vec3(c)) - rad;
+}
+
+float sph(vec3 i, vec3 f, vec3 c) {
+    vec3 p = 17.0 * fract(
+        (i + c) * 0.3183099 + vec3(0.11, 0.17, 0.13)
+    );
+
+    float w = fract(
+        p.x * p.y * p.z * (p.x + p.y + p.z)
+    );
+
+    float r = 0.7 * w * w;
+
+    return length(f - c) - r;
 }
 
 float sdBase(vec3 p) {
@@ -93,16 +107,17 @@ float sdFbm( vec3 p, float d )
 }
 
 float map(vec3 p) {
-    return sdFbm(p, 1.0);
+    float base_plane = p.y;
+    return sdFbm(p, base_plane);
 }
 
 vec3 GetNormal2(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
-    float d = map(p);
-    vec3 normal = d - vec3(
-        map(p - e.xyy),
-        map(p - e.yxy),
-        map(p - e.yyx)
+    //float d = map(p);
+    vec3 normal = vec3(
+	map(p + e.xyy) - map(p - e.xyy),
+        map(p + e.yxy) - map(p - e.yxy),
+        map(p + e.yyx) - map(p - e.yyx)
     );
     return normalize(normal);
 }
@@ -120,8 +135,8 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		//float dist_scene = sd_sphere(p, 0.5);
-		float dist_scene = sdFbm(p, 1.0);
-		ray_length += dist_scene;
+		float dist_scene = map(p);
+		ray_length += dist_scene * 0.4;
 		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
 	}
 	return ray_length;
@@ -136,7 +151,7 @@ void main() {
 	float dif = GetLight(position);
 
 	//vec3 col = vec3(dif); //+ GetNormal(position);
-	vec3 col = GetNormal2(position);
+	vec3 col = GetNormal2(position) * 0.5 + 0.5;
 	//col = vec3(dif);
 	//col += GetNormal(position);
 
