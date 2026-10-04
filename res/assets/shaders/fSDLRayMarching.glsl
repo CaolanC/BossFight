@@ -93,7 +93,7 @@ float sdFbm( vec3 p, float d )
 }
 
 float map(vec3 p) {
-    return sdFbm(p, 0.0);
+    return sdFbm(p, 1.0);
 }
 
 vec3 GetNormal2(vec3 p) {
@@ -120,7 +120,7 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		//float dist_scene = sd_sphere(p, 0.5);
-		float dist_scene = sdFbm(p, 0.0);
+		float dist_scene = sdFbm(p, 1.0);
 		ray_length += dist_scene;
 		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
 	}
