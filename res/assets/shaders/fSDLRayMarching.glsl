@@ -1,10 +1,10 @@
 #version 460
 
-#define MAX_STEPS 40.0
+#define MAX_STEPS 100.0
 #define MAX_DIST 25.0
-#define HIT_THRESHOLD 0.05
+#define HIT_THRESHOLD 0.01
 
-#define PLANET_RADIUS 10.0
+#define PLANET_RADIUS 5.0
 
 in vec3 FragPos;
 out vec4 FragColor;
@@ -306,24 +306,27 @@ vec3 GetNormal3(vec3 p) {
 }
 
 float GetLight(vec3 p) {
-	//vec3 light = vec3(4.0, 4.0, 2.0);
-	vec3 light = camera_position.xyz;
+	vec3 light = vec3(4.0, 4.0, 2.0);
+	//vec3 light = camera_position.xyz;
 	vec3 light_vector = normalize(light - p);
 	vec3 surface_normal = GetNormal3(p);
 	float d = distance(light, p);
-	return clamp(dot(light_vector, surface_normal), 0., 1.) / d;
+	return (clamp(dot(light_vector, surface_normal), 0., 1.)) / (d/10);
 }
 
 float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	float ray_length = 0.0;
 
+
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
+
+		float falloff = distance(camera_position.xyz, p) / 3;
 		//float dist_scene = sd_sphere(p, 0.5);
 		float dist_scene = planetSDF(p);
 		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
-		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
+		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD+falloff) break;
 	}
 	return ray_length;
 }
@@ -336,7 +339,7 @@ void main() {
 
 	float dif = GetLight(position);
 
-	vec3 col = vec3(dif); //+ GetNormal(position);
+	vec3 col = vec3(dif) * vec3(0.5, 0.0, 0.5); //+ GetNormal(position);
 	//vec3 col = GetNormal2(position) * 0.5 + 0.5;
 	//col = vec3(dif);
 	//col += GetNormal(position);
