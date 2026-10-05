@@ -4,6 +4,8 @@
 #define MAX_DIST 25.0
 #define HIT_THRESHOLD 0.05
 
+#define PLANET_RADIUS 10.0
+
 in vec3 FragPos;
 out vec4 FragColor;
 
@@ -13,6 +15,160 @@ layout(std140, binding = 0) uniform CameraUBO
 	mat4 view_matrix;
 	vec4 camera_position;
 };
+
+float hash31(vec3 p)
+{
+    p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
+    p *= 17.0;
+
+    return fract(
+        p.x * p.y * p.z *
+        (p.x + p.y + p.z)
+    );
+}
+
+// ------------------------------------------------------------
+// Smooth 3D value noise
+// ------------------------------------------------------------
+
+float noise(vec3 p)
+{
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+
+    // Smooth interpolation curve.
+    f = f * f * (3.0 - 2.0 * f);
+
+    float n000 = hash31(i + vec3(0, 0, 0));
+    float n100 = hash31(i + vec3(1, 0, 0));
+    float n010 = hash31(i + vec3(0, 1, 0));
+    float n110 = hash31(i + vec3(1, 1, 0));
+
+    float n001 = hash31(i + vec3(0, 0, 1));
+    float n101 = hash31(i + vec3(1, 0, 1));
+    float n011 = hash31(i + vec3(0, 1, 1));
+    float n111 = hash31(i + vec3(1, 1, 1));
+
+    float x00 = mix(n000, n100, f.x);
+    float x10 = mix(n010, n110, f.x);
+    float x01 = mix(n001, n101, f.x);
+    float x11 = mix(n011, n111, f.x);
+
+    float y0 = mix(x00, x10, f.y);
+    float y1 = mix(x01, x11, f.y);
+
+    return mix(y0, y1, f.z);
+}
+
+
+// ------------------------------------------------------------
+// FBM
+// ------------------------------------------------------------
+
+float fbm(vec3 p)
+{
+    float value = 0.0;
+    float amplitude = 0.5;
+
+    for (int i = 0; i < 6; i++)
+    {
+        value += noise(p) * amplitude;
+
+        p *= 2.0;
+        amplitude *= 0.5;
+    }
+
+    return value;
+}
+
+
+// ------------------------------------------------------------
+// Ridged noise
+// ------------------------------------------------------------
+
+float ridgedNoise(vec3 p)
+{
+    float n = noise(p);
+
+    // Convert valleys of normal noise into ridges.
+    n = 1.0 - abs(n * 2.0 - 1.0);
+
+    // Sharpen the ridges.
+    n *= n;
+
+    return n;
+}
+
+
+// ------------------------------------------------------------
+// Ridged FBM
+// ------------------------------------------------------------
+
+float ridgedFbm(vec3 p)
+{
+    float value = 0.0;
+    float amplitude = 0.5;
+
+    for (int i = 0; i < 5; i++)
+    {
+        value += ridgedNoise(p) * amplitude;
+
+        p *= 2.0;
+        amplitude *= 0.5;
+    }
+
+    return value;
+}
+
+
+// ------------------------------------------------------------
+// Planet terrain
+// ------------------------------------------------------------
+
+float terrain(vec3 p)
+{
+    // IMPORTANT:
+    // p is a position in 3D space.
+    // Normalize it so the terrain is based only on direction
+    // from the planet centre.
+    p = normalize(p);
+
+    // Large-scale continental structure.
+    float continents = fbm(p * 2.0);
+
+    // Mountain structure.
+    float mountains = ridgedFbm(p * 5.0);
+
+    // Small-scale surface detail.
+    float detail = fbm(p * 20.0);
+
+    // Remove some of the mountains from low areas.
+    float mountainMask = smoothstep(
+        0.35,
+        0.65,
+        continents
+    );
+
+    mountains *= mountainMask;
+
+    // Combine scales.
+    float height = 0.0;
+
+    height += (continents - 0.5) * 2.0;
+    height += mountains * 0.8;
+    height += (detail - 0.5) * 0.15;
+
+    return height;
+}
+
+float planetSDF(vec3 p)
+{
+    float r = length(p);
+
+    float height = terrain(p);
+
+    return r - (PLANET_RADIUS + height);
+}
 
 float sd_sphere(vec3 pos, float radius) {
 	//pos.x = pos.x - round(pos.x);
@@ -43,11 +199,6 @@ float old_sph(ivec3 i, vec3 f, ivec3 c) {
 	return length(f-vec3(c)) - rad;
 }
 
-float hash31(vec3 p) {
-    p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
-    p *= 17.0;
-    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
-}
 
 float not_so_old_sph(vec3 i, vec3 f, vec3 c) {
     vec3 p = 17.0 * fract(
@@ -157,7 +308,8 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		//float dist_scene = sd_sphere(p, 0.5);
-		float dist_scene = map(p);
+		float dist_scene = planetSDF(p);
+		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
 		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
 	}
