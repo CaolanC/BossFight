@@ -167,7 +167,7 @@ namespace gui {
                         app.client.active_registry.emplace_or_replace<component::mat_ref>(entity, app.selected_material_ref);
                     }
                     if (ImGui::MenuItem("Debug Spin")) {
-                        app.client.active_registry.emplace_or_replace<component::debug_spin>(entity);
+                        active_scene.emplace_or_replace<component::debug_spin>(entity);
                     }
                     if (ImGui::MenuItem("Point Light")) {
                         active_scene.emplace_or_replace<component::basic_light>(entity);

@@ -1,6 +1,6 @@
 #version 460
 
-#define MAX_STEPS 100.0
+#define MAX_STEPS 25.0
 #define MAX_DIST 25.0
 #define HIT_THRESHOLD 0.01
 
@@ -9,11 +9,37 @@
 in vec3 FragPos;
 out vec4 FragColor;
 
+uniform mat4 uModel;
+
 layout(std140, binding = 0) uniform CameraUBO
 {
 	mat4 projection_matrix;
 	mat4 view_matrix;
 	vec4 camera_position;
+};
+
+struct DirectionalLight {
+    vec4 position;
+    vec4 color;
+};
+
+struct AmbientLighting {
+    vec4 color;
+};
+
+struct PointLight {
+    vec4 position;
+    vec4 color; 
+};
+
+#define MAX_LIGHTS 100
+
+layout(std140, binding = 1) uniform LightingUBO
+{
+    AmbientLighting ambient_lighting;
+    PointLight[MAX_LIGHTS] point_lights;
+    int no_lights;
+
 };
 
 float hash31(vec3 p)
@@ -305,13 +331,22 @@ vec3 GetNormal3(vec3 p) {
     return normalize(normal);
 }
 
-float GetLight(vec3 p) {
-	vec3 light = vec3(4.0, 4.0, 2.0);
+vec3 GetLight(vec3 p, PointLight light) {
+	//vec3 light = vec3(4.0, 4.0, 2.0);
 	//vec3 light = camera_position.xyz;
-	vec3 light_vector = normalize(light - p);
+	vec3 light_vector = normalize(light.position.xyz - p);
 	vec3 surface_normal = GetNormal3(p);
-	float d = distance(light, p);
-	return (clamp(dot(light_vector, surface_normal), 0., 1.)) / (d/10);
+	float d = distance(light.position.xyz, p);
+	return (vec3((clamp(dot(light_vector, surface_normal), 0., 1.)) / (d/10)) * light.color.xyz) * light.color.w;
+}
+
+vec3 lighting(vec3 p) {
+	vec3 light_value = vec3(0.0);
+	for(int i = 0; i < no_lights; i++) {
+		PointLight pl = point_lights[i];
+		light_value += GetLight(p, pl);
+	}
+	return light_value;
 }
 
 float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
@@ -320,13 +355,14 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
+		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
 
-		float falloff = distance(camera_position.xyz, p) / 3;
+		//float falloff = distance(camera_position.xyz, p) / 3;
 		//float dist_scene = sd_sphere(p, 0.5);
-		float dist_scene = planetSDF(p);
+		float dist_scene = planetSDF(localP);
 		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
-		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD+falloff) break;
+		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
 	}
 	return ray_length;
 }
@@ -337,7 +373,9 @@ void main() {
 
 	vec3 position = camera_position.xyz + ray_dir * t;
 
-	float dif = GetLight(position);
+	//float dif = GetLight(position);
+	vec3 dif = lighting(position);
+	
 
 	vec3 col = vec3(dif) * vec3(0.5, 0.0, 0.5); //+ GetNormal(position);
 	//vec3 col = GetNormal2(position) * 0.5 + 0.5;
