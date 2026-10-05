@@ -1,8 +1,8 @@
 #version 460
 
-#define MAX_STEPS 25.0
-#define MAX_DIST 25.0
-#define HIT_THRESHOLD 0.01
+#define MAX_STEPS 50.0
+#define MAX_DIST 30.0
+#define HIT_THRESHOLD 0.05
 
 #define PLANET_RADIUS 5.0
 
@@ -342,16 +342,17 @@ vec3 GetLight(vec3 p, PointLight light) {
 
 vec3 lighting(vec3 p) {
 	vec3 light_value = vec3(0.0);
+	vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+
 	for(int i = 0; i < no_lights; i++) {
 		PointLight pl = point_lights[i];
-		light_value += GetLight(p, pl);
+		light_value += GetLight(localP, pl);
 	}
 	return light_value;
 }
 
 float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	float ray_length = 0.0;
-
 
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
