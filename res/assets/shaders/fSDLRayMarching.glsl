@@ -1,8 +1,8 @@
 #version 460
 
-#define MAX_STEPS 100
-#define MAX_DIST 200.0
-#define HIT_THRESHOLD 0.01
+#define MAX_STEPS 25.0
+#define MAX_DIST 25.0
+#define HIT_THRESHOLD 0.05
 
 in vec3 FragPos;
 out vec4 FragColor;
@@ -43,7 +43,13 @@ float old_sph(ivec3 i, vec3 f, ivec3 c) {
 	return length(f-vec3(c)) - rad;
 }
 
-float sph(vec3 i, vec3 f, vec3 c) {
+float hash31(vec3 p) {
+    p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
+    p *= 17.0;
+    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+float not_so_old_sph(vec3 i, vec3 f, vec3 c) {
     vec3 p = 17.0 * fract(
         (i + c) * 0.3183099 + vec3(0.11, 0.17, 0.13)
     );
@@ -55,6 +61,16 @@ float sph(vec3 i, vec3 f, vec3 c) {
     float r = 0.7 * w * w;
 
     return length(f - c) - r;
+}
+
+float sph(ivec3 i, vec3 f, ivec3 c) {
+    vec3 grid_pos = vec3(i + c);
+
+    float h = hash31(grid_pos);
+
+    float rad = 0.2 + 0.2 * h;
+
+    return length(f - vec3(c)) - rad;
 }
 
 float sdBase(vec3 p) {
@@ -78,17 +94,22 @@ float smax(float a, float b, float k) {
     return mix(a, b, h) + k * h * (1.0 - h);
 }
 
-float smin( float a, float b, float k )
+float old_smin( float a, float b, float k )
 {
     k *= 1.0;
     float r = exp2(-a/k) + exp2(-b/k);
     return -k*log2(r);
 }
 
+float smin(float a, float b, float k) {
+    float h = max(k - abs(a - b), 0.0) / k;
+    return min(a, b) - h * h * k * 0.25;
+}
+
 float sdFbm( vec3 p, float d )
 {
-   float s = 1.0;
-   for( int i=0; i<6; i++ )
+   float s = 10.0;
+   for( int i=0; i<11; i++ )
    {
        // evaluate new octave
        float n = s*sdBase(p);
