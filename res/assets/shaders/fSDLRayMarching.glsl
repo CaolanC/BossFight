@@ -1,6 +1,6 @@
 #version 460
 
-#define MAX_STEPS 25.0
+#define MAX_STEPS 40.0
 #define MAX_DIST 25.0
 #define HIT_THRESHOLD 0.05
 
@@ -108,8 +108,8 @@ float smin(float a, float b, float k) {
 
 float sdFbm( vec3 p, float d )
 {
-   float s = 10.0;
-   for( int i=0; i<11; i++ )
+   float s = 5.0;
+   for( int i=0; i<2; i++ )
    {
        // evaluate new octave
        float n = s*sdBase(p);
