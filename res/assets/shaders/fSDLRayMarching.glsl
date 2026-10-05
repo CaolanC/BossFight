@@ -378,7 +378,7 @@ void main() {
 	vec3 dif = lighting(position);
 	
 
-	vec3 col = vec3(dif) * vec3(0.5, 0.0, 0.5); //+ GetNormal(position);
+	vec3 col = vec3(dif); //+ GetNormal(position);
 	//vec3 col = GetNormal2(position) * 0.5 + 0.5;
 	//col = vec3(dif);
 	//col += GetNormal(position);
