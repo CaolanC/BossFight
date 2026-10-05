@@ -294,10 +294,22 @@ vec3 GetNormal2(vec3 p) {
     return normalize(normal);
 }
 
+vec3 GetNormal3(vec3 p) {
+    vec2 e = vec2(0.001, 0.0);
+    //float d = map(p);
+    vec3 normal = vec3(
+	planetSDF(p + e.xyy),
+	planetSDF(p + e.yxy),
+	planetSDF(p + e.yyx)
+    );
+    return normalize(normal);
+}
+
 float GetLight(vec3 p) {
-	vec3 light = vec3(4.0, 4.0, 2.0);
+	//vec3 light = vec3(4.0, 4.0, 2.0);
+	vec3 light = camera_position.xyz;
 	vec3 light_vector = normalize(light - p);
-	vec3 surface_normal = GetNormal2(p);
+	vec3 surface_normal = GetNormal3(p);
 	float d = distance(light, p);
 	return clamp(dot(light_vector, surface_normal), 0., 1.) / d;
 }
