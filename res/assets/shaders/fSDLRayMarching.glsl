@@ -108,8 +108,8 @@ float smin(float a, float b, float k) {
 
 float sdFbm( vec3 p, float d )
 {
-   float s = 5.0;
-   for( int i=0; i<2; i++ )
+   float s = 10.0;
+   for( int i=0; i<3; i++ )
    {
        // evaluate new octave
        float n = s*sdBase(p);
@@ -147,7 +147,8 @@ float GetLight(vec3 p) {
 	vec3 light = vec3(4.0, 4.0, 2.0);
 	vec3 light_vector = normalize(light - p);
 	vec3 surface_normal = GetNormal2(p);
-	return clamp(dot(light_vector, surface_normal), 0., 1.);
+	float d = distance(light, p);
+	return clamp(dot(light_vector, surface_normal), 0., 1.) / d;
 }
 
 float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
@@ -171,8 +172,8 @@ void main() {
 
 	float dif = GetLight(position);
 
-	//vec3 col = vec3(dif); //+ GetNormal(position);
-	vec3 col = GetNormal2(position) * 0.5 + 0.5;
+	vec3 col = vec3(dif); //+ GetNormal(position);
+	//vec3 col = GetNormal2(position) * 0.5 + 0.5;
 	//col = vec3(dif);
 	//col += GetNormal(position);
 
