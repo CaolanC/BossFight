@@ -334,7 +334,7 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 		float dist_scene = planetSDF(localP);
 		//float dist_other_planet = planetSDF(localP);
 		vec3 p1 = vec3(7.0, 0.0, 0.0);
-		dist_scene = max(dist_scene, -sd_sphere(p-p1, 3.0));
+		dist_scene = smax(dist_scene, sd_sphere(p-p1, 3.0), 1.0);
 		//dist_scene -= dist_other_planet;
 		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
