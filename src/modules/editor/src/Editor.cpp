@@ -162,6 +162,7 @@ static void process_events(AppContext& app) {
             SDL_SetWindowRelativeMouseMode(app.window, false);
             SDL_CaptureMouse(false);
             SDL_SetWindowMouseGrab(app.window, false);
+			app.runtime.editor_mode = true;
         }
 
         app.runtime.process_input_event(e);

@@ -184,19 +184,6 @@ float sd_sphere(vec3 pos, float radius) {
 	return distance;
 }
 
-vec3 GetNormal(vec3 p) {
-	vec2 e = vec2(.01, 0);
-	//float d = sd_sphere(p, 0.5);
-	vec3 normal = vec3(
-		sd_sphere(p-e.xyy, 0.5),
-		sd_sphere(p-e.yxy, 0.5),
-		sd_sphere(p-e.yyx, 0.5)
-
-	);
-	return normalize(normal);
-}
-
-
 float old_sph(ivec3 i, vec3 f, ivec3 c) {
 	float rad = 0.1;
 
@@ -346,7 +333,8 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 		//float dist_scene = sd_sphere(p, 0.5);
 		float dist_scene = planetSDF(localP);
 		//float dist_other_planet = planetSDF(localP);
-		dist_scene = max(dist_scene, sd_sphere(p, 5.0));
+		vec3 p1 = vec3(7.0, 0.0, 0.0);
+		dist_scene = max(dist_scene, sd_sphere(p-p1, 5.0));
 		//dist_scene -= dist_other_planet;
 		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;

@@ -67,6 +67,7 @@ namespace gui {
         }
 
         if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(0)) {
+			app.runtime.editor_mode = false;
             app.client.set_input_mode(client::InputMode::Client);
             SDL_SetWindowMouseGrab(app.window, true);
             SDL_CaptureMouse(true);

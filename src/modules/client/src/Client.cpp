@@ -185,7 +185,6 @@ namespace client {
         entt::registry& r = active_registry;
         auto& kb = r.ctx().get<component::keyboard_state>();
         auto& ms = r.ctx().get<component::mouse_state>();
-
         switch (event.type) {
             case SDL_EVENT_KEY_DOWN:
                 if (event.key.scancode < SDL_SCANCODE_COUNT) {
