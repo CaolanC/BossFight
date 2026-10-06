@@ -38,6 +38,9 @@ namespace gui {
 		if (ImGui::Button("Write .pak file")) {
 			app.runtime.resource_manager.write_pak_file();
 		}
+		if (ImGui::Button("Recompile Shaders")) {
+			app.runtime.resource_manager.shader_manager.recompile_shaders();
+		}
 
         ImGui::End();
     }
@@ -64,6 +67,7 @@ namespace gui {
         }
 
         if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(0)) {
+			app.runtime.editor_mode = false;
             app.client.set_input_mode(client::InputMode::Client);
             SDL_SetWindowMouseGrab(app.window, true);
             SDL_CaptureMouse(true);
@@ -167,7 +171,7 @@ namespace gui {
                         app.client.active_registry.emplace_or_replace<component::mat_ref>(entity, app.selected_material_ref);
                     }
                     if (ImGui::MenuItem("Debug Spin")) {
-                        app.client.active_registry.emplace_or_replace<component::debug_spin>(entity);
+                        active_scene.emplace_or_replace<component::debug_spin>(entity);
                     }
                     if (ImGui::MenuItem("Point Light")) {
                         active_scene.emplace_or_replace<component::basic_light>(entity);

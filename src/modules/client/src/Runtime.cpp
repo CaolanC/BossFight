@@ -74,6 +74,8 @@ void Runtime::process_input_event(const SDL_Event& event) {
     auto& kb = r.ctx().get<component::keyboard_state>();
     auto& ms = r.ctx().get<component::mouse_state>();
 
+    if (editor_mode) return;
+
     switch (event.type) {
         case SDL_EVENT_KEY_DOWN:
             if (event.key.scancode < SDL_SCANCODE_COUNT) {

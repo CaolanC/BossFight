@@ -36,6 +36,7 @@ namespace rendering {
 	//std::vector<ShaderProgram> get_shader_programs();
 	MaterialAsset& get_material_asset(const MaterialAssetHandle& handle);
 	std::vector<const ShaderProgramAsset*> get_programs();
+	void recompile_shaders();
 	//const ShaderProgramAsset& get_program_asset(
 
 

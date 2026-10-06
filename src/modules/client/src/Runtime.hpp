@@ -25,6 +25,7 @@ class Runtime {
 	SceneManager scene_manager; // This too.
 	rendering::ResourceManager resource_manager = rendering::ResourceManager(); // This too.
 	entt::registry& active_scene = scene_manager.get_scene("Default Scene"); // This too.
+	bool editor_mode = false;
 
 	//void ensure_framebuffer(int w, int h); // Ideally these don't exist here at all, but this too lol.
     unsigned int render_texture(int w, int h);

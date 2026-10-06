@@ -3,6 +3,7 @@
 #include <rendering/Shader.hpp>
 
 #include <SDL3/SDL.h>
+#include <glad/glad.h>
 
 #include <string>
 
@@ -28,8 +29,26 @@ void ShaderManager::create_program(std::string access_name, std::string vertex_p
 	shader_program_assets.insert({access_name, asset});
 };
 
+void ShaderManager::recompile_shaders() {
+	reload_sources();
+	for (auto& [k, asset]: shader_program_assets) {
+		compile_shader(asset);
+		//glCompileShader(asset.program_name);
+	}
+};
+
 void ShaderManager::add_source(std::string path) {
 	shader_sources.insert({path, ShaderSource(path)});
+};
+
+void ShaderManager::reload_sources() {
+	for(auto& [path, source] : shader_sources) {
+		reload_source(path);
+	}
+};
+
+void ShaderManager::reload_source(std::string path) {
+	shader_sources.insert_or_assign(path, ShaderSource(path));
 };
 
 ShaderSource ShaderManager::get_source(std::string path) {

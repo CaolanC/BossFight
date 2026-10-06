@@ -70,6 +70,10 @@ namespace rendering {
 		
     }
 
+    void ResourceManager::recompile_shaders() {
+	shader_manager.recompile_shaders();
+    };
+
     MaterialAsset& ResourceManager::get_material_asset(const MaterialAssetHandle& handle) {
 	return material_assets.at(handle);
     };

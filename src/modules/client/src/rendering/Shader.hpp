@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 #include <rendering/ShaderSource.hpp>
-//#include <SDL/SDL3.h>
+#include <SDL3/SDL.h>
 
 namespace rendering {
 
@@ -37,7 +37,9 @@ namespace rendering {
            //     glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
            //     //if(!ok){ glGetShaderInfoLog(shader, sizeof(log), NULL, log); SDL_Log("VS: %s", log); }
            // }
-           
+           	void recompile() {
+			glCompileShader(shader);
+		};
 		void from_source(const ShaderSource& source)
 		{
 		    shader = glCreateShader(source.type);
@@ -52,6 +54,18 @@ namespace rendering {
 		    );
 		
 		    glCompileShader(shader);
+
+			GLint compiled = GL_FALSE;
+			glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+			if (!compiled) {
+			    GLint log_length = 0;
+			    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+			    if (log_length > 0) {
+			        std::vector<char> log(log_length);
+			        glGetShaderInfoLog(shader, log_length, nullptr, log.data());
+			        SDL_Log("Shader compile error: %s", log.data());
+			    }
+			}
 		
 		    GLint ok;
 		    glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
