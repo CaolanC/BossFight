@@ -31,7 +31,7 @@ static bool init(AppContext& app) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
-    app.window = SDL_CreateWindow("Perfect.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
+    app.window = SDL_CreateWindow("BossFight.", 1280, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED);;
     app.gl_context = SDL_GL_CreateContext(app.window);
 
     SDL_GL_MakeCurrent(app.window, app.gl_context);

@@ -37,7 +37,9 @@ namespace rendering {
            //     glGetShaderiv(shader, GL_COMPILE_STATUS, &ok);
            //     //if(!ok){ glGetShaderInfoLog(shader, sizeof(log), NULL, log); SDL_Log("VS: %s", log); }
            // }
-           
+           	void recompile() {
+			glCompileShader(shader);
+		};
 		void from_source(const ShaderSource& source)
 		{
 		    shader = glCreateShader(source.type);

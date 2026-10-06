@@ -38,6 +38,9 @@ namespace gui {
 		if (ImGui::Button("Write .pak file")) {
 			app.runtime.resource_manager.write_pak_file();
 		}
+		if (ImGui::Button("Recompile Shaders")) {
+			app.runtime.resource_manager.shader_manager.recompile_shaders();
+		}
 
         ImGui::End();
     }

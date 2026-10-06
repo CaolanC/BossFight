@@ -2,7 +2,7 @@
 
 #define MAX_STEPS 50.0
 #define MAX_DIST 30.0
-#define HIT_THRESHOLD 0.05
+#define HIT_THRESHOLD 0.005
 
 #define PLANET_RADIUS 5.0
 
@@ -53,10 +53,6 @@ float hash31(vec3 p)
     );
 }
 
-// ------------------------------------------------------------
-// Smooth 3D value noise
-// ------------------------------------------------------------
-
 float noise(vec3 p)
 {
     vec3 i = floor(p);
@@ -87,10 +83,6 @@ float noise(vec3 p)
 }
 
 
-// ------------------------------------------------------------
-// FBM
-// ------------------------------------------------------------
-
 float fbm(vec3 p)
 {
     float value = 0.0;
@@ -108,10 +100,6 @@ float fbm(vec3 p)
 }
 
 
-// ------------------------------------------------------------
-// Ridged noise
-// ------------------------------------------------------------
-
 float ridgedNoise(vec3 p)
 {
     float n = noise(p);
@@ -125,10 +113,6 @@ float ridgedNoise(vec3 p)
     return n;
 }
 
-
-// ------------------------------------------------------------
-// Ridged FBM
-// ------------------------------------------------------------
 
 float ridgedFbm(vec3 p)
 {
@@ -146,10 +130,6 @@ float ridgedFbm(vec3 p)
     return value;
 }
 
-
-// ------------------------------------------------------------
-// Planet terrain
-// ------------------------------------------------------------
 
 float terrain(vec3 p)
 {
@@ -170,9 +150,9 @@ float terrain(vec3 p)
 
     // Remove some of the mountains from low areas.
     float mountainMask = smoothstep(
-        0.35,
-        0.65,
-        continents
+    	0.35,
+    	0.65,
+    	continents
     );
 
     mountains *= mountainMask;
@@ -348,6 +328,10 @@ vec3 lighting(vec3 p) {
 		PointLight pl = point_lights[i];
 		light_value += GetLight(localP, pl);
 	}
+
+	//vec4 spotlight = vec4(1.0, 1.0, 1.0, 0.5);
+	//light_value += clamp(dot(normalize(p), normalize(camera_position.xyz)), 0., 1.); // * spotlight.xyz * spotlight.w;
+
 	return light_value;
 }
 
@@ -358,12 +342,15 @@ float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
 
-		//float falloff = distance(camera_position.xyz, p) / 3;
+		float falloff = distance(camera_position.xyz, p);
 		//float dist_scene = sd_sphere(p, 0.5);
 		float dist_scene = planetSDF(localP);
+		//float dist_other_planet = planetSDF(localP);
+		dist_scene = max(dist_scene, sd_sphere(p, 5.0));
+		//dist_scene -= dist_other_planet;
 		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
-		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD) break;
+		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD * falloff) break;
 	}
 	return ray_length;
 }
@@ -379,6 +366,7 @@ void main() {
 	
 
 	vec3 col = vec3(dif); //+ GetNormal(position);
+	//vec3 col = vec3(dif) + GetNormal3(position);
 	//vec3 col = GetNormal2(position) * 0.5 + 0.5;
 	//col = vec3(dif);
 	//col += GetNormal(position);
