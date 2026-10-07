@@ -298,6 +298,17 @@ vec3 GetNormal3(vec3 p) {
     return normalize(normal);
 }
 
+vec3 GetNormal(vec3 p) {
+    vec2 e = vec2(0.001, 0.0);
+    //float d = map(p);
+    vec3 normal = vec3(
+		planetSDF(p + e.xyy),
+		planetSDF(p + e.yxy),
+		planetSDF(p + e.yyx)
+    );
+    return normalize(normal);
+}
+
 vec3 GetLight(vec3 p, PointLight light) {
 	//vec3 light = vec3(4.0, 4.0, 2.0);
 	//vec3 light = camera_position.xyz;
@@ -310,6 +321,11 @@ vec3 GetLight(vec3 p, PointLight light) {
 vec3 lighting(vec3 p) {
 	vec3 light_value = vec3(0.0);
 	vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+
+	vec3 sun_dir  = normalize(-vec3(300, 300, 300));
+	vec3 surface_normal = normalize(GetNormal3(p));
+	vec4 sun_col = vec4(1.0, 1.0, 1.0, 1.0);
+	light_value += clamp(dot(normalize(p), surface_normal), 0., 1.) * sun_col.xyz * sun_col.w;
 
 	for(int i = 0; i < no_lights; i++) {
 		PointLight pl = point_lights[i];
@@ -325,16 +341,40 @@ vec3 lighting(vec3 p) {
 float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	float ray_length = 0.0;
 
+	vec3 sphere_location = vec3(6.0, 0.0, 6.0);
+	bool inside_glass = false;
+
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+
+		float dist_glass_sphere = sd_sphere(p-sphere_location, 3.0);
+
+		if (inside_glass) {
+			dist_glass_sphere = -dist_glass_sphere;
+		}
+
+		if (!inside_glass && dist_glass_sphere <= HIT_THRESHOLD) {
+			if (dist_glass_sphere >= 0) {
+				vec3 incident = normalize(ray_direction);
+				vec3 normal = normalize(GetNormal(p));
+				ray_direction = refract(incident, normal, 1.0/1.5);
+				inside_glass = true;
+			}
+		}
+		if (inside_glass && dist_glass_sphere > HIT_THRESHOLD) {
+			vec3 normal = normalize(GetNormal(p));
+			ray_direction = refract(normalize(ray_direction), -normal, 1.0/1.5);
+			inside_glass = false;
+		}
+		
 
 		float falloff = distance(camera_position.xyz, p);
 		//float dist_scene = sd_sphere(p, 0.5);
 		float dist_scene = planetSDF(localP);
 		//float dist_other_planet = planetSDF(localP);
 		vec3 p1 = vec3(7.0, 0.0, 0.0);
-		dist_scene = smax(dist_scene, sd_sphere(p-p1, 3.0), 1.0);
+		dist_scene = smin(dist_scene, sd_sphere(p-p1, 3.0), 8.0);
 		//dist_scene -= dist_other_planet;
 		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
