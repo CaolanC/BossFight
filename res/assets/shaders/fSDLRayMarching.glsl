@@ -179,10 +179,7 @@ float planetSDF(vec3 p)
 }
 
 float sd_sphere(vec3 pos, float radius) {
-	//pos.x = pos.x - round(pos.x);
 	float distance = length(pos) - radius;
-	//float distance = sin(pos.x);
-	//distance += cos(pos.x) * 0.5;
 	return distance;
 }
 
@@ -307,7 +304,6 @@ vec3 GetGlassNormal(vec3 p)
 
 vec3 GetNormal(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
-    //float d = map(p);
     vec3 normal = vec3(
 		sd_sphere(p + e.xyy, 1.0),
 		sd_sphere(p + e.yxy, 1.0),
@@ -364,7 +360,6 @@ vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col, vec3 p) {
     return specular_strength * spec * light_col.xyz;
 }
 
-
 vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	float ray_length = 0.0;
 
@@ -372,7 +367,7 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	bool inside_glass = false;
 
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
-
+	bool first_pass = false;
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
@@ -386,35 +381,39 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 		}
 
 		if (dist_glass_sphere <= HIT_THRESHOLD) {
-			vec3 normal = normalize(p -sphere_location);
+			//vec3 normal = normalize(p -sphere_location);
+			vec3 normal = GetNormal(p-sphere_location);
+			vec3 incident = normalize(ray_direction);
+
 			if (!inside_glass) {
-				vec3 incident = normalize(ray_direction);
 				ray_direction = refract(incident, normal, 1.0/1.5);
-				color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), GetNormal(p), vec4(0.5, 0.0, 0.5, 1.0), p);
-				//color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), normal, vec4(1.0), p) * vec3(1.0, 0.0, 1.0); // Something wrong with calculating normals this way.
 				inside_glass = true;
+
+				//color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), GetNormal(p), vec4(0.5, 0.0, 0.5, 1.0), p);
+				//color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), normal, vec4(1.0), p) * vec3(1.0, 0.0, 1.0); // Something wrong with calculating normals this way.
 			} else {
-				ray_direction = refract(normalize(ray_direction), -normal, 1.5/1.0);
+				ray_direction = refract(incident, -normal, 1.5/1.0);
 				inside_glass = false;
 			}
 			ray_origin = p + ray_direction * (HIT_THRESHOLD * 2.0);
 			ray_length = 0.0;
+			continue;
 		}
 		
 
 		float falloff = distance(camera_position.xyz, p);
 		float dist_scene = planetSDF(localP);
-		ray_length += dist_scene * 0.4;
-
+		ray_length += min(dist_scene, abs(dist_glass_sphere));
+		
 		if (ray_length >= MAX_DIST) {
-			color += texture(skybox, normalize(p));
+			color += texture(skybox, normalize(ray_direction));
 			break;
 		}
 
-		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD * falloff) {
-			color.xyz += lighting(p);
+		if (dist_scene <= HIT_THRESHOLD) { // *FALLOFF
+			color.xyz += lighting(localP);
 			break;
-		}
+		};
 
 
 
