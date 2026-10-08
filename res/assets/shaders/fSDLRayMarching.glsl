@@ -368,6 +368,8 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 	bool first_pass = false;
+	ray_direction = normalize(ray_direction);
+
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
@@ -381,9 +383,9 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 		}
 
 		if (dist_glass_sphere <= HIT_THRESHOLD) {
-			//vec3 normal = normalize(p -sphere_location);
-			vec3 normal = GetNormal(p-sphere_location);
-			vec3 incident = normalize(ray_direction);
+			vec3 normal = normalize(p -sphere_location);
+			//vec3 normal = GetNormal(p-sphere_location);
+			vec3 incident = ray_direction;
 
 			if (!inside_glass) {
 				ray_direction = refract(incident, normal, 1.0/1.5);
@@ -395,25 +397,35 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 				ray_direction = refract(incident, -normal, 1.5/1.0);
 				inside_glass = false;
 			}
-			ray_origin = p + ray_direction * (HIT_THRESHOLD * 2.0);
-			ray_length = 0.0;
-			continue;
+
+            		if (ray_direction == vec3(0.0)) {
+                		ray_direction = reflect(incident, inside_glass ? -normal : normal);
+                		inside_glass = !inside_glass; // Revert the flip because we didn't exit/enter
+            		}
+
+           		 // Update ray origin safely beyond the surface boundary & reset step tracker
+           		 ray_origin = p + ray_direction * 0.05; 
+           		 ray_length = 0.0;
+           		 continue;
 		}
 		
 
 		float falloff = distance(camera_position.xyz, p);
-		float dist_scene = planetSDF(localP);
-		ray_length += min(dist_scene, abs(dist_glass_sphere));
+		//float dist_scene = planetSDF(localP);
 		
+
+		//if (dist_scene <= HIT_THRESHOLD) { // *FALLOFF
+		//	color.xyz += lighting(localP);
+		//	break;
+		//};
+
+		//ray_length += min(dist_scene, dist_glass_sphere);
+		ray_length += dist_glass_sphere;
+
 		if (ray_length >= MAX_DIST) {
 			color += texture(skybox, normalize(ray_direction));
 			break;
 		}
-
-		if (dist_scene <= HIT_THRESHOLD) { // *FALLOFF
-			color.xyz += lighting(localP);
-			break;
-		};
 
 
 
