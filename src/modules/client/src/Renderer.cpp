@@ -49,6 +49,8 @@ namespace client {
 		);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, lighting_ubo);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		
     };
 
     void Renderer::set_camera_ubo(const glm::vec3& camera_position, const glm::mat4& projection_matrix, const glm::mat4& view_matrix) {
@@ -70,7 +72,10 @@ namespace client {
 		
 		glBindVertexArray(gpu_mesh.vao);
 
-		const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
+		rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
+
+		material_asset.cubemap_texture_handle = resource_manager.default_cubemap_texture_asset;
+
 		GLuint shader_program = resource_manager.shader_manager.get_program(material_asset.shader_program_handle).program_name;
 		//GLuint shader_program = resource_manager.shader_program_assets.at(material_asset.shader_program_handle).program_name;
 		glUseProgram(shader_program);
@@ -90,6 +95,11 @@ namespace client {
 		GLint tex_location = glGetUniformLocation(shader_program, "uTex");
 
 		glUniform1i(tex_location, 0);
+
+
+		const rendering::TextureAsset& cubemap_texture = resource_manager.texture_assets.at(material_asset.cubemap_texture_handle.value());
+		const rendering::GPUTexture& gpu_cubemap_texture = cubemap_texture.gpu_texture.value(); // Needs bounds checking obv. :)
+		glBindTexture(GL_TEXTURE_CUBE_MAP, gpu_cubemap_texture.ID);
 
        	glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr); // Need to implement non indexed drawing condition
 	};

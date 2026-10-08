@@ -1,7 +1,7 @@
 #version 460
 
 #define MAX_STEPS 50.0
-#define MAX_DIST 30.0
+#define MAX_DIST 100.0
 #define HIT_THRESHOLD 0.005
 
 #define PLANET_RADIUS 5.0
@@ -10,6 +10,8 @@ in vec3 FragPos;
 out vec4 FragColor;
 
 uniform mat4 uModel;
+
+uniform samplerCube skybox;
 
 layout(std140, binding = 0) uniform CameraUBO
 {
@@ -298,13 +300,18 @@ vec3 GetNormal3(vec3 p) {
     return normalize(normal);
 }
 
+vec3 GetGlassNormal(vec3 p)
+{
+    return normalize(p - vec3(6.0, 0.0, 6.0));
+}
+
 vec3 GetNormal(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
     //float d = map(p);
     vec3 normal = vec3(
-		planetSDF(p + e.xyy),
-		planetSDF(p + e.yxy),
-		planetSDF(p + e.yyx)
+		sd_sphere(p + e.xyy, 1.0),
+		sd_sphere(p + e.yxy, 1.0),
+		sd_sphere(p + e.yyx, 1.0)
     );
     return normalize(normal);
 }
@@ -338,70 +345,100 @@ vec3 lighting(vec3 p) {
 	return light_value;
 }
 
-float RayMarcher(vec3 ray_origin, vec3 ray_direction) {
+vec3 sphere_normal(vec3 p, vec3 sphere_location) {
+	return normalize(p - sphere_location);
+}
+
+vec3 sphere_lighting(vec3 p, vec3 sphere_location) {
+	vec3 normal = sphere_normal(p, sphere_location);
+	return normal;
+}
+
+vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col, vec3 p) {
+    float specular_strength = 0.5; // We can probabaly add this to the lighting ubo later
+    vec3 view_dir = normalize(camera_position.xyz - p);
+    vec3 reflect_dir = reflect(-light_dir, norm);
+
+    float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+    
+    return specular_strength * spec * light_col.xyz;
+}
+
+
+vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	float ray_length = 0.0;
 
 	vec3 sphere_location = vec3(6.0, 0.0, 6.0);
 	bool inside_glass = false;
 
+	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
+
 	for(int i = 0; i < MAX_STEPS; i++) {
 		vec3 p = ray_origin + ray_direction * ray_length;
 		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
 
-		float dist_glass_sphere = sd_sphere(p-sphere_location, 3.0);
+
+		float dist_glass_sphere = sd_sphere(p-sphere_location, 1.0);
 
 		if (inside_glass) {
 			dist_glass_sphere = -dist_glass_sphere;
+			//color.w *= 0.3;
 		}
 
-		if (!inside_glass && dist_glass_sphere <= HIT_THRESHOLD) {
-			if (dist_glass_sphere >= 0) {
+		if (dist_glass_sphere <= HIT_THRESHOLD) {
+			vec3 normal = normalize(p -sphere_location);
+			if (!inside_glass) {
 				vec3 incident = normalize(ray_direction);
-				vec3 normal = normalize(GetNormal(p));
 				ray_direction = refract(incident, normal, 1.0/1.5);
+				color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), GetNormal(p), vec4(0.5, 0.0, 0.5, 1.0), p);
+				//color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), normal, vec4(1.0), p) * vec3(1.0, 0.0, 1.0); // Something wrong with calculating normals this way.
 				inside_glass = true;
+			} else {
+				ray_direction = refract(normalize(ray_direction), -normal, 1.5/1.0);
+				inside_glass = false;
 			}
-		}
-		if (inside_glass && dist_glass_sphere > HIT_THRESHOLD) {
-			vec3 normal = normalize(GetNormal(p));
-			ray_direction = refract(normalize(ray_direction), -normal, 1.0/1.5);
-			inside_glass = false;
+			ray_origin = p + ray_direction * (HIT_THRESHOLD * 2.0);
+			ray_length = 0.0;
 		}
 		
 
 		float falloff = distance(camera_position.xyz, p);
-		//float dist_scene = sd_sphere(p, 0.5);
 		float dist_scene = planetSDF(localP);
-		//float dist_other_planet = planetSDF(localP);
-		vec3 p1 = vec3(7.0, 0.0, 0.0);
-		dist_scene = smin(dist_scene, sd_sphere(p-p1, 3.0), 8.0);
-		//dist_scene -= dist_other_planet;
-		//float dist_scene = map(p);
 		ray_length += dist_scene * 0.4;
-		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD * falloff) break;
+		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD * falloff) {
+			color.xyz += lighting(p);
+			break;
 	}
-	return ray_length;
+
+
+
+		//vec3 p1 = vec3(7.0, 0.0, 0.0);
+		//dist_scene = smin(dist_scene, sd_sphere(p-p1, 3.0), 8.0);
+		//dist_scene -= dist_other_planet;
+		//float dist_scene = sd_sphere(p, 0.5);
+		//float dist_other_planet = planetSDF(localP);
+
+	}
+
+	return color;
 }
 
 void main() {
 	vec3 ray_dir = normalize(FragPos - camera_position.xyz);
-	float t = RayMarcher(camera_position.xyz, ray_dir);
+	vec4 color = RayMarcher(camera_position.xyz, ray_dir);
 
-	vec3 position = camera_position.xyz + ray_dir * t;
+	//vec3 position = camera_position.xyz + ray_dir * t;
 
 	//float dif = GetLight(position);
-	vec3 dif = lighting(position);
+	//vec3 dif = lighting(position);
 	
 
-	vec3 col = vec3(dif); //+ GetNormal(position);
+	//vec3 col = vec3(dif); //+ GetNormal(position);
 	//vec3 col = vec3(dif) + GetNormal3(position);
 	//vec3 col = GetNormal2(position) * 0.5 + 0.5;
 	//col = vec3(dif);
 	//col += GetNormal(position);
 
-	if (t < MAX_DIST) {
-		FragColor = vec4(col, 1.0);
-	} else {
-		FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-	}
+	//FragColor = color;
+	FragColor = texture(skybox, normalize(FragPos));
 }

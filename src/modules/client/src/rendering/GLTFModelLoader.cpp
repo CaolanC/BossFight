@@ -126,8 +126,10 @@ MaterialAsset GLTFModelLoader::load_materials(tinygltf::Primitive& primitive, ti
 		    		CPUTexture cpu_texture = CPUTexture(fullPath.string().c_str()); // I reall would like to avoid this to string to c_string if possible, note to future caolan to sort it out please and thank you, cheers.
 		    		int in = baseTex.index;
 		    		index_texture_cache.insert({in, cpu_texture});
-		    		texture_asset.cpu_texture = cpu_texture;
-					TextureAssetHandle texture_asset_handle = resource_manager.add_texture_asset(texture_asset);
+				texture_asset.cpu_textures.push_back(cpu_texture);
+				texture_asset.dimension = rendering::TextureDimension::Texture2D;
+		    		//texture_asset.cpu_texture = cpu_texture;
+				TextureAssetHandle texture_asset_handle = resource_manager.add_texture_asset(texture_asset);
 		    		material_asset.base_color_texture_handle = texture_asset_handle;
     			}
     	    }

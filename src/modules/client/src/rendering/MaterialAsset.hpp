@@ -12,6 +12,7 @@ namespace rendering {
     struct MaterialAsset {
 		MaterialAssetHandle handle;
 		std::optional<TextureAssetHandle> base_color_texture_handle;
+		std::optional<TextureAssetHandle> cubemap_texture_handle;
 		std::string shader_program_handle;
 		//ShaderProgramHandle shader_program_handle;
     };
