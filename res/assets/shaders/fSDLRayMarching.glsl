@@ -405,10 +405,17 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 		float falloff = distance(camera_position.xyz, p);
 		float dist_scene = planetSDF(localP);
 		ray_length += dist_scene * 0.4;
+
+		if (ray_length >= MAX_DIST) {
+			color += texture(skybox, normalize(p));
+			break;
+		}
+
 		if (ray_length >= MAX_DIST || dist_scene <= HIT_THRESHOLD * falloff) {
 			color.xyz += lighting(p);
 			break;
-	}
+		}
+
 
 
 
@@ -439,6 +446,6 @@ void main() {
 	//col = vec3(dif);
 	//col += GetNormal(position);
 
-	//FragColor = color;
-	FragColor = texture(skybox, normalize(FragPos));
+	FragColor = color;
+	//FragColor = texture(skybox, normalize(FragPos));
 }
