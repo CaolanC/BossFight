@@ -1,8 +1,8 @@
 #version 460
 
-#define MAX_STEPS 50.0
+#define MAX_STEPS 100.0
 #define MAX_DIST 100.0
-#define HIT_THRESHOLD 0.005
+#define HIT_THRESHOLD 0.001
 
 #define PLANET_RADIUS 5.0
 
@@ -145,7 +145,7 @@ float terrain(vec3 p)
     float continents = fbm(p * 2.0);
 
     // Mountain structure.
-    float mountains = ridgedFbm(p * 5.0);
+    //float mountains = ridgedFbm(p * 5.0);
 
     // Small-scale surface detail.
     float detail = fbm(p * 20.0);
@@ -157,13 +157,13 @@ float terrain(vec3 p)
     	continents
     );
 
-    mountains *= mountainMask;
+    //mountains *= mountainMask;
 
     // Combine scales.
     float height = 0.0;
 
     height += (continents - 0.5) * 2.0;
-    height += mountains * 0.8;
+    //height += mountains * 0.8;
     height += (detail - 0.5) * 0.15;
 
     return height;
@@ -288,14 +288,38 @@ vec3 GetNormal2(vec3 p) {
 
 vec3 GetNormal3(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
-    //float d = map(p);
     vec3 normal = vec3(
-	planetSDF(p + e.xyy),
-	planetSDF(p + e.yxy),
-	planetSDF(p + e.yyx)
+		planetSDF(p + e.xyy) - planetSDF(p - e.xyy),
+		planetSDF(p + e.yxy) - planetSDF(p - e.yxy),
+		planetSDF(p + e.yyx) - planetSDF(p - e.yyx)
     );
     return normalize(normal);
 }
+
+vec3 GetNormal4(vec3 p) {
+    vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+    vec2 e = vec2(0.001, 0.0);
+    vec3 normal = vec3(
+        planetSDF(p+ e.xyy) - planetSDF(p- e.xyy),
+        planetSDF(p+ e.yxy) - planetSDF(p- e.yxy),
+        planetSDF(p+ e.yyx) - planetSDF(p- e.yyx)
+    );
+    // Transform normal back to world space
+    //mat3 normalMatrix = transpose(inverse(mat3(uModel)));
+    //return normalize(normalMatrix * normal);
+	return normalize(normal);
+}
+
+vec3 GetNormal5(vec3 p) {
+    vec2 e = vec2(0.001, 0.0);
+    vec3 normal = vec3(
+        planetSDF(p + e.xyy),
+        planetSDF(p + e.yxy),
+        planetSDF(p + e.yyx)
+    );  
+    return normalize(normal);
+}
+
 
 vec3 GetGlassNormal(vec3 p)
 {
@@ -303,11 +327,12 @@ vec3 GetGlassNormal(vec3 p)
 }
 
 vec3 GetNormal(vec3 p) {
-    vec2 e = vec2(0.001, 0.0);
+    vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+    vec2 e = vec2(0.005, 0.0);
     vec3 normal = vec3(
-		sd_sphere(p + e.xyy, 1.0),
-		sd_sphere(p + e.yxy, 1.0),
-		sd_sphere(p + e.yyx, 1.0)
+		sd_sphere(localP + e.xyy, 1.0),
+		sd_sphere(localP + e.yxy, 1.0),
+		sd_sphere(localP + e.yyx, 1.0)
     );
     return normalize(normal);
 }
@@ -318,21 +343,22 @@ vec3 GetLight(vec3 p, PointLight light) {
 	vec3 light_vector = normalize(light.position.xyz - p);
 	vec3 surface_normal = GetNormal3(p);
 	float d = distance(light.position.xyz, p);
-	return (vec3((clamp(dot(light_vector, surface_normal), 0., 1.)) / (d/10)) * light.color.xyz) * light.color.w;
+	//return (vec3((clamp(dot(light_vector, surface_normal), 0., 1.)) / (d/10)) * light.color.xyz) * light.color.w;
+	return (vec3((clamp(dot(light_vector, surface_normal), 0., 1.))) * light.color.xyz) * light.color.w;
 }
 
 vec3 lighting(vec3 p) {
 	vec3 light_value = vec3(0.0);
-	vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+	//vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
 
 	vec3 sun_dir  = normalize(-vec3(300, 300, 300));
-	vec3 surface_normal = normalize(GetNormal3(p));
+	vec3 surface_normal = GetNormal3(p);
 	vec4 sun_col = vec4(1.0, 1.0, 1.0, 1.0);
 	light_value += clamp(dot(normalize(p), surface_normal), 0., 1.) * sun_col.xyz * sun_col.w;
 
 	for(int i = 0; i < no_lights; i++) {
 		PointLight pl = point_lights[i];
-		light_value += GetLight(localP, pl);
+		light_value += GetLight(p, pl);
 	}
 
 	//vec4 spotlight = vec4(1.0, 1.0, 1.0, 0.5);
@@ -350,14 +376,20 @@ vec3 sphere_lighting(vec3 p, vec3 sphere_location) {
 	return normal;
 }
 
-vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col, vec3 p) {
+vec3 calc_specular(vec3 light_pos, vec3 norm, vec4 light_col, vec3 p) {
     float specular_strength = 0.5; // We can probabaly add this to the lighting ubo later
+
+    vec3 light_dir = normalize(light_pos - p);
     vec3 view_dir = normalize(camera_position.xyz - p);
     vec3 reflect_dir = reflect(-light_dir, norm);
 
     float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
     
     return specular_strength * spec * light_col.xyz;
+}
+
+float df_sphere(vec3 position, float radius) {
+	return abs(length(position) - radius) + 0.01; // Epsilon so no division by small numbers.
 }
 
 vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
@@ -370,12 +402,16 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	bool first_pass = false;
 	ray_direction = normalize(ray_direction);
 
+	vec3 smoke_sphere_l = vec3(5.0, 0.0, -5.0);
+	float smoke_sphere_r = 3.0;
+
 	for(int i = 0; i < MAX_STEPS; i++) {
+		float w = 1.2; // For Over-Relaxed sphere marching, couldn't quite get it to work.
 		vec3 p = ray_origin + ray_direction * ray_length;
 		vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
 
 
-		float dist_glass_sphere = sd_sphere(p-sphere_location, 1.0);
+		float dist_glass_sphere = sd_sphere(p-sphere_location, 3.0);
 
 		if (inside_glass) {
 			dist_glass_sphere = -dist_glass_sphere;
@@ -391,7 +427,7 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 				ray_direction = refract(incident, normal, 1.0/1.5);
 				inside_glass = true;
 
-				//color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), GetNormal(p), vec4(0.5, 0.0, 0.5, 1.0), p);
+				color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), normal, vec4(1.0, 1.0, 1.0, 1.0), p);
 				//color.xyz = color.xyz + calc_specular(vec3(300, 300, 300), normal, vec4(1.0), p) * vec3(1.0, 0.0, 1.0); // Something wrong with calculating normals this way.
 			} else {
 				ray_direction = refract(incident, -normal, 1.5/1.0);
@@ -404,23 +440,28 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
             		}
 
            		 // Update ray origin safely beyond the surface boundary & reset step tracker
-           		 ray_origin = p + ray_direction * 0.05; 
+           		 //ray_origin = p + ray_direction * ray_length; 
+           		 ray_origin = p + ray_direction; 
            		 ray_length = 0.0;
            		 continue;
 		}
+		float volume = df_sphere(p-smoke_sphere_l, smoke_sphere_r);
+		if (volume <= 3.0) {
+			color.xyz += vec3(0.1, 1.0, 1.0);
+			//continue;
+		}
+
+		//float falloff = distance(camera_position.xyz, p);
+		float dist_scene = planetSDF(localP);
+
 		
 
-		float falloff = distance(camera_position.xyz, p);
-		//float dist_scene = planetSDF(localP);
-		
-
-		//if (dist_scene <= HIT_THRESHOLD) { // *FALLOFF
-		//	color.xyz += lighting(localP);
-		//	break;
-		//};
-
-		//ray_length += min(dist_scene, dist_glass_sphere);
-		ray_length += dist_glass_sphere;
+		if (dist_scene <= HIT_THRESHOLD) { // *FALLOFF
+			color.xyz += lighting(localP);
+			break;
+		};
+		ray_length += min(min(dist_scene, dist_glass_sphere), volume);
+		//ray_length += dist_glass_sphere;
 
 		if (ray_length >= MAX_DIST) {
 			color += texture(skybox, normalize(ray_direction));
