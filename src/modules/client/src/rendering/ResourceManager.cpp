@@ -33,11 +33,11 @@ namespace rendering {
 			pak_file.add_material(material_A.second);
 		};
 
-		for(auto& shader_A : shader_program_assets) {
-			ShaderSource v_src = shader_manager.get_source(shader_A.second.vert_source);
-			ShaderSource f_src = shader_manager.get_source(shader_A.second.frag_source);
-			pak_file.add_shader_program(shader_A.second, v_src, f_src);
-		};
+		//for(auto& shader_A : shader_program_assets) {
+	//		ShaderSource v_src = shader_manager.get_source(shader_A.second.vert_source.value());
+	//		ShaderSource f_src = shader_manager.get_source(shader_A.second.frag_source.value());
+	//		pak_file.add_shader_program(shader_A.second, v_src, f_src);
+	//	}; Didn't want to write the extra logic while I was integrating compute shaders, handing this over to you future C.
 
 		pak_file.close();
 		
@@ -51,6 +51,7 @@ namespace rendering {
 	shader_manager.add_source("shaders/fBasicLighting.glsl");
 	shader_manager.add_source("shaders/fWhite.glsl");
 	shader_manager.add_source("shaders/fSDLRayMarching.glsl");
+	shader_manager.add_source("shaders/cSDLCache.glsl");
 
         //xg::Guid vsh_src_guid = xg::newGuid();
         //xg::Guid fsh_src_guid = xg::newGuid();
@@ -65,7 +66,8 @@ namespace rendering {
 	
 	shader_manager.create_program("Default Program", "shaders/v3D.glsl", "shaders/fBasicLighting.glsl");
 	shader_manager.create_program("White Program", "shaders/v3D.glsl", "shaders/fWhite.glsl");
-	shader_manager.create_program("RayMarching Program", "shaders/vFullScreen.glsl", "shaders/fSDLRayMarching.glsl");
+	shader_manager.create_program("RayMarching Program", "shaders/v3D.glsl", "shaders/fSDLRayMarching.glsl");
+	shader_manager.create_compute_program("SDLCache Program", "shaders/cSDLCache.glsl");
 
 
 	default_shader_program_handle = "Default Program";
@@ -80,7 +82,8 @@ namespace rendering {
 	};
 	
 	add_cubemap(default_cubemap_textures);
-
+	
+	create_gpu_texture(8, 8, 8);
 	shader_program_manager.init();
 		
     }
@@ -343,6 +346,35 @@ namespace rendering {
 
     // }
 
+	void ResourceManager::create_gpu_texture(int texture_width, int texture_height, int texture_depth) {
+	    TextureAsset asset;
+	    asset.dimension = TextureDimension::Texture3D;
+	    asset.handle = xg::newGuid();
+
+	    GPUTexture gpu;
+	    glGenTextures(1, &gpu.ID);
+	    
+	    // Bind as a 3D texture to configure parameters
+	    glActiveTexture(GL_TEXTURE0);
+	    glBindTexture(GL_TEXTURE_3D, gpu.ID);
+	    
+	    // Set filtering and wrapping parameters
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	    
+	    // Allocate 3D texture storage (Width, Height, Depth)
+	    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, texture_width, texture_height, texture_depth, 0, GL_RGBA, GL_FLOAT, NULL);
+	    
+	    // Bind to image unit 0 for compute shader access (layered = GL_TRUE for 3D textures)
+    	    glBindImageTexture(0, gpu.ID, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
+	    asset.gpu_texture = gpu;
+	    
+	    texture_assets.insert({asset.handle, asset});
+	}
+
 	void ResourceManager::upload_texture_to_gpu(TextureAssetHandle handle)
 	{
 	auto it = texture_assets.find(handle);
@@ -433,37 +465,39 @@ namespace rendering {
 	}
 	}
 
-    xg::Guid ResourceManager::compile_shader(ShaderProgramAsset shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
+   // xg::Guid ResourceManager::compile_shader(ShaderProgramAsset shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
+   //     									//
+   //     	// I don't think this exists anymore.
 
-		rendering::Shader vert_shader;
-		vert_shader.from_source(shader_manager.get_source(shader_asset.vert_source));
+   //     	rendering::Shader vert_shader;
+   //     	vert_shader.from_source(shader_manager.get_source(shader_asset.vert_source.value()));
 
-		rendering::Shader frag_shader;
-		frag_shader.from_source(shader_manager.get_source(shader_asset.frag_source));
+   //     	rendering::Shader frag_shader;
+   //     	frag_shader.from_source(shader_manager.get_source(shader_asset.frag_source.value()));
 
-        shader_asset.program_name = glCreateProgram();
-		GLuint program_name = shader_asset.program_name;
+   //     shader_asset.program_name = glCreateProgram();
+   //     	GLuint program_name = shader_asset.program_name;
 
-        glAttachShader(program_name, vert_shader.get_shader());
-        glAttachShader(program_name, frag_shader.get_shader());
+   //     glAttachShader(program_name, vert_shader.get_shader());
+   //     glAttachShader(program_name, frag_shader.get_shader());
 
-        glLinkProgram(program_name);
+   //     glLinkProgram(program_name);
 
-        GLint ok = GL_FALSE;
-        glGetProgramiv(program_name, GL_LINK_STATUS, &ok);
-        if (!ok) {
-            char log[2048];
-            glGetProgramInfoLog(program_name, sizeof log, nullptr, log);
-            SDL_Log("Link error: %s", log);
-		}
-		xg::Guid sh_pr_guid = xg::newGuid();
-		shader_asset.guid = sh_pr_guid;
-		shader_program_assets.insert({sh_pr_guid, shader_asset});
+   //     GLint ok = GL_FALSE;
+   //     glGetProgramiv(program_name, GL_LINK_STATUS, &ok);
+   //     if (!ok) {
+   //         char log[2048];
+   //         glGetProgramInfoLog(program_name, sizeof log, nullptr, log);
+   //         SDL_Log("Link error: %s", log);
+   //     	}
+   //     	xg::Guid sh_pr_guid = xg::newGuid();
+   //     	shader_asset.guid = sh_pr_guid;
+   //     	shader_program_assets.insert({sh_pr_guid, shader_asset});
 
-		shaders.insert({xg::newGuid(), vert_shader});
-		shaders.insert({xg::newGuid(), frag_shader});
+   //     	shaders.insert({xg::newGuid(), vert_shader});
+   //     	shaders.insert({xg::newGuid(), frag_shader});
 
-        return sh_pr_guid; 
-    };
+   //     return sh_pr_guid; 
+   // };
 
 }

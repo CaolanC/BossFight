@@ -69,6 +69,10 @@ class ShaderSource
 		return ShaderType::Fragment;
 	};
 
+	if (front == 'c') {
+		return ShaderType::Compute;
+	};
+
 	// What happens if a shader is not correctly named? Probabaly not a full crash if its in the editor mode, but this should never happen in the runtime.
     };
 

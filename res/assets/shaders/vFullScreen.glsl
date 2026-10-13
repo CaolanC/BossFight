@@ -19,5 +19,6 @@ void main() {
     vec3 p = vec3(x, y, 0.0);
     vec4 worldPos = uModel * vec4(p, 1.0);
     FragPos = worldPos.xyz;
-    gl_Position = projection_matrix * view_matrix * worldPos;
+    //gl_Position = projection_matrix * worldPos;
+    gl_Position = projection_matrix * worldPos;
 }

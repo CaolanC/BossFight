@@ -2,6 +2,8 @@
 
 out vec4 FragColor;
 
+uniform samplerCube skybox;
+
 layout(std140, binding = 0) uniform CameraUBO
 {
     mat4 projection_matrix;
@@ -42,7 +44,7 @@ in vec2 vUV;
 vec3 calc_diffuse(vec3 light_dir, vec3 norm, vec4 light_col) {
     float diff = max(dot(norm, light_dir), 0.0);
 
-    return diff * light_col.xyz;
+    return diff * light_col.xyz * light_col.w;
 }
 
 vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col) {
@@ -52,7 +54,7 @@ vec3 calc_specular(vec3 light_dir, vec3 norm, vec4 light_col) {
 
     float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
     
-    return specular_strength * spec * light_col.xyz;
+    return specular_strength * spec * light_col.xyz * light_col.w;
 }
 
 void main() {
@@ -74,6 +76,8 @@ void main() {
     }
 
     vec3 albedo = texture(uTex, vUV).rgb;
-	vec3 color = (ambient + diffuse) * albedo + specular;
+    //vec4 color = texture(skybox, normalize(camera_position.xyz));
+    vec3 color = (ambient + diffuse) * albedo + specular;
+    //color = vec4((ambient + diffuse) * albedo + specular, 1.0);
     FragColor = vec4(color, 1.0);
 }

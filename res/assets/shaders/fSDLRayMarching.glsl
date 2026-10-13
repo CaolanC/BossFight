@@ -135,6 +135,9 @@ float ridgedFbm(vec3 p)
 
 float terrain(vec3 p)
 {
+    vec3 po = p;
+    float height = 0.0;
+
     // IMPORTANT:
     // p is a position in 3D space.
     // Normalize it so the terrain is based only on direction
@@ -142,29 +145,30 @@ float terrain(vec3 p)
     p = normalize(p);
 
     // Large-scale continental structure.
-    float continents = fbm(p * 2.0);
+    if (distance(po, camera_position.xyz) < PLANET_RADIUS) {
+    	float continents = fbm(p * 2.0);
+    	height += (continents - 0.5) * 2.0;
+    }
 
     // Mountain structure.
     //float mountains = ridgedFbm(p * 5.0);
 
     // Small-scale surface detail.
-    float detail = fbm(p * 20.0);
+    //float detail = fbm(p * 20.0);
 
     // Remove some of the mountains from low areas.
-    float mountainMask = smoothstep(
-    	0.35,
-    	0.65,
-    	continents
-    );
+   // float mountainMask = smoothstep(
+   // 	0.35,
+   // 	0.65,
+   // 	continents
+    //);
 
     //mountains *= mountainMask;
 
     // Combine scales.
-    float height = 0.0;
 
-    height += (continents - 0.5) * 2.0;
     //height += mountains * 0.8;
-    height += (detail - 0.5) * 0.15;
+    //height += (detail - 0.5) * 0.15;
 
     return height;
 }

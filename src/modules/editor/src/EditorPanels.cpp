@@ -41,6 +41,12 @@ namespace gui {
 		if (ImGui::Button("Recompile Shaders")) {
 			app.runtime.resource_manager.shader_manager.recompile_shaders();
 		}
+		if (ImGui::Button("Take Screenshot")) {
+			app.runtime.take_screenshot(1920, 1080);
+		}
+		if (ImGui::Button("Regenerate SDF Cache")) {
+			app.runtime.resource_manager.shader_manager.run_compute_program("SDLCache Program");
+		}
 
         ImGui::End();
     }
