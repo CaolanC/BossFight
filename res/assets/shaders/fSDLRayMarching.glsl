@@ -500,14 +500,15 @@ vec4 RayMarcher2() {
 
 		ivec3 texel_i = ivec3(floor(ray_position));
 
-		if (any(greaterThan(texel_i, ivec3(8))) || ray_length > MAX_DIST) {
+		if (any(greaterThan(texel_i, ivec3(64))) || ray_length > MAX_DIST) {
+		//if (ray_length > MAX_DIST) {
 			color.xyz = texture(skybox, normalize(ray_dir)).xyz;
 			break; 
 		}
 
 		vec4 v = texelFetch(sd_field, texel_i, 0);
 
-		if (v.x > 0.0) {
+		if (v.x > 0.01) {
 			color.x = v.x;
 			break;
 		}
