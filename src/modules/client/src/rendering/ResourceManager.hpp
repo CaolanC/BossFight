@@ -38,7 +38,7 @@ namespace rendering {
 	std::vector<const ShaderProgramAsset*> get_programs();
 	void recompile_shaders();
 	void add_cubemap(std::vector<std::string> textures);
-	void create_gpu_texture(int texture_width, int texture_height, int texture_depth);
+	TextureAssetHandle create_gpu_texture(int texture_width, int texture_height, int texture_depth);
 	//const ShaderProgramAsset& get_program_asset(
 
 

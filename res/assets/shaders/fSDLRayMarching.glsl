@@ -11,7 +11,8 @@ out vec4 FragColor;
 
 uniform mat4 uModel;
 
-uniform samplerCube skybox;
+layout(binding = 0) uniform samplerCube skybox;
+layout(binding = 1) uniform sampler3D sd_field;
 
 layout(std140, binding = 0) uniform CameraUBO
 {
@@ -486,9 +487,49 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	return color;
 }
 
+vec4 RayMarcher2() {
+	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
+	vec3 ray_dir = normalize(FragPos - camera_position.xyz);
+	vec3 ray_origin = camera_position.xyz;
+	vec3 ray_position = camera_position.xyz; // Origin before any calculations happen.
+	float ray_length = 0.0;
+
+	for(int i = 0; i < MAX_STEPS; i++) {
+		ray_position = ray_origin + ray_length * ray_dir;
+
+
+		ivec3 texel_i = ivec3(floor(ray_position));
+
+		if (any(greaterThan(texel_i, ivec3(8))) || ray_length > MAX_DIST) {
+			color.xyz = texture(skybox, normalize(ray_dir)).xyz;
+			break; 
+		}
+
+		vec4 v = texelFetch(sd_field, texel_i, 0);
+
+		if (v.x > 0.0) {
+			color.x = v.x;
+			break;
+		}
+
+		//color.x = texelFetch(sd_field, texel_i, 0).x;
+
+
+		//if(texelFetch(sd_field, ivec3(ray_position), 0).x > 0.5) {
+		//	color.xyz = vec3(1.0);
+		//	break;
+		//};
+
+		ray_length += 0.1;
+	}
+
+	return color;
+}
+
 void main() {
 	vec3 ray_dir = normalize(FragPos - camera_position.xyz);
-	vec4 color = RayMarcher(camera_position.xyz, ray_dir);
+	//vec4 color = RayMarcher(camera_position.xyz, ray_dir);
+	vec4 color = RayMarcher2();
 
 	//vec3 position = camera_position.xyz + ray_dir * t;
 

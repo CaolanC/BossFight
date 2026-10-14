@@ -83,7 +83,9 @@ namespace rendering {
 	
 	add_cubemap(default_cubemap_textures);
 	
-	create_gpu_texture(8, 8, 8);
+	TextureAssetHandle t_handle = create_gpu_texture(8, 8, 8);
+	
+	shader_manager.bind_texture("RayMarching Program", texture_assets.at(t_handle));
 	shader_program_manager.init();
 		
     }
@@ -346,7 +348,7 @@ namespace rendering {
 
     // }
 
-	void ResourceManager::create_gpu_texture(int texture_width, int texture_height, int texture_depth) {
+	TextureAssetHandle ResourceManager::create_gpu_texture(int texture_width, int texture_height, int texture_depth) {
 	    TextureAsset asset;
 	    asset.dimension = TextureDimension::Texture3D;
 	    asset.handle = xg::newGuid();
@@ -373,6 +375,8 @@ namespace rendering {
 	    asset.gpu_texture = gpu;
 	    
 	    texture_assets.insert({asset.handle, asset});
+
+	    return asset.handle;
 	}
 
 	void ResourceManager::upload_texture_to_gpu(TextureAssetHandle handle)

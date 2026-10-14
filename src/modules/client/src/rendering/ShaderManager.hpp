@@ -2,6 +2,7 @@
 
 #include <rendering/ShaderProgramAsset.hpp>
 #include <rendering/ShaderSource.hpp>
+#include <rendering/TextureAsset.hpp>
 
 #include <crossguid/guid.hpp>
 
@@ -26,6 +27,7 @@ class ShaderManager {
 	void reload_sources();
 	void reload_source(std::string path);
 	void run_compute_program(std::string access_name);
+	void bind_texture(std::string access_name, TextureAsset& texture_asset);
 	
 
 	std::unordered_map<std::string, ShaderProgramAsset> shader_program_assets;

@@ -1,6 +1,7 @@
 #include <rendering/ShaderManager.hpp>
 #include <rendering/ShaderProgramAsset.hpp>
 #include <rendering/Shader.hpp>
+#include <rendering/TextureAsset.hpp>
 
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
@@ -42,10 +43,22 @@ void ShaderManager::create_compute_program(std::string access_name, std::string 
 	shader_program_assets.insert({access_name, asset});
 };
 
+void ShaderManager::bind_texture(std::string access_name, TextureAsset& texture_asset) {
+	ShaderProgramAsset shader_asset = shader_program_assets.at(access_name);
+	
+	glUseProgram(shader_asset.program_name);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_3D, texture_asset.gpu_texture.value().ID); // Remember to build this out to support other texture/image types later C!
+	glUniform1i(glGetUniformLocation(shader_asset.program_name, "sd_field"), 1);
+
+	//glBindTexture(GL_TEXTURE_3D, 0);
+
+};
+
 void ShaderManager::run_compute_program(std::string access_name) {
 	ShaderProgramAsset asset = shader_program_assets.at(access_name);
 	glUseProgram(asset.program_name);
-	glDispatchCompute(8, 8, 8);
+	glDispatchCompute(1, 1, 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 };
 
