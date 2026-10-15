@@ -11,6 +11,6 @@ float sd_sphere(uvec3 p, vec3 sphere_position, float radius) {
 void main() {
 	vec4 value = vec4(0.0, 0.0, 0.0, 1.0);
 	//value.x = 1.0;
-	value.x = -sd_sphere(gl_GlobalInvocationID, vec3(4.0, 4.0, 4.0), 4.5);
+	value.x = -sd_sphere(gl_GlobalInvocationID, vec3(0.0, 0.0, 0.0), 15.0);
 	imageStore(sd_field, ivec3(gl_GlobalInvocationID.xyz), value);
 }

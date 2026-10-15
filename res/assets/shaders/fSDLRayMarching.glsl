@@ -509,7 +509,8 @@ vec4 RayMarcher2() {
 		vec4 v = texelFetch(sd_field, texel_i, 0);
 
 		if (v.x > 0.01) {
-			color.x = v.x;
+			color.b = v.x;
+			color.g = v.x;
 			break;
 		}
 

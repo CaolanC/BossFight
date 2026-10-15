@@ -83,7 +83,7 @@ namespace rendering {
 	
 	add_cubemap(default_cubemap_textures);
 	
-	TextureAssetHandle t_handle = create_gpu_texture(8, 8, 8);
+	TextureAssetHandle t_handle = create_gpu_texture(64, 64, 64);
 	
 	shader_manager.bind_texture("RayMarching Program", texture_assets.at(t_handle));
 	shader_program_manager.init();
