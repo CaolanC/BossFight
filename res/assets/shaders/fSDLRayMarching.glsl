@@ -500,8 +500,8 @@ vec4 RayMarcher2() {
 
 		ivec3 texel_i = ivec3(floor(ray_position));
 
-		if (any(greaterThan(texel_i, ivec3(64))) || ray_length > MAX_DIST) {
-		//if (ray_length > MAX_DIST) {
+		//if (any(greaterThan(texel_i, ivec3(64))) || ray_length > MAX_DIST) {
+		if (ray_length > MAX_DIST) {
 			color.xyz = texture(skybox, normalize(ray_dir)).xyz;
 			break; 
 		}
@@ -510,7 +510,7 @@ vec4 RayMarcher2() {
 		vec4 v = texture(sd_field, lerp_j);
 
 		if (v.x < 0.01) {
-			color.g = v.x * 10.0;
+			color.b = v.x + 0.5;
 			break;
 		}
 
@@ -522,7 +522,7 @@ vec4 RayMarcher2() {
 		//	break;
 		//};
 
-		ray_length += 0.1;
+		ray_length += v.x;
 	}
 
 	return color;
