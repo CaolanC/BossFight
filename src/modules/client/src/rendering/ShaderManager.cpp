@@ -1,6 +1,7 @@
 #include <rendering/ShaderManager.hpp>
 #include <rendering/ShaderProgramAsset.hpp>
 #include <rendering/Shader.hpp>
+#include <rendering/TextureAsset.hpp>
 
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
@@ -27,6 +28,38 @@ void ShaderManager::create_program(std::string access_name, std::string vertex_p
 	compile_shader(asset);
 
 	shader_program_assets.insert({access_name, asset});
+};
+
+void ShaderManager::create_compute_program(std::string access_name, std::string compute_path) {
+	ShaderSource c_source = shader_sources.at(compute_path);
+
+	ShaderProgramAsset asset;
+	asset.comp_source = compute_path;
+	asset.access_name = access_name;
+	asset.guid = xg::newGuid();
+	
+	compile_shader(asset);
+
+	shader_program_assets.insert({access_name, asset});
+};
+
+void ShaderManager::bind_texture(std::string access_name, TextureAsset& texture_asset) {
+	ShaderProgramAsset shader_asset = shader_program_assets.at(access_name);
+	
+	glUseProgram(shader_asset.program_name);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_3D, texture_asset.gpu_texture.value().ID); // Remember to build this out to support other texture/image types later C!
+	glUniform1i(glGetUniformLocation(shader_asset.program_name, "sd_field"), 1);
+
+	//glBindTexture(GL_TEXTURE_3D, 0);
+
+};
+
+void ShaderManager::run_compute_program(std::string access_name) {
+	ShaderProgramAsset asset = shader_program_assets.at(access_name);
+	glUseProgram(asset.program_name);
+	glDispatchCompute(2, 2, 2);
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 };
 
 void ShaderManager::recompile_shaders() {
@@ -79,19 +112,25 @@ std::vector<const ShaderProgramAsset*> ShaderManager::get_programs() {
 };
 
 void ShaderManager::compile_shader(ShaderProgramAsset& shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
-
-	Shader vert_shader;
-	vert_shader.from_source(shader_sources.at(shader_asset.vert_source));
-
-	Shader frag_shader;
-	frag_shader.from_source(shader_sources.at(shader_asset.frag_source));
-
-//        shader_asset.program_name = glCreateProgram();
-//	GLuint program_name = shader_asset.program_name;
 	GLuint program_name = glCreateProgram();
+	
+	if (shader_asset.vert_source.has_value()) {
+		Shader vert_shader;
+		vert_shader.from_source(shader_sources.at(shader_asset.vert_source.value()));
+        	glAttachShader(program_name, vert_shader.get_shader());
+	}
 
-        glAttachShader(program_name, vert_shader.get_shader());
-        glAttachShader(program_name, frag_shader.get_shader());
+	if (shader_asset.frag_source.has_value()) {
+		Shader frag_shader;
+		frag_shader.from_source(shader_sources.at(shader_asset.frag_source.value()));
+        	glAttachShader(program_name, frag_shader.get_shader());
+	}
+
+	if (shader_asset.comp_source.has_value()) {
+		Shader comp_shader;
+		comp_shader.from_source(shader_sources.at(shader_asset.comp_source.value()));
+		glAttachShader(program_name, comp_shader.get_shader());
+	}
 
         glLinkProgram(program_name);
 

@@ -16,7 +16,7 @@ find_package(glm REQUIRED)            # Provided by Conan
 find_package(EnTT REQUIRED)           # Provided by Conan
 find_package(concurrentqueue REQUIRED)# Provided by Conan
 find_package(cglm REQUIRED)           # Provided by Conan
-
+find_package(freeimage REQUIRED)
 find_package(SDL3 REQUIRED)
 
 # 1. If Conan created `sdl::sdl`, promote it to GLOBAL so subdirectories see it

@@ -27,9 +27,11 @@ class Runtime {
 	entt::registry& active_scene = scene_manager.get_scene("Default Scene"); // This too.
 	bool editor_mode = false;
 
+	void take_screenshot(int width, int height);
+
 	//void ensure_framebuffer(int w, int h); // Ideally these don't exist here at all, but this too lol.
-    unsigned int render_texture(int w, int h);
-    //unsigned int get_render_texture() const;
+    	unsigned int render_texture(int w, int h);
+    	//unsigned int get_render_texture() const;
 
 	void process_input_event(const SDL_Event& event);
 	void begin_input_frame();

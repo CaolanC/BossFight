@@ -13,6 +13,7 @@
 #include <rendering/MaterialAsset.hpp>
 #include <rendering/GPUTexture.hpp>
 #include <glad/glad.h>
+#include <FreeImage.h>
 
 #include <iostream>
 
@@ -24,6 +25,7 @@ namespace client {
 	}
 
     void Renderer::init() {
+	    	FreeImage_Initialise();
 		init_ubos();
     }
 
@@ -49,7 +51,61 @@ namespace client {
 		);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, lighting_ubo);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		
     };
+
+    void Renderer::take_screenshot(int width, int height, entt::registry& active_scene) {
+	 render_to_texture(width, height, active_scene);
+   	 if (framebuffer == 0 || width <= 0 || height <= 0) {
+   	     std::cout << "Error: Framebuffer is uninitialized or dimensions are invalid.\n";
+   	     return;
+   	 }
+
+   	 // Ensure rendering commands are finished
+   	 glFinish();
+
+   	 glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+   	 glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+   	 // Fix stride alignment issues
+   	 glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
+	 std::vector<GLubyte> pixels(3 * width * height);
+    	glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+
+    	// 2. Convert with standard 24-bit RGB masks
+    	FIBITMAP* image = FreeImage_ConvertFromRawBits(
+        	pixels.data(), width, height, 3 * width, 24, 
+        	0x0000FF, 0x00FF00, 0xFF0000, false
+    	);
+
+   	// std::vector<GLubyte> pixels(4 * width * height);
+   	// glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+   	 glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+   	// FIBITMAP* image = FreeImage_ConvertFromRawBits(
+   	//     pixels.data(), width, height, 4 * width, 32, 
+   	//     0xFF000000, 0x00FF0000, 0x0000FF00, false
+   	// );
+
+   	 if (!image) {
+   	     std::cout << "Error: FreeImage_ConvertFromRawBits failed!\n";
+   	     return;
+   	 }
+	 auto id = xg::newGuid();
+	 std::stringstream s;
+	 s << id;
+	 BOOL saved = FreeImage_Save(FIF_BMP, image, ("/home/DF_AUS/Pictures/" + s.str()).c_str(), 0); // Remember to remove this hardcoding later C, otherwise it all goes to shit. :D
+   	 if (!saved) {
+   	     std::cout << "Error: Failed to save screenshot to disk.\n";
+   	 } else {
+   	     std::cout << "Screenshot saved successfully to ./screenshot.bmp\n";
+   	 }
+
+   	 FreeImage_Unload(image);
+    }
 
     void Renderer::set_camera_ubo(const glm::vec3& camera_position, const glm::mat4& projection_matrix, const glm::mat4& view_matrix) {
 		glBindBuffer(GL_UNIFORM_BUFFER, camera_ubo);
@@ -70,7 +126,10 @@ namespace client {
 		
 		glBindVertexArray(gpu_mesh.vao);
 
-		const rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
+		rendering::MaterialAsset& material_asset = resource_manager.material_assets.at(material_handle);
+
+		material_asset.cubemap_texture_handle = resource_manager.default_cubemap_texture_asset;
+
 		GLuint shader_program = resource_manager.shader_manager.get_program(material_asset.shader_program_handle).program_name;
 		//GLuint shader_program = resource_manager.shader_program_assets.at(material_asset.shader_program_handle).program_name;
 		glUseProgram(shader_program);
@@ -90,6 +149,11 @@ namespace client {
 		GLint tex_location = glGetUniformLocation(shader_program, "uTex");
 
 		glUniform1i(tex_location, 0);
+
+
+		const rendering::TextureAsset& cubemap_texture = resource_manager.texture_assets.at(material_asset.cubemap_texture_handle.value());
+		const rendering::GPUTexture& gpu_cubemap_texture = cubemap_texture.gpu_texture.value(); // Needs bounds checking obv. :)
+		glBindTexture(GL_TEXTURE_CUBE_MAP, gpu_cubemap_texture.ID);
 
        	glDrawElements(gpu_mesh.draw_mode, gpu_mesh.count, gpu_mesh.index_type, nullptr); // Need to implement non indexed drawing condition
 	};

@@ -2,6 +2,7 @@
 
 #include <rendering/ResourceManager.hpp>
 #include <glm/glm.hpp>
+#include <FreeImage.h>
 
 namespace client {
 
@@ -29,6 +30,7 @@ namespace client {
 			void render_to_texture(int w, int h, entt::registry& active_scene);
 			void render_to_window(int w, int h, entt::registry& active_scene);
 			unsigned get_color_texture();
+			void take_screenshot(int width, int height, entt::registry& active_scene);
 		private:
 			void ensure_framebuffer(int w, int h);
 			unsigned int camera_ubo, lighting_ubo;
