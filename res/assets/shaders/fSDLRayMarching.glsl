@@ -487,6 +487,26 @@ vec4 RayMarcher(vec3 ray_origin, vec3 ray_direction) {
 	return color;
 }
 
+vec3 lighting2(vec3 p, vec3 surface_normal) {
+	vec3 light_value = vec3(0.0);
+	//vec3 localP = (inverse(uModel) * vec4(p, 1.0)).xyz;
+
+	vec3 sun_dir  = normalize(-vec3(300, 300, 300));
+	//vec3 surface_normal = GetNormal3(p);
+	vec4 sun_col = vec4(1.0, 1.0, 1.0, 1.0);
+	light_value += clamp(dot(normalize(p), surface_normal), 0., 1.) * sun_col.xyz * sun_col.w;
+
+	//for(int i = 0; i < no_lights; i++) {
+	//	PointLight pl = point_lights[i];
+	//	light_value += GetLight(p, pl);
+	//}
+
+	//vec4 spotlight = vec4(1.0, 1.0, 1.0, 0.5);
+	//light_value += clamp(dot(normalize(p), normalize(camera_position.xyz)), 0., 1.); // * spotlight.xyz * spotlight.w;
+
+	return light_value;
+}
+
 vec4 RayMarcher2() {
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 	vec3 ray_dir = normalize(FragPos - camera_position.xyz);
@@ -509,8 +529,9 @@ vec4 RayMarcher2() {
 		//vec4 v = texelFetch(sd_field, texel_j, 0);
 		vec4 v = texture(sd_field, lerp_j);
 
-		if (v.x < 0.01) {
-			color.g = v.x + 0.2;
+		if (v.w < 0.01) {
+			//color.g = v.w + 0.2;
+			color.xyz = lighting2(ray_position, v.xyz);
 			break;
 		}
 
@@ -523,7 +544,7 @@ vec4 RayMarcher2() {
 		//};
 
 		//ray_length += 0.1;
-		ray_length += v.x;
+		ray_length += v.w;
 	}
 
 	return color;

@@ -1,6 +1,8 @@
 #version 460
 
 #define TEXTURE_SIZE 64
+const float infinity = 1. / 0.;
+
 // Don't know if this is the correct value, be sure to check you spoon.
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
@@ -13,13 +15,72 @@ layout(std140, binding = 0) uniform CameraUBO {
 	vec4 camera_position;
 };
 
-float sd_sphere(uvec3 p, vec3 sphere_position, float radius) {
+struct SDF {
+	mat4 transform;
+	int type; // 0:Sphere, 1:Box
+	float radius;
+};
+
+layout(std430, binding = 1) readonly buffer SDFBuffer {
+	int shape_count;
+	SDF sdfs[];
+};
+
+float smin(float a, float b, float k) {
+    float h = max(k - abs(a - b), 0.0) / k;
+    return min(a, b) - h * h * k * 0.25;
+}
+
+
+float sd_sphere(vec3 p, vec3 sphere_position, float radius) {
 	return distance(p, sphere_position) - radius;
+}
+
+uniform mat4 uModel;
+
+vec3 GetSphereNormal(vec3 p, vec3 sphere_location, float radius) {
+    //vec3 localP = (inverse(uModel) * uvec4(p, 1.0)).xyz;
+    vec2 e = vec2(0.005, 0.0);
+    vec3 normal = vec3(
+		sd_sphere(p + e.xyy, sphere_location, radius) - sd_sphere(p - e.xyy, sphere_location, radius),
+        	sd_sphere(p + e.yxy, sphere_location, radius) - sd_sphere(p - e.yxy, sphere_location, radius),
+        	sd_sphere(p + e.yyx, sphere_location, radius) - sd_sphere(p - e.yyx, sphere_location, radius)
+    );
+    return normalize(normal);
 }
 
 void main() {
 	vec4 value = vec4(0.0, 0.0, 0.0, 1.0);
-	//value.x = 1.0;
-	value.x = sd_sphere(gl_GlobalInvocationID, vec3(32.0, 32.0, 32.0), 25.0);
+	vec3 sphere_location = vec3(32.0, 32.0, 32.0);
+	vec3 global_invocation_id_v3 = vec3(gl_GlobalInvocationID);
+
+	float distance_value = infinity;
+	int winning_index = -1; 
+	for(int i = 0; i < shape_count; i++) {
+		SDF sdf = sdfs[i];
+		float curr_dist = infinity;
+		if (sdf.type == 0) {
+			curr_dist = sd_sphere(global_invocation_id_v3, sdf.transform[3].xyz, sdf.radius);
+		}
+
+		if (curr_dist < distance_value) {
+			distance_value = curr_dist;
+			winning_index = i;
+
+		}
+	}
+
+	vec3 normal = vec3(0.0);
+
+	if (winning_index != -1) {
+		SDF winner = sdfs[winning_index];
+		if (winner.type == 0) {
+			normal = GetSphereNormal(global_invocation_id_v3.xyz, winner.transform[3].xyz, winner.radius);
+		}
+	}
+
+	//value.w = distance_value;
+	//value.xyz = GetSphereNormal(global_invocation_id_v3.xyz, winner.transform[3].xyz, winner.radius);
+	value = vec4(normal, distance_value);
 	imageStore(sd_field, ivec3(gl_GlobalInvocationID.xyz), value);
 }

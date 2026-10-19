@@ -12,10 +12,14 @@
 #include <rendering/ResourceManager.hpp>
 #include <rendering/MaterialAsset.hpp>
 #include <rendering/GPUTexture.hpp>
+#include <sdf/GPU_SDF.hpp>
+
 #include <glad/glad.h>
 #include <FreeImage.h>
 
 #include <iostream>
+
+#define MAX_SDFS 1024
 
 
 namespace client {
@@ -52,7 +56,18 @@ namespace client {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, lighting_ubo);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		
+		glGenBuffers(1, &sdf_ssbo);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_ssbo);
+		glBufferData(
+			GL_SHADER_STORAGE_BUFFER,
+			sizeof(int) + sizeof(GPU_SDF) * MAX_SDFS,
+			NULL,
+			GL_DYNAMIC_DRAW
+		);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, sdf_ssbo);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+
     };
 
     void Renderer::take_screenshot(int width, int height, entt::registry& active_scene) {
@@ -113,6 +128,12 @@ namespace client {
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(view_matrix));
 		glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(glm::vec3), glm::value_ptr(camera_position));
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    };
+
+    void Renderer::set_sdf_ssbo(int count, const GPU_SDF* gpu_sdfs) {
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_ssbo);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &count);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 16, sizeof(GPU_SDF) * count, gpu_sdfs); // Offset is 16 because std430 has 4 byte alignment for ints/floats etc.
     };
 
     void Renderer::set_lighting_ubo(const LightingUBOCPU& lighting_ubo_cpu) {
@@ -197,11 +218,31 @@ namespace client {
 	
 		set_lighting_ubo(l_ubo_cpu);
 
+
+		auto sdf_view = reg.view<component::signed_distance_field, shared::component::transform>();
+
+		int count = 0;
+		GPU_SDF gpu_sdfs[MAX_SDFS];
+		for (auto [e, sdf, transform] : sdf_view.each()) {
+			GPU_SDF gpu_sdf;
+			gpu_sdf.transform = transform;
+			//gpu_sdf.radius = sdf.parameters.radius;
+			gpu_sdf.radius = 10.0;
+			gpu_sdf.type = 0;
+
+			gpu_sdfs[count] = gpu_sdf;
+			count++;
+		}
+		if (count) {
+			set_sdf_ssbo(count, &gpu_sdfs[0]);
+		}
+
 		auto view = reg.view<component::mesh, component::material, shared::component::transform>();
 
 		for (auto [e, mesh, material, transform] : view.each()) {
 			draw_mesh(mesh.mesh_handle, material.material_handle, transform);
 		}
+
 
     }
 
