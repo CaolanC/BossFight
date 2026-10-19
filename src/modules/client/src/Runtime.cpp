@@ -56,6 +56,10 @@ void Runtime::render_to_window(int w, int h) {
 	renderer.render_to_window(w, h, active_scene);
 };
 
+void Runtime::take_screenshot(int width, int height) {
+	renderer.take_screenshot(width, height, active_scene);
+};
+
 void Runtime::begin_input_frame() {
 	//entt::registry& r = active_scene;
 	auto& ms = active_scene.ctx().get<component::mouse_state>();

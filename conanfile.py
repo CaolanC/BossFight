@@ -11,6 +11,7 @@ class SouljaConan(ConanFile):
         "cglm/0.9.6",
         "gtest/1.15.0",
         "concurrentqueue/1.0.4",
+        "freeimage/3.18.0"
     )
 
     def layout(self):

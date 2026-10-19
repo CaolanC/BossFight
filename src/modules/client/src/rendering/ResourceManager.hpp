@@ -37,10 +37,12 @@ namespace rendering {
 	MaterialAsset& get_material_asset(const MaterialAssetHandle& handle);
 	std::vector<const ShaderProgramAsset*> get_programs();
 	void recompile_shaders();
+	void add_cubemap(std::vector<std::string> textures);
+	TextureAssetHandle create_gpu_texture(int texture_width, int texture_height, int texture_depth);
 	//const ShaderProgramAsset& get_program_asset(
 
 
-	xg::Guid compile_shader(ShaderProgramAsset shader_asset);
+	//xg::Guid compile_shader(ShaderProgramAsset shader_asset);
 	
 
 	MaterialManager material_manager;
@@ -57,6 +59,7 @@ namespace rendering {
 	rendering::ShaderManager shader_manager;
 
 	std::string default_shader_program_handle;
+	xg::Guid default_cubemap_texture_asset;
         
         // uint32_t add_mesh();
         // uint32_t add_texture();

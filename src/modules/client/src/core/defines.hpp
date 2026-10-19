@@ -21,5 +21,6 @@ using ModelHandle = xg::Guid;
 
 enum ShaderType {
     Vertex  = GL_VERTEX_SHADER,
-    Fragment = GL_FRAGMENT_SHADER
+    Fragment = GL_FRAGMENT_SHADER,
+    Compute = GL_COMPUTE_SHADER
 };

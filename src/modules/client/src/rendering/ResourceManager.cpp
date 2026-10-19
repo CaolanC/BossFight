@@ -8,6 +8,7 @@
 #include <rendering/NewMesh.hpp>
 #include <rendering/CPUTexture.hpp>
 #include <rendering/GPUTexture.hpp>
+#include <utils/gl/helpers.hpp>
 #include <Pak.hpp>
 
 namespace rendering {
@@ -23,19 +24,20 @@ namespace rendering {
 			pak_file.add_mesh(mesh_A.second.cpu_mesh.value());
 		};
 
-		for(auto& texture_A : texture_assets) { // Obviously need to check if the cpu_mesh actually exists, handing this over to you future C.
-			pak_file.add_texture(texture_A.second.cpu_texture.value());
-		};
+		//for(auto& texture_A : texture_assets) { // Obviously need to check if the cpu_mesh actually exists, handing this over to you future C.
+		//	pak_file.add_texture(texture_A.second.cpu_texture.value());
+		//};
+		// Remember to re-add this caolan. We were lazy today so you have to deal with it now. Congrats! :)
 
 		for(auto& material_A : material_assets) { // Obviously need to check if the cpu_mesh actually exists, handing this over to you future C.
 			pak_file.add_material(material_A.second);
 		};
 
-		for(auto& shader_A : shader_program_assets) {
-			ShaderSource v_src = shader_manager.get_source(shader_A.second.vert_source);
-			ShaderSource f_src = shader_manager.get_source(shader_A.second.frag_source);
-			pak_file.add_shader_program(shader_A.second, v_src, f_src);
-		};
+		//for(auto& shader_A : shader_program_assets) {
+	//		ShaderSource v_src = shader_manager.get_source(shader_A.second.vert_source.value());
+	//		ShaderSource f_src = shader_manager.get_source(shader_A.second.frag_source.value());
+	//		pak_file.add_shader_program(shader_A.second, v_src, f_src);
+	//	}; Didn't want to write the extra logic while I was integrating compute shaders, handing this over to you future C.
 
 		pak_file.close();
 		
@@ -45,9 +47,11 @@ namespace rendering {
 		
 
 	shader_manager.add_source("shaders/v3D.glsl");
+	shader_manager.add_source("shaders/vFullScreen.glsl");
 	shader_manager.add_source("shaders/fBasicLighting.glsl");
 	shader_manager.add_source("shaders/fWhite.glsl");
 	shader_manager.add_source("shaders/fSDLRayMarching.glsl");
+	shader_manager.add_source("shaders/cSDLCache.glsl");
 
         //xg::Guid vsh_src_guid = xg::newGuid();
         //xg::Guid fsh_src_guid = xg::newGuid();
@@ -63,12 +67,43 @@ namespace rendering {
 	shader_manager.create_program("Default Program", "shaders/v3D.glsl", "shaders/fBasicLighting.glsl");
 	shader_manager.create_program("White Program", "shaders/v3D.glsl", "shaders/fWhite.glsl");
 	shader_manager.create_program("RayMarching Program", "shaders/v3D.glsl", "shaders/fSDLRayMarching.glsl");
+	shader_manager.create_compute_program("SDLCache Program", "shaders/cSDLCache.glsl");
+
+	load_model("models/cube/Cube.gltf");
 
 
 	default_shader_program_handle = "Default Program";
+	std::vector<std::string> default_cubemap_textures = {
+		utils::assets::get_asset("textures/bkg1_right.png"),
+		utils::assets::get_asset("textures/bkg1_left.png"),
+		utils::assets::get_asset("textures/bkg1_top.png"),
+		utils::assets::get_asset("textures/bkg1_bot.png"),
+		utils::assets::get_asset("textures/bkg1_front.png"),
+		utils::assets::get_asset("textures/bkg1_back.png")
+
+	};
+	
+	add_cubemap(default_cubemap_textures);
+	
+	TextureAssetHandle t_handle = create_gpu_texture(64, 64, 64);
+	
+	shader_manager.bind_texture("RayMarching Program", texture_assets.at(t_handle));
 	shader_program_manager.init();
 		
     }
+
+    void ResourceManager::add_cubemap(std::vector<std::string> textures) {
+	TextureAsset texture_asset;
+	texture_asset.dimension = TextureDimension::TextureCube;
+
+	for(auto& texture : textures) {
+		texture_asset.cpu_textures.push_back(CPUTexture(texture.c_str()));
+	}
+	auto id = xg::newGuid();
+	texture_assets.insert({id, texture_asset});
+	default_cubemap_texture_asset = id;
+	upload_texture_to_gpu(id);
+    };
 
     void ResourceManager::recompile_shaders() {
 	shader_manager.recompile_shaders();
@@ -101,7 +136,7 @@ namespace rendering {
 	void ResourceManager::upload_node_to_gpu(const ModelTreeNode& node) {
 	    // 1. Process all mesh handles associated with this node
 	    for (const MeshAssetHandle& handle : node.mesh_handles) {
-			upload_texture_to_gpu(material_assets.at(node.mesh_material_map.at(handle)).base_color_texture_handle.value()); // Will obviously need to get rid of this and the mesh material map in model tree
+		upload_texture_to_gpu(material_assets.at(node.mesh_material_map.at(handle)).base_color_texture_handle.value()); // Will obviously need to get rid of this and the mesh material map in model tree
 	        auto it = mesh_assets.find(handle);
 	        if (it == mesh_assets.end()) {
 	            continue; // Handle not found in resource map
@@ -315,9 +350,40 @@ namespace rendering {
 
     // }
 
+	TextureAssetHandle ResourceManager::create_gpu_texture(int texture_width, int texture_height, int texture_depth) {
+	    TextureAsset asset;
+	    asset.dimension = TextureDimension::Texture3D;
+	    asset.handle = xg::newGuid();
+
+	    GPUTexture gpu;
+	    glGenTextures(1, &gpu.ID);
+	    
+	    // Bind as a 3D texture to configure parameters
+	    glActiveTexture(GL_TEXTURE0);
+	    glBindTexture(GL_TEXTURE_3D, gpu.ID);
+	    
+	    // Set filtering and wrapping parameters
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	    
+	    // Allocate 3D texture storage (Width, Height, Depth)
+	    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, texture_width, texture_height, texture_depth, 0, GL_RGBA, GL_FLOAT, NULL);
+	    
+	    // Bind to image unit 0 for compute shader access (layered = GL_TRUE for 3D textures)
+    	    glBindImageTexture(0, gpu.ID, 0, GL_TRUE, 0, GL_READ_WRITE, GL_RGBA32F);
+	    asset.gpu_texture = gpu;
+	    
+	    texture_assets.insert({asset.handle, asset});
+
+	    return asset.handle;
+	}
+
 	void ResourceManager::upload_texture_to_gpu(TextureAssetHandle handle)
 	{
-    	auto it = texture_assets.find(handle);
+	auto it = texture_assets.find(handle);
 
     	if (it == texture_assets.end()) {
     	    return;
@@ -330,83 +396,79 @@ namespace rendering {
     	    return;
 		}
 
-    	if (!asset.cpu_texture.has_value()) {
+    	if (!asset.cpu_textures.size()) {
     	    return;
-		}
-
-    	const CPUTexture& cpu = *asset.cpu_texture;
-
-    	GPUTexture gpu;
-
-    	glGenTextures(1, &gpu.ID);
-    	glBindTexture(GL_TEXTURE_2D, gpu.ID);
-
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    	glTexParameteri(
-    	    GL_TEXTURE_2D,
-    	    GL_TEXTURE_MIN_FILTER,
-    	    GL_LINEAR_MIPMAP_LINEAR
-    	);
-
-    	glTexParameteri(
-    	    GL_TEXTURE_2D,
-    	    GL_TEXTURE_MAG_FILTER,
-    	    GL_LINEAR
-    	);
-
-    	glTexImage2D(
-    	    GL_TEXTURE_2D,
-    	    0,
-    	    cpu.internal_format,
-    	    cpu.width,
-    	    cpu.height,
-    	    0,
-    	    cpu.format,
-    	    GL_UNSIGNED_BYTE,
-    	    cpu.data
-    	);
-
-    	glGenerateMipmap(GL_TEXTURE_2D);
-
-    	glBindTexture(GL_TEXTURE_2D, 0);
-
-    	gpu.loaded = true;
-    	asset.gpu_texture = gpu;
 	}
 
-    xg::Guid ResourceManager::compile_shader(ShaderProgramAsset shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
+	if (asset.dimension == TextureDimension::Texture2D) {
+    		const CPUTexture& cpu = asset.cpu_textures[0];
 
-		rendering::Shader vert_shader;
-		vert_shader.from_source(shader_manager.get_source(shader_asset.vert_source));
+    		GPUTexture gpu;
 
-		rendering::Shader frag_shader;
-		frag_shader.from_source(shader_manager.get_source(shader_asset.frag_source));
+    		glGenTextures(1, &gpu.ID);
+    		glBindTexture(GL_TEXTURE_2D, gpu.ID);
 
-        shader_asset.program_name = glCreateProgram();
-		GLuint program_name = shader_asset.program_name;
+    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glAttachShader(program_name, vert_shader.get_shader());
-        glAttachShader(program_name, frag_shader.get_shader());
+    		glTexParameteri(
+    	    		GL_TEXTURE_2D,
+    	    		GL_TEXTURE_MIN_FILTER,
+    	    		GL_LINEAR_MIPMAP_LINEAR
+    		);
 
-        glLinkProgram(program_name);
+    		glTexParameteri(
+    	    		GL_TEXTURE_2D,
+    	    		GL_TEXTURE_MAG_FILTER,
+    	    		GL_LINEAR
+    		);
 
-        GLint ok = GL_FALSE;
-        glGetProgramiv(program_name, GL_LINK_STATUS, &ok);
-        if (!ok) {
-            char log[2048];
-            glGetProgramInfoLog(program_name, sizeof log, nullptr, log);
-            SDL_Log("Link error: %s", log);
+    		glTexImage2D(
+    	    		GL_TEXTURE_2D,
+    	    		0,
+    	    		cpu.internal_format,
+    	    		cpu.width,
+    	    		cpu.height,
+    	    		0,
+    	    		cpu.format,
+    	    		GL_UNSIGNED_BYTE,
+    	    		cpu.data
+    		);
+
+    		glGenerateMipmap(GL_TEXTURE_2D);
+
+    		glBindTexture(GL_TEXTURE_2D, 0);
+
+    		gpu.loaded = true;
+    		asset.gpu_texture = gpu;
+	} else if (asset.dimension == TextureDimension::TextureCube) {
+		GPUTexture gpu;
+		glGenTextures(1, &gpu.ID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, gpu.ID);
+
+		for (int i = 0; i < asset.cpu_textures.size(); i++) {
+			auto& cpu = asset.cpu_textures[i];
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0,
+				cpu.internal_format,
+				cpu.width,
+				cpu.height,
+				0,
+				cpu.format,
+				GL_UNSIGNED_BYTE,
+				cpu.data
+			);
 		}
-		xg::Guid sh_pr_guid = xg::newGuid();
-		shader_asset.guid = sh_pr_guid;
-		shader_program_assets.insert({sh_pr_guid, shader_asset});
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-		shaders.insert({xg::newGuid(), vert_shader});
-		shaders.insert({xg::newGuid(), frag_shader});
-
-        return sh_pr_guid; 
-    };
+		gpu.loaded = true;
+		asset.gpu_texture = gpu;
+	}
+	}
 
 }

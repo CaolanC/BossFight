@@ -11,6 +11,8 @@
 #include <rendering/NewMesh.hpp>
 #include <rendering/MeshAsset.hpp>
 #include <rendering/MaterialAsset.hpp>
+#include <sdf/ComponentParameters.hpp>
+#include <sdf/Type.hpp>
 
 #include <string>
 
@@ -104,16 +106,34 @@ namespace component
     };
 
     struct material {
-		rendering::MaterialAssetHandle material_handle;		
+	rendering::MaterialAssetHandle material_handle;		
     };
 
     struct basic_color {
-		glm::vec3 color{1.0f, 0.5f, 0.31f};	
+	glm::vec3 color{1.0f, 0.5f, 0.31f};	
     };
 
     struct basic_light {
-		glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
-		glm::vec4 position{0, 0, 0, 0};
+	glm::vec4 color{1.0f, 1.0f, 1.0f, 1.0f};
+	glm::vec4 position{0, 0, 0, 0};
+    };
+
+    struct signed_distance_field {
+	sdf::Type type;
+	sdf::SDF_Parameters parameters;
+	glm::vec3 half_extents;
+
+	signed_distance_field(sdf::Type type, uint8_t _parameters[1]) : type(type) {
+		switch (type) {
+			case (sdf::Type::Sphere):
+				//parameters[0] = _parameters[0]; // Radius
+				//parameters.radius = 
+				break;
+			case (sdf::Type::Box):
+				break;
+		}
+	};
+
     };
 
 	struct scene_root {
