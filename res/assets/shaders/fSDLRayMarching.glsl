@@ -530,7 +530,7 @@ vec4 RayMarcher2() {
 		vec4 v = texture(sd_field, lerp_j);
 
 		if (v.w < 0.01) {
-			color.g = v.w + 0.2;
+			//color.g = v.w + 0.2;
 			color.xyz = lighting2(ray_position, v.xyz);
 			break;
 		}

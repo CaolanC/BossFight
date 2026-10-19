@@ -186,6 +186,9 @@ namespace gui {
 					if (ImGui::MenuItem("Mesh")) {
 						active_scene.emplace_or_replace<component::mesh>(entity);
 					}
+					if (ImGui::MenuItem("SDF Shape")) {
+						active_scene.emplace_or_replace<component::signed_distance_field>(entity);
+					}
                     ImGui::EndMenu();
                 }
 
@@ -272,6 +275,14 @@ namespace gui {
 				    }
 				}
 				
+				}
+
+				if (active_scene.all_of<component::signed_distance_field>(entity)) {
+					ImGui::TreeNodeEx("Comp_SDF", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "SDF Shape");
+					auto& sdf = active_scene.get<component::signed_distance_field>(entity);
+					float r = sdf.parameters.radius;
+					ImGui::DragFloat("Radius", &r, 0.0f, 0.01f, 100.0f);
+					sdf.parameters.radius = r;
 				}
                 if (active_scene.all_of<component::basic_light>(entity)) {
                     ImGui::TreeNodeEx("Comp_Light", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Light");

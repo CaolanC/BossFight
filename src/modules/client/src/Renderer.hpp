@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rendering/ResourceManager.hpp>
+#include <sdf/GPU_SDF.hpp>
+
 #include <glm/glm.hpp>
 #include <FreeImage.h>
 
@@ -24,6 +26,7 @@ namespace client {
 			void new_render(entt::registry& reg, int viewport_width, int viewport_height);
 			void set_camera_ubo(const glm::vec3& camera_position, const glm::mat4& projection_matrix, const glm::mat4& view_matrix);
 			void set_lighting_ubo(const LightingUBOCPU& lighting_ubo_cpu);
+			void set_sdf_ssbo(int count, const GPU_SDF* gpu_sdfs);
 			void init();
 			void init_ubos();
 			void draw_mesh(rendering::MeshAssetHandle& mesh_handle, rendering::MaterialAssetHandle& material_handle, glm::mat4& transform);
@@ -33,14 +36,14 @@ namespace client {
 			void take_screenshot(int width, int height, entt::registry& active_scene);
 		private:
 			void ensure_framebuffer(int w, int h);
-			unsigned int camera_ubo, lighting_ubo;
+			unsigned int camera_ubo, lighting_ubo, sdf_ssbo;
 			rendering::ResourceManager& resource_manager;
 			unsigned int default_shader_program;
-      		unsigned int framebuffer = 0;
-       		unsigned int color_texture = 0;
-        	unsigned int depth_rbo = 0;
-        	int framebuffer_width = 0;
-        	int framebuffer_height = 0;
+      			unsigned int framebuffer = 0;
+       			unsigned int color_texture = 0;
+        		unsigned int depth_rbo = 0;
+        		int framebuffer_width = 0;
+        		int framebuffer_height = 0;
 
 	};
 }

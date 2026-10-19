@@ -119,20 +119,26 @@ namespace component
     };
 
     struct signed_distance_field {
-	sdf::Type type;
-	sdf::SDF_Parameters parameters;
+	sdf::Type type = sdf::Type::Sphere;
+	sdf::SDF_Parameters parameters = sdf::SDF_Parameters{5.0f};
 	glm::vec3 half_extents;
 
-	signed_distance_field(sdf::Type type, uint8_t _parameters[1]) : type(type) {
+	signed_distance_field() {};
+
+	signed_distance_field(sdf::Type type, sdf::SDF_Parameters parameters) : type(type), parameters(parameters) {
 		switch (type) {
 			case (sdf::Type::Sphere):
 				//parameters[0] = _parameters[0]; // Radius
-				//parameters.radius = 
 				break;
 			case (sdf::Type::Box):
 				break;
 		}
 	};
+
+	// In memory:
+	// vec3 position
+	// int type
+	// float radius
 
     };
 
