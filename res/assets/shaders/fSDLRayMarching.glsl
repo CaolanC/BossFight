@@ -505,12 +505,12 @@ vec4 RayMarcher2() {
 			color.xyz = texture(skybox, normalize(ray_dir)).xyz;
 			break; 
 		}
-		vec3 lerp_j = ray_position / 64;
+		vec3 lerp_j = ray_position / 128;
 		//vec4 v = texelFetch(sd_field, texel_j, 0);
 		vec4 v = texture(sd_field, lerp_j);
 
 		if (v.x < 0.01) {
-			color.b = v.x + 0.5;
+			color.g = v.x + 0.2;
 			break;
 		}
 
@@ -522,6 +522,7 @@ vec4 RayMarcher2() {
 		//	break;
 		//};
 
+		//ray_length += 0.1;
 		ray_length += v.x;
 	}
 

@@ -16,6 +16,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/glm.hpp>
+#include <crossguid/guid.hpp>
 
 namespace gui {
 
@@ -182,6 +183,9 @@ namespace gui {
                     if (ImGui::MenuItem("Point Light")) {
                         active_scene.emplace_or_replace<component::basic_light>(entity);
                     }
+					if (ImGui::MenuItem("Mesh")) {
+						active_scene.emplace_or_replace<component::mesh>(entity);
+					}
                     ImGui::EndMenu();
                 }
 
@@ -234,21 +238,56 @@ namespace gui {
                     rot = glm::quat(euler_rad);
                     scale.s = s;
                 }
+				if (active_scene.all_of<component::mesh>(entity)) {
+				    ImGui::TreeNodeEx("Comp_Mesh", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Mesh");
+				
+				    auto& mesh_comp = active_scene.get<component::mesh>(entity);
+				
+				    std::vector<std::string> indexable_handles;
+				    std::vector<xg::Guid> raw_guids;
+				    
+				    int current_item = 0;
+				    int counter = 0;
+				
+				    for (auto& [k, v] : app.runtime.resource_manager.mesh_assets) {
+				        raw_guids.push_back(k);
+				        indexable_handles.push_back(k.str());
+				        
+				        if (k == mesh_comp.mesh_handle) {
+				            current_item = counter;
+				        }
+				        counter++;
+				    }
+				// 1. Correct the lambda signature to return const char* and take only (data, idx)
+				auto items_getter = [](void* data, int idx) -> const char* {
+				    auto* vector = static_cast<std::vector<std::string>*>(data);
+				    if (idx < 0 || idx >= static_cast<int>(vector->size())) return nullptr;
+				    return (*vector)[idx].c_str();
+				};
+				
+				// 2. Call ImGui::Combo
+				if (ImGui::Combo("Select Mesh##UniqueSuffix", &current_item, items_getter, &indexable_handles, static_cast<int>(indexable_handles.size()))) {
+				    if (current_item >= 0 && current_item < raw_guids.size()) {
+				        mesh_comp.mesh_handle = raw_guids[current_item];
+				    }
+				}
+				
+				}
                 if (active_scene.all_of<component::basic_light>(entity)) {
                     ImGui::TreeNodeEx("Comp_Light", ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Bullet, "Light");
 
                     auto& light = active_scene.get<component::basic_light>(entity);
 
                     float u_col[4] = {
-			light.color[0],
-			light.color[1],
-			light.color[2],
-			light.color[3]
-                    };
+						light.color[0],
+						light.color[1],
+						light.color[2],
+						light.color[3]
+        			            };
 
-		    ImGui::DragFloat4("Color", u_col, 0.01f);
+					    ImGui::DragFloat4("Color", u_col, 0.01f);
 
-		    light.color = glm::vec4(u_col[0], u_col[1], u_col[2], u_col[3]);
+					    light.color = glm::vec4(u_col[0], u_col[1], u_col[2], u_col[3]);
 
                 }
                 if (active_scene.all_of<component::material>(entity)) {

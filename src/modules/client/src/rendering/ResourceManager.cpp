@@ -69,6 +69,8 @@ namespace rendering {
 	shader_manager.create_program("RayMarching Program", "shaders/v3D.glsl", "shaders/fSDLRayMarching.glsl");
 	shader_manager.create_compute_program("SDLCache Program", "shaders/cSDLCache.glsl");
 
+	load_model("models/cube/Cube.gltf");
+
 
 	default_shader_program_handle = "Default Program";
 	std::vector<std::string> default_cubemap_textures = {
@@ -468,40 +470,5 @@ namespace rendering {
 		asset.gpu_texture = gpu;
 	}
 	}
-
-   // xg::Guid ResourceManager::compile_shader(ShaderProgramAsset shader_asset) { // This feels like it could be cleaner, need to establish guid ownership formally.
-   //     									//
-   //     	// I don't think this exists anymore.
-
-   //     	rendering::Shader vert_shader;
-   //     	vert_shader.from_source(shader_manager.get_source(shader_asset.vert_source.value()));
-
-   //     	rendering::Shader frag_shader;
-   //     	frag_shader.from_source(shader_manager.get_source(shader_asset.frag_source.value()));
-
-   //     shader_asset.program_name = glCreateProgram();
-   //     	GLuint program_name = shader_asset.program_name;
-
-   //     glAttachShader(program_name, vert_shader.get_shader());
-   //     glAttachShader(program_name, frag_shader.get_shader());
-
-   //     glLinkProgram(program_name);
-
-   //     GLint ok = GL_FALSE;
-   //     glGetProgramiv(program_name, GL_LINK_STATUS, &ok);
-   //     if (!ok) {
-   //         char log[2048];
-   //         glGetProgramInfoLog(program_name, sizeof log, nullptr, log);
-   //         SDL_Log("Link error: %s", log);
-   //     	}
-   //     	xg::Guid sh_pr_guid = xg::newGuid();
-   //     	shader_asset.guid = sh_pr_guid;
-   //     	shader_program_assets.insert({sh_pr_guid, shader_asset});
-
-   //     	shaders.insert({xg::newGuid(), vert_shader});
-   //     	shaders.insert({xg::newGuid(), frag_shader});
-
-   //     return sh_pr_guid; 
-   // };
 
 }

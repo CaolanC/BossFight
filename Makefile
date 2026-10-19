@@ -25,6 +25,10 @@ gui:
 	cmake --build build --target GUI
 	./bin/GUI
 
+cgui:
+	@echo "COMPILING BOSSFIGHT."
+	cmake --build build --target GUI
+
 guid: cmaked
 	cmake --build build --target GUI
 	gdb ./bin/GUI

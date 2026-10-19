@@ -121,16 +121,19 @@ namespace component
     struct signed_distance_field {
 	sdf::Type type;
 	sdf::SDF_Parameters parameters;
+	glm::vec3 half_extents;
 
 	signed_distance_field(sdf::Type type, uint8_t _parameters[1]) : type(type) {
 		switch (type) {
 			case (sdf::Type::Sphere):
 				//parameters[0] = _parameters[0]; // Radius
+				//parameters.radius = 
 				break;
 			case (sdf::Type::Box):
 				break;
 		}
 	};
+
     };
 
 	struct scene_root {

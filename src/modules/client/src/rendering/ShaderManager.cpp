@@ -58,7 +58,7 @@ void ShaderManager::bind_texture(std::string access_name, TextureAsset& texture_
 void ShaderManager::run_compute_program(std::string access_name) {
 	ShaderProgramAsset asset = shader_program_assets.at(access_name);
 	glUseProgram(asset.program_name);
-	glDispatchCompute(2, 2, 2);
+	glDispatchCompute(8, 8, 8);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 };
 
