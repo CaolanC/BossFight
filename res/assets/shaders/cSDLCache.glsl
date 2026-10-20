@@ -79,8 +79,6 @@ void main() {
 		}
 	}
 
-	//value.w = distance_value;
-	//value.xyz = GetSphereNormal(global_invocation_id_v3.xyz, winner.transform[3].xyz, winner.radius);
 	value = vec4(normal, distance_value);
 	imageStore(sd_field, ivec3(gl_GlobalInvocationID.xyz), value);
 }

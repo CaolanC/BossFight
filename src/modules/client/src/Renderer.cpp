@@ -60,7 +60,7 @@ namespace client {
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, sdf_ssbo);
 		glBufferData(
 			GL_SHADER_STORAGE_BUFFER,
-			sizeof(int) + sizeof(GPU_SDF) * MAX_SDFS,
+			16 + (sizeof(GPU_SDF) * MAX_SDFS), // 16 for int at start
 			NULL,
 			GL_DYNAMIC_DRAW
 		);
